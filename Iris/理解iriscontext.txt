@@ -1,0 +1,33 @@
+﻿context里涵盖了用户请求和对用户的相应
+涵盖了用户的所有交互，接收用户的，和返回给用户的，
+先说接收用户的：
+1. 接收用户的请求参数：
+1.1 获取头信息
+signature := ctx.GetHeader("X-Hub-Signature")
+获取提交表单里的参数
+1.2 id, _ := ctx.Params().GetUint("id")
+获取ctx value
+userId := ctx.Values().Get("auth_user_id").(uint)
+
+2. 返回给用户的相应信息：
+2.1 发出statuscode响应：
+ctx.StatusCode(iris.StatusOK)
+
+2.2 向客户发出json格式数据：
+json是api服务返回给客户端的
+ctx.JSON(ApiResource(false, nil, err.Error()))
+ApiResource构造出一个response结构体：
+type Response struct {
+	Status bool        `json:"status"`
+	Msg    interface{} `json:"msg"`
+	Data   interface{} `json:"data"`
+}
+func ApiResource(status bool, objects interface{}, msg string) (r *Response) {
+	r = &Response{Status: status, Data: objects, Msg: msg}
+	return r
+}
+
+2.2 返回view
+api.Get("/", func(ctx iris.Context) { // 首页模块
+			_ = ctx.View("index.html")
+		})

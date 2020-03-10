@@ -1,0 +1,82 @@
+先查询下表users表结构
+mysql> describe users;
++---------------------+------------------+------+-----+---------+----------------+
+| Field               | Type             | Null | Key | Default | Extra          |
++---------------------+------------------+------+-----+---------+----------------+
+| id                  | int(10) unsigned | NO   | PRI | NULL    | auto_increment |
+| created_at          | timestamp        | YES  |     | NULL    |                |
+| updated_at          | timestamp        | YES  |     | NULL    |                |
+| deleted_at          | timestamp        | YES  | MUL | NULL    |                |
+| birthday            | timestamp        | YES  |     | NULL    |                |
+| age                 | int(11)          | YES  |     | NULL    |                |
+| name                | varchar(255)     | YES  |     | NULL    |                |
+| password            | varchar(255)     | YES  |     | NULL    |                |
+| num                 | int(11)          | YES  |     | NULL    |                |
+| billing_address_id  | bigint(20)       | YES  |     | NULL    |                |
+| shipping_address_id | int(11)          | YES  |     | NULL    |                |
++---------------------+------------------+------+-----+---------+----------------+
+11 rows in set (0.02 sec)
+
+在字段age列上创建普通索引，指定索引名为age_index1
+mysql> alter table users add index age_index1(age);
+Query OK, 0 rows affected, 1 warning (0.21 sec)
+Records: 0  Duplicates: 0  Warnings: 1
+
+列出所有索引， 这里为省略篇幅， 只列出新创建的索引
+mysql> show index from users;
++-------+------------+----------------------+--------------+-------------+-----------+-------------+
+| Table | Non_unique | Key_name             | Seq_in_index | Column_name | Collation | Cardinality |
++-------+------------+----------------------+--------------+-------------+-----------+-------------+
+| users |          1 | age_index1           |            1 | age         | A         |           0 |
++-------+------------+----------------------+--------------+-------------+-----------+-------------+
+
+删除索引
+mysql> drop index age_index1 on users;
+Query OK, 0 rows affected (0.13 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+可以在同一个列上建立多个索引， 没有指定索引名，即没有设置key_name， mysql会自动设置，把字段名作为索引名，
+这里要在name这个字段上建立索引, 没有指定索引名，自动创建的索引名和字段名同名
+mysql> alter table users add unique (name);
+Query OK, 0 rows affected, 1 warning (0.17 sec)
+Records: 0  Duplicates: 0  Warnings: 1
+
+mysql> show index from users;
++-------+------------+----------------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+----
+| Table | Non_unique | Key_name             | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Com
++-------+------------+----------------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+----
+| users |          0 | PRIMARY              |            1 | id          | A         |           0 |     NULL | NULL   |      | BTREE      |
+| users |          0 | uix_users_name       |            1 | name        | A         |           0 |     NULL | NULL   | YES  | BTREE      |
+| users |          0 | name                 |            1 | name        | A         |           0 |     NULL | NULL   | YES  | BTREE      |
+| users |          1 | idx_users_deleted_at |            1 | deleted_at  | A         |           0 |     NULL | NULL   | YES  | BTREE      |
+| users |          1 | age_index            |            1 | age         | A         |           0 |     NULL | NULL   | YES  | BTREE      |
++-------+------------+----------------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+----
+
+可以在同一个列上建立多个索引， 没有指定索引名， mysql会自动设置，这里自动设置为name_1
+mysql> alter table users add index (name);
+Query OK, 0 rows affected (0.24 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> show index from users;
++-------+------------+----------------------+--------------+-------------+-----------+------
+| Table | Non_unique | Key_name             | Seq_in_index | Column_name | Collation | Cardi
++-------+------------+----------------------+--------------+-------------+-----------+------
+| users |          1 | name_1               |            1 | name        | A         |
++-------+------------+----------------------+--------------+-------------+-----------+------
+7 rows in set (0.00 sec)
+
+
+mysql> alter table users add index index_multi1(name, age);
+Query OK, 0 rows affected (0.23 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> show index from users;
++-------+------------+----------------------+--------------+-------------+-----------+-------------+-
+| Table | Non_unique | Key_name             | Seq_in_index | Column_name | Collation | Cardinality |
++-------+------------+----------------------+--------------+-------------+-----------+-------------+-
+| users |          1 | index_multi1         |            1 | name        | A         |           0 |
+               |
+| users |          1 | index_multi1         |            2 | age         | A         |           0 |
+               |
++-------+------------+----------------------+--------------+-------------+-----------+-------------+-
+

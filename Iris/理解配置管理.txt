@@ -1,0 +1,37 @@
+配置可分为两种， 静态配置， 动态配置
+静态配置就是配置数据都在本地文件里，
+由程序读取配置文件
+由读来的配置数据，构造一个配置对象，
+这个配置对象一般是全局的， 以备所有模块调用
+beego 和Iris框架都有专门的读取配置文件生成配置对象
+beego:
+import "github.com/astaxie/beego/config"
+conf, err := config.NewConfig("ini", "./conf/app.cfg")
+iris:
+import "github.com/kataras/iris/v12"
+Sc = iris.TOML("./config/conf.tml")
+
+静态配置方式生成配置对象， 都是在程序开始的时候，
+所以程序进程配置文件修改了，也不会生效， 只有重启程序进程才能生效
+如果想程序不用重启的方式， 也能生效， 就需要用etcd 检测配置文件的方式。
+etcd 监测作为配置的键值对
+for _, key := range keys {   // keys包括所有需要监测键值对
+		rch := e.EtcdClient.Watch(context.Background(), key)
+		fmt.Println("添加要watch的key，key的值=", key)
+		watchChans = append(watchChans, rch)
+}
+
+for {
+    for _, watchC := range watchChans {
+        select {
+        case wresp := <-watchC:
+            // 阻塞在这里，键值对修改了，阻塞被解除
+            for _, ev := range wresp.Events {
+                ConfChan <- string(ev.Kv.Value)
+                fmt.Printf("etcd服务watch到新的键值对： etcd key = %s , etcd value = %s \n", ev.Kv.Key, ev.Kv.Value)
+            }
+        default:
+        }
+    }
+    time.Sleep(time.Second)
+}

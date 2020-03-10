@@ -1,0 +1,27 @@
+ 
+ api路由定义函数， 
+ 两者都实现了restful规范
+ 即资源路径，restful 方法名， 处理函数
+ beego的routes函数的第三个写明restful方法
+ iris 的restful方法名作为函数名的前缀
+ 目前常用的只有get, post, 作为函数名前缀，可以很好辨认该函数式api函数
+
+ api 函数的注释部分，有标准规范
+ 包括请求的格式的实例和返回格式是咧
+ 请求格式的顺序： 方法名， api路径 
+ 相应格式的顺序： json格式的响应数据：
+
+ -----------
+ context：
+ beego的输入都在input里， 向用户的返回相应在output对象里
+
+beego的context内聚了八大对象， session, cache, i18n等
+iris的没有明确的划分， 如直接formvalue就可以得到用户提交的form表单
+json就直接返回json响应
+
+iris的context更丰富一些
+
+
+----------
+控制器
+beego需要继承基类控制器

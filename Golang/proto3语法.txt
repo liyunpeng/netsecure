@@ -1,0 +1,49 @@
+﻿
+proto3 语法：
+protobuf可以生成多种语言的代码。
+可以在protoc  后面的选项设置， 
+如果目标是go语言， 则用go_out=.  go_out表示生成go代码， 等号后面是生成文件存放的路径， 
+proto有自己的语法， 其类型和目标生成语言有对应关系， 
+对于go 语言， 对应关系为
+string   对应 string
+
+所有需要序列化的结构体， 
+先看最基本的模型， 基本的模型都是不掺杂其他优化什么的代码， 理解时受到的干扰小一些。 
+所以理解的步骤是， 
+复杂的问题之所以复杂， 是因为把很多简单的东西混在了一起， 
+一般理解的第一步， 是把复杂的问题分解为几个容易理解的简单问题， 
+一般这个简单问题就是一个基本模型， 或基本模块
+现在看proto的基本模型
+message UserRequest{
+// 定义请求参数
+string name = 1;
+}
+生成的：
+type UserRequest struct {
+	// 定义请求参数
+	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+下面的三个成员是固定的， 不管有多少个成员， 下面三个是固定的， 这部分先不不看
+声明的原型为 ;
+string name = 1;
+对应生成的：
+Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+原型不规定大小写， 但生成的都是大写开头， 否则不能被序列化到
+后面又反引号包含起来的字符串，是tag, 设置了序列化的规则，  
+proto3的规则是：
+protobuf:"bytes,1,opt,name=name,proto3”
+go 存放字符串， 建议都转变为字节数组
+这里不仅有protobuf的序列化规则， 还有json的规则。 在json时，tag相对简单， 
+就像gorm 在映射结构退类型到数据库的一个表时， 类型名不必是复数， 但映射出的表明是复数格式， 比如
+type strudent {
+} 
+映射到数据库的表时， 表名为：strudents
+protobuf和gorm都是可以生成代码的中间件， 都有自己的特定的语法规则。 真正发挥作用的是生成代码， 
+要数据这个语法规则， 你代码写了一句， 要知道他生成的目标代码， 
+在调用时， 也要知道生成代码里函数和字段的含义。 
+（两米之内的说话声， 是强干扰， 需要耳机声量调的很大，可以对抗住这个干扰， 两米以外就小很多了， 干扰随距离衰减的很快）
+
+

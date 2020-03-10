@@ -1,0 +1,6 @@
+以登录的动作为例：
+去掉首尾空格，密码字符串进行md5运算，得到的加密字符串存放到数据库
+func (c *HomeController) DoLogin() {
+	username := strings.TrimSpace(c.GetString("UserName"))
+	userpwd := strings.TrimSpace(c.GetString("UserPwd"))
+	userpwd = utils.String2md5(userpwd)

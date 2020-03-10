@@ -1,0 +1,18 @@
+api 的响应结果都是一个序列化的json字符串，
+里面包含了， 状态， 消息 和数据。
+type Response struct {
+	Status bool        `json:"status"`
+	Msg    interface{} `json:"msg"`
+	Data   interface{} `json:"data"`
+}
+
+func ApiResource(status bool, objects interface{}, msg string) (r *Response) {
+	r = &Response{Status: status, Data: objects, Msg: msg}
+	return r
+}
+
+ctx.JSON(ApiResource(false, nil, err.Error()))
+ctx.JSON把传入的结构体对象，序列化为json字符串，并输出给用户。
+
+运行中示例：
+待

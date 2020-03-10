@@ -1,0 +1,75 @@
+权限管理的数据库表：
+mysql> show tables;
++----------------------------+
+| Tables_in_sdrms            |
++----------------------------+
+| rms_backend_user           |
+| rms_backend_user_rms_roles |
+| rms_course                 |
+| rms_resource               |
+| rms_role                   |
+| rms_role_backenduser_rel   |
+| rms_role_resource_rel      |
++----------------------------+
+根据角色来显示资源， 以示例说明：
+用户和角色的对应表，一个用户绑定一个角色， 一对一关系
+mysql> select * from rms_role_backenduser_rel;
++----+---------+-----------------+---------------------+
+| id | role_id | backend_user_id | created             |
++----+---------+-----------------+---------------------+
+| 61 |      22 |               1 | 2017-12-18 07:35:58 |
+| 66 |      25 |               3 | 2017-12-19 06:40:34 |
++----+---------+-----------------+---------------------+
+2 rows in set (0.02 sec)
+
+-------
+角色和资源对应表， 一个角色可以操作多个资源， 一对多关系
+mysql> select * from rms_role_resource_rel;
++-----+---------+-------------+---------------------+
+| id  | role_id | resource_id | created             |
++-----+---------+-------------+---------------------+
+| 448 |      24 |           8 | 2017-12-19 06:40:16 |
+| 449 |      24 |          14 | 2017-12-19 06:40:16 |
+| 451 |      25 |          21 | 2019-05-11 13:57:37 |
+| 452 |      25 |          22 | 2019-05-11 13:57:37 |
+| 453 |      25 |          36 | 2019-05-11 13:57:37 |
+| 454 |      25 |          37 | 2019-05-11 13:57:37 |
+| 455 |      22 |          35 | 2019-05-11 13:57:51 |
+| 456 |      22 |          21 | 2019-05-11 13:57:51 |
+| 462 |      22 |          23 | 2019-05-11 13:57:51 |
++-----+---------+-------------+---------------------+
+26 rows in set (0.01 sec)
+
+资源表， 资源的id, 资源所对应的url请求url_for.
+mysql> select * from rms_resource;
++----+------+-----------+-------+-----+---------------------+------------------------------+
+| id | name | parent_id | rtype | seq | icon                | url_for                      |
++----+------+-----------+-------+-----+---------------------+------------------------------+
+|  7 | 1    |         0 |     8 | 100 | fa fa-balance-scale |                              |
+|  9 | 1    |         0 |     7 | 100 |                     | ResourceController.Index     |
+| 12 | 1    |         0 |     7 | 100 |                     | RoleController.Index         |
+| 13 | 1    |         0 |     7 | 100 |                     | BackendUserController.Index  |
+| 14 | 1    |         0 |     8 |  90 | fa fa-gears         |                              |
+| 22 | 1    |         0 |    21 | 100 | fa fa-book          | CourseController.Index       |
+| 23 | 1    |         0 |    14 | 100 |                     |                              |
+| 25 | 2    |         0 |     9 | 100 | fa fa-pencil        | ResourceController.Edit      |
+| 26 | 2    |         0 |    13 | 100 | fa fa-pencil        | BackendUserController.Edit   |
+| 27 | 2    |         0 |     9 | 100 | fa fa-trash         | ResourceController.Delete    |
+| 29 | 2    |         0 |    13 | 100 | fa fa-trash         | BackendUserController.Delete |
+| 30 | 2    |         0 |    12 | 100 | fa fa-pencil        | RoleController.Edit          |
+| 31 | 2    |         0 |    12 | 100 | fa fa-trash         | RoleController.Delete        |
+| 32 | 2    |         0 |    12 | 100 | fa fa-th            | RoleController.Allocate      |
+| 36 | 2    |         0 |    22 | 100 |                     | CourseController.Edit        |
+| 37 | 2    |         0 |    22 | 100 |                     | CourseController.Delete      |
++----+------+-----------+-------+-----+---------------------+------------------------------+
+16 rows in set (0.01 sec)
+比如前端对左侧菜单的请求：
+$(function () {
+   //页面左侧菜单初始化
+   rms.pageSidebarInit({
+        slideBarBox:'#pageSidebar',                         //菜单容器
+        url:'{{urlfor "ResourceController.UserMenuTree"}}', //菜单数据地址
+        cur:'{{.activeSidebarUrl}}'                         //当前激活的菜单地址
+   });
+});
+其中菜单数据地址就是，资源数据库表中的url_for数据列.

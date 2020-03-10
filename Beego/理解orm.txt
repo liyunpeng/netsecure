@@ -1,0 +1,29 @@
+model里运行sql两种方式：
+1. orm封装了sql语句， 业务程序直接调用封装好的方法：
+func ResourceOne(id int) (*Resource, error) {
+	o := orm.NewOrm()
+	m := Resource{Id: id}
+	err := o.Read(&m)
+	if err != nil {
+		return nil, err
+	}
+	return &m, nil
+}
+2. 直接运行sql语句，如：
+func ResourceTreeGridByUserId(backuserid, maxrtype int) []*Resource {
+    o := orm.NewOrm()
+    sql = fmt.Sprintf(`SELECT DISTINCT T0.resource_id,T2.id,T2.name,T2.parent_id,T2.rtype,T2.icon,T2.seq,T2.url_for
+    FROM %s AS T0
+    INNER JOIN %s AS T1 ON T0.role_id = T1.role_id
+    INNER JOIN %s AS T2 ON T2.id = T0.resource_id
+    WHERE T1.backend_user_id = ? and T2.rtype <= ?  Order By T2.seq asc,T2.id asc`, RoleResourceRelTBName(), RoleBackendUserRelTBName(), ResourceTBName())
+    o.Raw(sql, backuserid, maxrtype).QueryRows(&list)
+}
+sql语句里参数， 有raw的第二个参数对应：
+如第一个问号对应 backuserid.
+
+
+
+
+
+

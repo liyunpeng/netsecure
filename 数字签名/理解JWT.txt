@@ -1,0 +1,29 @@
+jwt是java web token 的缩写
+用做身份验证，
+用户第一次登陆时，
+后台的login的会返回给用户一个jwt, 即一个签名字符串
+用户后面再访问本网站的其他页面时，
+都会在http的header里面带上这个jwt,
+后台服务用jwt中间件检查用户的jwt, 完成身份验证
+
+--------------------------------------
+jwt的iris实现为：
+github.com/iris-contrib/middleware/jwt
+func JwtHandler() *jwt.Middleware {
+	var mySecret = []byte("HS2JDFKhu7Y1av7b")
+	return jwt.New(jwt.Config{
+		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
+			return mySecret, nil
+		},
+		SigningMethod: jwt.SigningMethodHS256,
+	})
+}
+JwtHandler 要生成用于管理jwt验证的jwt middleware对象， 其构造此对象的过程为：
+先准备好一个16字节的一个字符串串，作为一个secret.
+然后用此secret，sha256签名算法， 构造一个jwt管理对象。
+用此管理对象的serve
+func (m *Middleware) Serve(ctx context.Context)
+完成身份验证：
+v1.PartyFunc("/admin", func(admin iris.Party) {
+admin.Use(middleware.JwtHandler().Serve, casbinMiddleware.ServeHTTP)
+admin是个路径路由对象， use方法表示， 该路径先路由到use里的程序， 然后在走到注册的程序。

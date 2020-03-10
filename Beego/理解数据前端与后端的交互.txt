@@ -1,0 +1,110 @@
+以左侧菜单讲解：
+后端路由：
+beego.Router("/resource/usermenutree", &controllers.ResourceController{}, "POST:UserMenuTree")
+后端处理：
+func (c *ResourceController) UserMenuTree() {
+	userid := c.curUser.Id
+	//获取用户有权管理的菜单列表（包括区域）
+	tree := models.ResourceTreeGridByUserId(userid, 1)
+	//转换UrlFor 2 LinkUrl
+	c.UrlFor2Link(tree)
+	c.jsonResult(enums.JRCodeSucc, "", tree)
+}
+
+前端的显示部分：
+<section class="sidebar">
+    <!-- Sidebar Menu -->
+    <ul class="sidebar-menu" id="pageSidebar" data-widget="tree">
+
+前端向后端请求数据
+<script>
+    $(function () {
+       //页面左侧菜单初始化
+       rms.pageSidebarInit({
+            slideBarBox:'#pageSidebar',                         //菜单容器
+            url:'{{urlfor "ResourceController.UserMenuTree"}}', //菜单数据地址
+            cur:'{{.activeSidebarUrl}}'             //当前激活的菜单地址
+       });
+    });
+</script>
+
+收到后端数据，re为response缩写，即后端返回的响应数据，  前端动态添加菜单
+response的数据会被解析出来，用解析出来的数据展开成左侧菜单
+ function pageSidebarInit(options) {
+        var url = options.url;
+        $.sdpost(url, {}, function (re) {
+            if (re.code === 0) {
+                var $pageSidebar = $(options.slideBarBox);
+                if ($pageSidebar.length === 0) {
+                    console.log("menu box is null");
+                    return;
+                }
+                $pageSidebar.html('');
+                var data = re.obj;
+                var html = [];
+                $(data).filter(function (i, e) {
+                    //找出要节点
+                    return e.Parent.Id === 0;
+                }).each(function (i, e) {
+                    //菜单
+                    if (e.Rtype === 1) {
+                        //递归加载子节点
+                        html.push(showSiderBarSon(e, data));
+                    } else if (e.Rtype === 0) {
+                        //如果是区域菜单，先添加header
+                        html.push('<li class="header" > ' + e.Name + ' </li>');
+                        //添加区域的子节点菜单
+                        $(data).filter(function (i1, e1) {
+                            return e1.Parent.Id === e.Id;
+                        }).each(function (i2, e2) {
+                            //递归调用，显示子节点
+                            html.push(showSiderBarSon(e2, data));
+                        });
+                    }
+                });
+                $pageSidebar.html(html.join(''));
+                //acitve 将href值与cur对应上的菜单激活
+                //console.log(options.cur);
+                var curli = $('li a[href="'+options.cur+'"]',$pageSidebar);
+                if(curli.length>0){
+                    //激活当前
+                    curli.parent().addClass('active');
+                    //所有父ul.treeview-menu显示
+                    curli.parents("ul.treeview-menu").show();
+                    //所有父li.treeview展开
+                    curli.parents('li.treeview').addClass('menu-open');
+                }
+            } else {
+                layer.alert("获取失败", { icon: 2, title: "失败" })
+            }
+        });
+    }
+
+根据一菜单数据生成一个html菜单标签：
+function showSiderBarSon(cur, data) {
+    var html = [];
+    //有子菜单
+    if (cur.SonNum > 0) {
+        html.push('<li class="treeview">');
+        html.push('  <a href="javascript:;">');
+        html.push('    <i class="' + getIcon(cur.Icon) + '"></i>');
+        html.push('    <span>' + cur.Name + '</span>');
+        html.push('    <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>');
+        html.push('  </a>');
+        html.push('  <ul class="treeview-menu">');
+        $(data).filter(function (i, e) {
+            return e.Parent.Id === cur.Id;
+        }).each(function (i, e) {
+            //递归调用，显示子节点
+            html.push(showSiderBarSon(e, data));
+        });
+        html.push('  </ul>')
+        html.push('</li>')
+   } else {
+         if (!cur.LinkUrl || cur.LinkUrl.length === 0) {
+             cur.LinkUrl = "javascript:;"
+         }
+         //无子菜单, 那么点击这个菜单，右侧内容面板就会显示为本菜但的a标签的href指定的url对应的页面
+         html.push('<li><a href="' + cur.LinkUrl + '"><i class="' + getIcon(cur.Icon) + '"></i><span>' + cur.Name + '</span></a></li>');
+     }
+     return html.join('');

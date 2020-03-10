@@ -1,0 +1,47 @@
+-------------
+共性成员：
+
+mvc架构的前端的一个请求的路径， 需要包含控制器和action，
+beego架构里的基类控制器的GetControllerAndAction， 可以获取到控制器的名字和action的名字
+
+对于控制里必须有的，应用程序抽象出来的基本控制， 进一步抽象出共性部分，
+
+包括基类控制， 控制器名字和action的名字，用户信息
+type BaseController struct {
+	beego.Controller
+	controllerName string             //当前控制名称
+	actionName     string             //当前action名称
+	curUser        models.BackendUser //当前用户信息
+}
+
+---------------------
+生命周期
+一般一个对象都有自己的生命周期，就是几个阶段，
+控制器对象也有自己的生命周期， prepare阶段
+
+
+func (c *BaseController) Prepare() {
+	//附值
+	c.controllerName, c.actionName = c.GetControllerAndAction()
+	//从Session里获取数据 设置用户信息
+	c.adapterUserInfo()
+}
+
+// checkLogin判断用户是否登录，未登录则跳转至登录页面
+// 一定要在BaseController.Prepare()后执行
+func (c *BaseController) checkLogin() {
+	if c.curUser.Id == 0 {
+		//登录页面地址
+		urlstr := c.URLFor("HomeController.Login") + "?url="
+		//登录成功后返回的址为当前
+		returnURL := c.Ctx.Request.URL.Path
+		//如果ajax请求则返回相应的错码和跳转的地址
+		if c.Ctx.Input.IsAjax() {
+			//由于是ajax请求，因此地址是header里的Referer
+			returnURL := c.Ctx.Input.Refer()
+			c.jsonResult(enums.JRCode302, "请登录", urlstr+returnURL)
+		}
+		c.Redirect(urlstr+returnURL, 302)
+		c.StopRun()
+	}
+}

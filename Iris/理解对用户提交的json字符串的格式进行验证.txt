@@ -1,0 +1,23 @@
+用户输入的信息，要进过几次的验证
+首先就是js的验证基本的输入格式等
+在进入后端程序时，也要验证，
+比如用户登录信息，登录时
+get localhost:8081/v1/admin/login/
+body内容：{"username":"username", "password":"password"}
+ctx.readjson() 会以json方式读取body的全部内容
+服务端对body内容的验证，
+后端程序验证这样做：
+用户输入的信息是json格式的，
+输入的json字符长要符合特定的格式，
+验证类型描述了这个格式
+ctx 在readjson时，指定验证类型对象， 以达到对json字符串格式的验证， 代码：
+有专门的验证类型，：
+type LoginRequest struct {
+	Username string `json:"username" validate:"required,gte=2,lte=50" comment:"用户名"`
+	Password string `json:"password" validate:"required"  comment:"密码"`
+}
+这个验证格式描述的信息为：
+json字符串里要有username为键名的键值对，该键值对的值不能为空，大于两个字符，小于50个字符
+aul := new(validates.LoginRequest)
+	if err := ctx.ReadJSON(aul); err != nil {
+err != nil说明json字符串不符合指定的验证格式，

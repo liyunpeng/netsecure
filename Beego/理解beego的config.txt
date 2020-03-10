@@ -1,0 +1,17 @@
+conf/app.conf会被beego自动读取
+conf/app.conf：
+db_type = "mysql"
+[mysql]
+db_name = "sdrms"
+db_user = "root"
+db_pwd = "root"
+
+程序里beego框架会自动读取这个名字的配置文件，生成AppConfig对象， 不需要业务应用程序写这些。
+应用程序直接从这个AppConfig对象拿这些配置数据：
+dbType := beego.AppConfig.String("db_type")
+//数据库名称
+dbName := beego.AppConfig.String(dbType + "::db_name")
+//数据库连接用户名
+dbUser := beego.AppConfig.String(dbType + "::db_user")
+//数据库连接用户名
+dbPwd := beego.AppConfig.String(dbType + "::db_pwd")

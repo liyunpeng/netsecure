@@ -1,0 +1,17 @@
+mysql> use test;   // 进入test数据库
+Database changed
+mysql> show tables;
+Empty set (0.06 sec)
+
+mysql> create table table1(
+    -> username varchar(12),
+    -> password varchar(20));
+Query OK, 0 rows affected (0.10 sec)
+
+drop table if exists table1;
+drop table if exists tmp;
+
+给表增加一个字段
+alter table TABLE_NAME add column NEW_COLUMN_NAME varchar(255) not null;
+
+待

@@ -1,0 +1,16 @@
+
+	api.Logger().SetLevel(rc.App.LoggerLevel)
+func newLogFile() *os.File {
+	path := "./logs/"
+	_ = files.CreateFile(path)
+	filename := path + time.Now().Format("2006-01-02") + ".log"
+	f, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		color.Red(fmt.Sprintf("日志记录出错: %v", err))
+	}
+
+	return f
+}
+
+
+	ctx.Application().Logger().Infof("%s 登录系统", aul.Username)

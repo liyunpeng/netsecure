@@ -1,0 +1,106 @@
+casbin的最终目的是判断 一个主体对客体是否有指定操作的权限，
+ 最终是调用下面这个函数， 完成这个判断
+ func (c *Casbin) Check(r *http.Request, userId string) bool {
+	method := r.Method
+	path := r.URL.Path
+	ok, _ := c.enforcer.Enforce(userId, path, method)
+	return ok
+}
+在每次操作資源時，都要调用这个函数判断
+
+为了完成这个， casbin需要做几个准备工作，
+1. 加载策略的描述文件，
+描述了请求具体包括什么， 一般都是一个主体对一个客体做某种操作，
+即：
+[request_definition]
+r = sub, obj, act
+权限规则向描述了 策略文件的格式
+[policy_definition]
+p = sub, obj, act
+[policy_effect]
+e = some(where (p.eft == allow))
+对应的策略文件的内容就应该是：
+p 主题的名字  客体的名字 操作 allow, 比如：
+p, zeta, data1, read, allow
+p, bob, data2, write, allow
+
+matches项表示了请求的格式以matches指定的匹配方式，匹配到了权限规则， 就使用这个权限规则：
+matches一般请求项和权限规则完全相等:
+[matchers]
+m = g(r.sub, p.sub) && keyMatch(r.obj, p.obj) && (r.act == p.act || p.act == "*")
+等价于
+m = (r.sub == p.sub) && (r.obj == p.obj) && (r.act == p.act || p.act == "*")
+表示：
+请求的主体和规则的主体相等， 请求的客体和规则的客体相等， 请求的操作和规则的操作相等，
+如果规则的操作是*， 则匹配请求的所有规则。
+
+matches匹配规则，也可以写的复杂一点：
+[matchers]
+m = r.sub.Role=='Teacher' && r.obj.Name=='School Gate'
+ && r.act in('In','Out') && r.env.Time.Hour >=8 && r.env.Time.Hour <= 18
+匹配规则直接描述了权限规则。
+
+2. 具体规则的描述
+具体规则的描述可以放在一个文件里，也可以用数据库的方式：
+如果是文件的方式，加载规则的方式为：
+var Enforcer = casbin.NewEnforcer("casbinmodel.conf", "casbinpolicy.csv")
+casbinpolicy.csv 为具体规则文件，
+这个规则的格式必须符合策略配置文件制定的规则格式， 如：
+[policy_definition]
+p = sub, obj, act
+[policy_effect]
+e = some(where (p.eft == allow))
+对应的规则文件casbinpolicy.csv的内容就应该是：
+p 主题的名字  客体的名字 操作 allow, 比如：
+p, zeta, data1, read, allow
+p, bob, data2, write, allow
+
+如果规则放在数据库里， 加载规则的方式为：
+var c *gormadapter.Adapter
+c, err = gormadapter.NewAdapter("mysql", "root:123456@(127.0.0.1:3306)/") // Your driver and data source.
+Enforcer, err =  casbin.NewEnforcer("./config/rbac_model.conf", c)
+casbin会自动创建名为casbin的数据库，并且在此数据库下创建名为casbin_rule的数据库表
+每调用一次addPolicy就会在这个表增加一行：
+Enforcer.AddPolicy(主体名, 客体名, 操作);
+在restful框架下， 角色就是主体，角色是一组权限的集合，
+角色对应到casbin的权限策略就是：
+sub就是角色，
+obj就是restful AddPolicy
+act就是get, post等restful方法，
+所以创建一个角色，就要在casbin数据库里创建好这个角色对应的所以具体规则集合。
+如，角色id为3， 则：
+3  /api/user/   get  allow
+3  /api/user/{id}   post  allow
+这样的数据行插入到casbin_rule这个表里。
+modle里创建角色的代码：
+func CreateRole(aul *validates.RoleRequest, permIds []uint) (role *Role) {
+	role = &Role{
+		Name:        aul.Name,
+		DisplayName: aul.DisplayName,
+		Description: aul.Description,
+	}
+
+	if err := DB.Create(role).Error; err != nil {
+		color.Red(fmt.Sprintf("CreateRoleErr:%v \n", err))
+	}
+
+	addPerms(permIds, role)
+
+	return
+}
+
+func addPerms(permIds []uint, role *Role) {
+	if len(permIds) > 0 {
+		roleId := strconv.FormatUint(uint64(role.ID), 10)
+		if _, err := Enforcer.DeletePermissionsForUser(roleId); err != nil {
+			color.Red(fmt.Sprintf("AppendPermsErr:%s \n", err))
+		}
+		var perms []Permission
+		DB.Where("id in (?)", permIds).Find(&perms)
+		for _, perm := range perms {
+			if _, err := Enforcer.AddPolicy(roleId, perm.Name, perm.Act); err != nil {
+				color.Red(fmt.Sprintf("AddPolicy:%s \n", err))
+			}
+		}
+	}
+}

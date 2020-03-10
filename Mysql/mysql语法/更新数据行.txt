@@ -1,0 +1,60 @@
+先看下当前数据库下的所有表
+mysql> show tables;
++----------------------------+
+| Tables_in_sdrms            |
++----------------------------+
+| rms_backend_user           |
+| rms_backend_user_rms_roles |
+| rms_course                 |
+| rms_resource               |
+| rms_role                   |
+| rms_role_backenduser_rel   |
+| rms_role_resource_rel      |
++----------------------------+
+7 rows in set (0.19 sec)
+
+查看表结构
+mysql> describe rms_backend_user;
++-----------+--------------+------+-----+---------+----------------+
+| Field     | Type         | Null | Key | Default | Extra          |
++-----------+--------------+------+-----+---------+----------------+
+| id        | int(11)      | NO   | PRI | NULL    | auto_increment |
+| real_name | varchar(255) | NO   |     |         |                |
+| user_name | varchar(255) | NO   |     |         |                |
+| user_pwd  | varchar(255) | NO   |     |         |                |
+| is_super  | tinyint(1)   | NO   |     | 0       |                |
+| status    | int(11)      | NO   |     | 0       |                |
+| mobile    | varchar(16)  | NO   |     |         |                |
+| email     | varchar(256) | NO   |     |         |                |
+| avatar    | varchar(256) | NO   |     |         |                |
++-----------+--------------+------+-----+---------+----------------+
+9 rows in set (0.30 sec)
+
+导入数据库：
+mysql> source D:/goworkspace/sdrms/sdrms.sql
+结尾不能有分号
+
+更新数据行：
+mysql> update table1 set password='hehe' where username='hellokitty';
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+也可以分段写：
+mysql> update rms_backend_user
+    -> set is_super=1
+    -> where id=0;
+Query OK, 0 rows affected (0.53 sec)
+Rows matched: 0  Changed: 0  Warnings: 0
+
+
+插入数据行：
+mysql> insert into table1(username,password) values
+    -> ('leizhimin','lavasoft'),
+    -> ('hellokitty','hahhahah');
+Query OK, 2 rows affected (0.00 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+
+
+mysql> delete from table1 where username='hellokitty';
+Query OK, 1 row affected (0.01 sec)
+

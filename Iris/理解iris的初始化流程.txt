@@ -1,0 +1,50 @@
+---------------
+iris 初始化：
+new一个iris app
+iris架构提供New函数，
+该new函数创建一个application结构体对象， go的结构体就是一个类型， 所以也可以叫类型对象
+application里面会包含几个对象，还有一个ContextPool。 这些对象也会初始化
+app := &Application{
+    config:     &config,
+    logger:     golog.Default,
+    I18n:       i18n.New(),
+    APIBuilder: router.NewAPIBuilder(),
+    Router:     router.NewRouter(),
+}
+new 好了， 整个初始化流程就是围绕这个app
+本项目软件主要提供api功能， 所以这个app就叫api：
+api := iris.New()
+设置log级别：
+api.Logger().SetLevel(rc.App.LoggerLevel)
+
+注册view：
+api.RegisterView(iris.HTML("resources", ".html"))
+
+注册静态文件位置：
+api.HandleDir("/static", "resources/static")
+
+给这个api注册上路由：
+routes.Register(api)
+注册路由有<<理解iris路由>> 一文理解
+
+注册中间件：
+middleware.Register(api)
+
+----------
+model初始化，
+通过注册完成：
+models.Register(rc) // 数据初始化
+在注册里面，主要完成通过gorm里连接数据库，
+conn = rc.Mysql.Connect + rc.Mysql.Name + "?charset=utf8&parseTime=True&loc=Local"
+Db, err = gorm.Open(dirverName, conn)
+conn写明数据库连接：
+这里展开为：
+rc配置为：
+    [Other.Mysql]
+        DirverName = "mysql" # 数据库驱动名称
+        Connect ="root:root@(127.0.0.1:3306)/"
+        Name ="iris" # 数据库名称
+        TName ="iris_test" # 测试数据库名称
+展开为：
+conn = root:root@(127.0.0.1:3306)/iris?charset=utf8&parseTime=True&loc=Local
+

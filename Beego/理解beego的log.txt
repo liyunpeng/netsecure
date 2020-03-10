@@ -1,0 +1,33 @@
+newlogg设置通道缓冲区的数量，控制台log为1个缓冲区， 文件log的通道的缓冲区可以设置为10000
+setlogger设置log输出到哪，可以是控制台，可以是文件，可以是邮件， 可以是elasticsearch.
+然后在设置同步还是异步，一般都是异步，防止对程序的影响
+consoleLogs = logs.NewLogger(1)
+consoleLogs.SetLogger(logs.AdapterConsole)
+consoleLogs.Async() //异步
+
+fileLogs = logs.NewLogger(10000)
+level := beego.AppConfig.String("logs::level")
+fileLogs.SetLogger(logs.AdapterMultiFile, `{"filename":"logs/rms.log",
+    "separate":["emergency", "alert", "critical", "error", "warning", "notice", "info", "debug"],
+    "level":`+level+`,
+    "daily":true,
+    "maxdays":10}`)
+fileLogs.Async() //异步
+
+开发版本和生产版本的log是不同的。
+应用程序会在beego的基础上在封装出一个log函数，该函数会runmode输出不同的Log：
+func log(level, v interface{}) {
+	format := "%s"
+	if level == "" {
+		level = "debug"
+	}
+	if runmode == "dev" {
+			switch level {
+    		case "emergency":
+    			fileLogs.Emergency(format, v)
+	    }
+	}
+runmode可以是dev开发版， 和给到测试的debug,
+dev开发版， 因为会放到生产环境， 所以log要输出到文件。
+担心log输出文件, 可能会对系统有影响，可以把通道缓冲区设置的足够大， 比如本应用通道缓冲区数目设置为10000
+所以，开发版需要的内存还是更大一些

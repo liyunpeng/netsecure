@@ -1,0 +1,36 @@
+数据读入到程序进程， 则为输入流， 在java里叫inputstream.
+这里也叫reader
+数据从程序进程写出， 则为输出流. 在java里叫outputstream. 
+也叫writer. 
+
+先说reader.  确定数据的来源。 
+可以是字符串， 可以是文件， 可以是网络连接。 
+
+reader就是java里的输入流， 即inputstream
+从输入流直接读取数据， 意味着io操作，制造了等待情况的发生， 比如高速上量体温
+所以一般都不会让业务程序直接操作输入流， 
+而是用输入流构造出缓冲输入流，
+使用缓冲输入流， bufio包就是做这件事的。
+可以在输入流上构造出缓冲输入流。 
+业务程序输入流的读取动作都是所有
+缓冲输入流的原理是， 从输入流里先读出尽可能多的数据放到内存里， 
+下次再读的时候，直接从内存里读出数据。 
+举几个例子：
+1. 字符串输入流：
+sr := strings.NewReader("123\n456")
+reader := bufio.NewReader(sr)
+
+2. 文件输入流：
+f, err := os.Open(filePath)
+buf := bufio.NewReader(f)
+
+3. 网络连接输入流：
+conn, _ := listener.Accept()
+input := bufio.NewScanner(c)
+for i := 0; input.Scan(); i++ {
+		clientinfo.Name = input.Text()
+scanner与reader都是输入流， 区别在于scanner的数据多少是动态的， 会随时增加，
+比如网络的另一端是用户动态输入。
+reader的数据多少是确定的。 
+
+

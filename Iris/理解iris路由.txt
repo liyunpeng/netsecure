@@ -1,0 +1,55 @@
+路由的连接:
+路由就是把一个url路径 路由到一个方法处理
+url路径属于restful范畴的
+每一个资源都有一个路径与之对应
+对资源的操作，有创建，获取， 删除， 修改，即CRUD.
+资源的分类通过路径来划分， 同一路径下的资源都属于同一类资源
+比如
+/api/v1/user/ 这个路径开头的表示都是User资源的路径
+/api/v1/user/1 表示id为1的user资源
+/api/v1/order/ 这个路径开头的表示都是order资源的路径
+所以路由需要一种链式写法
+A = api.Party(/api)
+B = A.Party(/v1)
+则B的路径就是/api/v1
+通过party完成了路由的连接，看实例:
+main := api.Party("/", ...)
+v1 := main.Party("/v1")
+v1.PartyFunc("/admin", func(admin iris.Party) {
+admin.PartyFunc("/users", func(users iris.Party) {
+    users.Get("/", controllers.GetAllUsers).Name = "用户列表123"
+    users.Get("/{id:uint}", controllers.GetUser).Name = "用户详情"
+    users.Post("/", controllers.CreateUser).Name = "创建用户"
+}
+对/v1/admin/users/1 这个资源路径的 get 操作就被路由到controllers.GetUser方法来处理
+对/v1/admin/users/ 这个资源路径的 post 操作就被路由到controllers.CreateUser方法来处理
+这里post操作就是创建的操作。
+
+-------------------
+路径表示资源的好处：
+通过路径表示资源，这种做法在很多成熟的键值对管理的中间件使用的多
+比如kafka的zookeeper，路径的表示法很容易表示出资源间的树状的层级关系
+
+-------------------
+对资源操作者的认证：
+正规化的操作资源，都需要对操作者做身份认证和权限认证的，
+在所有的处理方法里都加上这些认证代码， 是不太可取的
+对这种共性操作时是要抽象出来的，
+结合路径的层级表示， 可以把这个处理放在上级路径的处理程序里
+这样这个路径下的所有资源都会先走这个共性处理程序
+然后在走自己的专门的处理程序。
+身份验证的中间件： middleware.JwtHandler().Serve
+权限验证的中间件： casbinMiddleware.ServeHTTP
+两个中间件， 调用上就是两个函数， 不需要配那么多东西，一个中间件对应一个函数即可
+在partyFunc的处理程序里， 用use把这两个函数加载进来，这样操作者每次操作都会走到完成验证的中间件
+main := api.Party("/", ...)
+v1 := main.Party("/v1")
+v1.PartyFunc("/admin", func(admin iris.Party) {
++ admin.Use(middleware.JwtHandler().Serve, casbinMiddleware.ServeHTTP)
+admin.PartyFunc("/users", func(users iris.Party) {
+    users.Get("/", controllers.GetAllUsers).Name = "用户列表123"
+    users.Get("/{id:uint}", controllers.GetUser).Name = "用户详情"
+    users.Post("/", controllers.CreateUser).Name = "创建用户"
+}
+完成身份验证的jwt， 和完成权限验证的casbin各有理解专文
+

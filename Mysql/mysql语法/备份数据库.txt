@@ -1,0 +1,16 @@
+备份数据库，就是导出数据库，其原理是把对数据库的所有操作记录都记录到一个文本里。
+操作记录包括创建表，插入记录，更新记录等所有操作。 文本就是导出的结果。
+以下是导出的例子：
+把本地数据库导出到本地文件：
+D:\>mysqldump -u root -p gotest > dbname1.sql
+把远程数据库导出到本地文件：
+D:\>mysqldump -h 192.168.3.143 -u root -p pwd -x --default-character-set=gbk > C:\testdb.sql
+
+恢复数据库，即是导入数据库：
+D:\> mysql -u root -pleizhimin testdb <C:\testdb.sql
+也可以这样写：
+mysql> create database gotest1;
+mysql> use gotest1;
+mysql> source d:/tmp1/dbname1.sql;
+
+

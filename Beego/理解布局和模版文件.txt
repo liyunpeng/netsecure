@@ -1,0 +1,17 @@
+布局为header, 左侧菜单， 右边面板， 底部footer.
+右边面板为替换的部分，替换的部分用模版表示：
+布局文件：
+<aside class="main-sidebar">
+    {{ template "shared/sidebar.html" }}
+</aside>
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    {{.LayoutContent}}
+</div>
+
+.LayoutContent 会被后端程序中的tplName指定的文件所替换, home页的断点调试：
+c.Layout = layout ：  shared/layout_page.html
+c.TplName = tplName ： home/index.html
+
+

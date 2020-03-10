@@ -1,0 +1,277 @@
+--------------------------------------------------------------
+interface底层实现;
+接口有两种类型:
+内部无方法的, 就是iface类型, 其_type在iface->tab->_type
+内部有方法的, 就是eface类型, 其_type在eface->_type
+eface 类型和iface 类型都在src/runtime/runtime2.go定义
+
+type iface struct {
+	tab  *itab
+	data unsafe.Pointer
+}
+
+type eface struct {
+	_type *_type
+	data  unsafe.Pointer
+}
+_type的定义在src/runtime/type.go
+type _type struct {
+	size       uintptr
+	ptrdata    uintptr // size of memory prefix holding all pointers
+	hash       uint32
+	tflag      tflag
+	align      uint8
+	fieldalign uint8
+	kind       uint8
+	alg        *typeAlg
+	// gcdata stores the GC type data for the garbage collector.
+	// If the KindGCProg bit is set in kind, gcdata is a GC program.
+	// Otherwise it is a ptrmask bitmap. See mbitmap.go for details.
+	gcdata    *byte
+	str       nameOff
+	ptrToThis typeOff
+}
+
+相等的条件是_type和data都要想等，举个例子：
+	var a interface{}
+	var d Human
+	fmt.Println("not assign a d:", a==d)
+	/*
+		运行结果:
+		not assign a d: true
+		理解:
+		虽然a是eface类型, d是iface类型,
+		但a, d比较时, 使用他们的_type和data成员比较的, 都为nil, 所以相等
+	*/
+---------------------------------------------------------------------------------------------------
+map 的底层实现：
+文件; src/runtime/hashmap.go: 
+先说一下go map的对外特性：
+1. map不能寻址， 如果value是结构体， 不能直接修改结构体里的值，
+要想修改value里的值，有两种做法：
+一是修改value为结构体指针， 一是用临时变量， 然后map key中心只想这个临时结构体变量
+2. map[key] 会返回两个值， 一个是value,一个是表示该key 是否存在，不存在， 返回的value是0， 第二个值为false
+3. map没有长度，只有容量， 扩容
+// A header for a Go map.
+type hmap struct {
+	// Note: the format of the Hmap is encoded in ../../cmd/internal/gc/reflect.go and
+	// ../reflect/type.go. Don't change this structure without also changing that code!
+	count     int // # live cells == size of map.  Must be first (used by len() builtin)
+	flags     uint8
+	B         uint8  // log_2 of # of buckets (can hold up to loadFactor * 2^B items)
+	noverflow uint16 // approximate number of overflow buckets; see incrnoverflow for details
+	hash0     uint32 // hash seed
+
+	buckets    unsafe.Pointer // array of 2^B Buckets. may be nil if count==0.
+	oldbuckets unsafe.Pointer // previous bucket array of half the size, non-nil only when growing
+	nevacuate  uintptr        // progress counter for evacuation (buckets less than this have been evacuated)
+
+	extra *mapextra // optional fields
+}
+buckets 实际是指向的的bmap结构的指针， 是一个链表数组， 数组里的每个元素是个指向链表的指针，
+链表的每个节点至多存放8个键值对，
+键值对的key的哈希值的高8位确定在数组中的第几个链表， 后8位表示在链表中的确切位置
+
+src/runtime/hashmap.go:
+// A bucket for a Go map.
+type bmap struct {
+	// tophash generally contains the top byte of the hash value
+	// for each key in this bucket. If tophash[0] < minTopHash,
+	// tophash[0] is a bucket evacuation state instead.
+	tophash [bucketCnt]uint8
+	// Followed by bucketCnt keys and then bucketCnt values.
+	// NOTE: packing all the keys together and then all the values together makes the
+	// code a bit more complicated than alternating key/value/key/value/... but it allows
+	// us to eliminate padding which would be needed for, e.g., map[int64]int8.
+	// Followed by an overflow pointer.
+}
+
+---------------------------------------------------------------------------------------------------
+defer 底层实现： 结构体_defer  和两个函数都在runtimer/runtime2.go里定义。 
+具名返回值 表示 返回值在声明时， 有名字。 返回值声明也可以没有名字。 
+defer可以操作具名返回值。 
+type _defer struct {
+	siz     int32
+	started bool
+	sp      uintptr // sp at time of defer  指向了defer所在函数的栈指针
+	pc      uintptr
+	fn      *funcval  指向defer所在的函数
+	_panic  *_panic // panic that is running defer
+	link    *_defer  
+}
+
+defer处执行的函数：
+func deferproc(siz int32, fn *funcval) { // arguments of fn follow fn
+把fn出入到goroutine链表里
+在函数return前， 调用
+func deferreturn(arg0 uintptr) {
+把fn从goountine从链表里取出来， 然后执行。  所以defer多出来的调用不仅仅是一个call语句。 
+defer 会拷贝参数， 还有一些延迟， 网上有测试， 单纯一个defer， 里面什么都不做， 也要增加耗时20ns.
+所以defer非常耗时
+defer的用法; defer应该只用来捕获panic的处理，其他资源释放等操作，锁释放等操作，
+这些都不会引起paniic的，程序有多个退出路径， 都可以要用goto去做，避免用defer
+
+--------------------------------------------------------------------------------------------------
+sliece 底层实现：
+文件 src/runtime/slice.go
+1. 基本：
+type slice struct {
+	array unsafe.Pointer
+	len   int
+	cap   int
+}
+创建切片：
+func makeslice(et *_type, len, cap int) slice {
+    // 根据切片的数据类型，获取切片的最大容量
+    maxElements := maxSliceCap(et.size)
+    // 比较切片的长度，长度值域应该在[0,maxElements]之间
+    if len < 0 || uintptr(len) > maxElements {
+        panic(errorString("makeslice: len out of range"))
+    }
+    // 比较切片的容量，容量值域应该在[len,maxElements]之间
+    if cap < len || uintptr(cap) > maxElements {
+        panic(errorString("makeslice: cap out of range"))
+    }
+    // 根据切片的容量申请内存
+    p := mallocgc(et.size*uintptr(cap), et, true)
+    // 返回申请好内存的切片的首地址
+    return slice{p, len, cap}
+}
+
+2. nil和空切片
+nil切片和空切片也是常用的。
+下面的声明得到一个nil切片：
+var slice []int
+nil 切片被用在很多标准库和内置函数中，描述一个不存在的切片的时候，就需要用到 nil 切片。
+比如函数在发生异常的时候，返回的切片就是nil切片。nil切片的指针指向nil。
+
+空切片一般会用来表示一个空的集合。比如数据库查询，一条结果也没有查到，那么就可以返回一个空切片。
+下面的声明得到一个空切片 
+silce := make( []int , 0 )
+slice := []int{ }
+
+空切片和nil切片的区别在于：
+空切片指向的地址不是nil，指向的是一个内存地址，但是它没有分配任何内存空间，即底层元素包含0个元素。
+空切片和nil切片的相同点：
+不管是使用nil切片还是空切片，对其调用内置函数append，len和cap的效果都是一样的。
+
+3. 扩容
+扩容都是放弃原有内存空间，重新开辟一块连续新的内存空间
+如果切片的容量小于1024个元素，于是扩容的时候就翻倍增加容量。
+一旦元素个数超过 1024 个元素，那么增长因子就变成 1.25 ，即每次增加原来容量的四分之一。
+函数：
+func growslice(et *_type, old slice, cap int) slice {
+    if raceenabled {
+        callerpc := getcallerpc(unsafe.Pointer(&et))
+        racereadrangepc(old.array, uintptr(old.len*int(et.size)), callerpc, funcPC(growslice))
+    }
+    if msanenabled {
+        msanread(old.array, uintptr(old.len*int(et.size)))
+    }
+ 
+    if et.size == 0 {
+        // 如果新要扩容的容量比原来的容量还要小，这代表要缩容了，那么可以直接报panic了。
+        if cap < old.cap {
+            panic(errorString("growslice: cap out of range"))
+        }
+ 
+        // 如果当前切片的大小为0，还调用了扩容方法，那么就新生成一个新的容量的切片返回。
+        return slice{unsafe.Pointer(&zerobase), old.len, cap}
+    }
+ 
+  // 这里就是扩容的策略
+    newcap := old.cap
+    doublecap := newcap + newcap
+    if cap > doublecap {
+        newcap = cap
+    } else {
+        if old.len < 1024 {
+            newcap = doublecap
+        } else {
+            for newcap < cap {
+                newcap += newcap / 4
+            }
+        }
+    }
+ 
+    // 计算新的切片的容量，长度。
+    var lenmem, newlenmem, capmem uintptr
+    const ptrSize = unsafe.Sizeof((*byte)(nil))
+    switch et.size {
+    case 1:
+        lenmem = uintptr(old.len)
+        newlenmem = uintptr(cap)
+        capmem = roundupsize(uintptr(newcap))
+        newcap = int(capmem)
+    case ptrSize:
+        lenmem = uintptr(old.len) * ptrSize
+        newlenmem = uintptr(cap) * ptrSize
+        capmem = roundupsize(uintptr(newcap) * ptrSize)
+        newcap = int(capmem / ptrSize)
+    default:
+        lenmem = uintptr(old.len) * et.size
+        newlenmem = uintptr(cap) * et.size
+        capmem = roundupsize(uintptr(newcap) * et.size)
+        newcap = int(capmem / et.size)
+    }
+ 
+    // 判断非法的值，保证容量是在增加，并且容量不超过最大容量
+    if cap < old.cap || uintptr(newcap) > maxSliceCap(et.size) {
+        panic(errorString("growslice: cap out of range"))
+    }
+ 
+    var p unsafe.Pointer
+    if et.kind&kindNoPointers != 0 {
+        // 在老的切片后面继续扩充容量
+        p = mallocgc(capmem, nil, false)
+        // 将 lenmem 这个多个 bytes 从 old.array地址 拷贝到 p 的地址处
+        memmove(p, old.array, lenmem)
+        // 先将 P 地址加上新的容量得到新切片容量的地址，然后将新切片容量地址后面的 capmem-newlenmem 个 bytes 这块内存初始化。为之后继续 append() 操作腾出空间。
+        memclrNoHeapPointers(add(p, newlenmem), capmem-newlenmem)
+    } else {
+        // 重新申请新的数组给新切片
+        // 重新申请 capmen 这个大的内存地址，并且初始化为0值
+        p = mallocgc(capmem, et, true)
+        if !writeBarrier.enabled {
+            // 如果还不能打开写锁，那么只能把 lenmem 大小的 bytes 字节从 old.array 拷贝到 p 的地址处
+            memmove(p, old.array, lenmem)
+        } else {
+            // 循环拷贝老的切片的值
+            for i := uintptr(0); i < lenmem; i += et.size {
+                typedmemmove(et, add(p, i), add(old.array, i))
+            }
+        }
+    }
+    // 返回最终新切片，容量更新为最新扩容之后的容量
+    return slice{p, old.len, newcap}
+}
+待写点; 
+ 数组是一种顺序存储的数据结构，在定义数组时，首先要确定数组的大小。静态数组在编译时就需要确定数组的大小，所以，为了防止内存溢出，我们尽量将数组定义的大一些，但是这样太过浪费内存。
+C++的动态数， 不是在编译时确定大小，而是在运行时确定，。
+go语言的切片（slice）是对数组一个连续片段的引用，所以切片是一个引用类型（因此更类似于 C/C++ 中的数组类型，或者 Python 中的 list 类型）。
+这个片段可以是整个数组，或者是由起始和终止索引标识的一些项的子集。
+终止索引标识的项不包括在切片内。切片提供了一个与指向数组的动态窗口。
+
+给定项的切片索引可能比相关数组的相同元素的索引小。和数组不同的是，切片的长度可以在运行时修改，最小为 0 最大为相关数组的长度：切片是一个长度可变的数组。
+
+
+------------------------------------------------------------------------------
+gc扫描：
+a, b是对象, c是指针， a拥有c， 指的是，a被c指向, 即c=&a
+gc按对象扫描， 会把该对象拥有的所有指针都扫描， 指针被扫描到了才会有释放回收等进一步操作。
+扫描前， a不拥有c， b拥有C
+扫描过程中， 
+a先被扫描完， 在扫描b的过程中， go应用程序发生了c=&a的动作，
+本来c跟着b被扫描的， 但c不属于b了， 变成属于a了， 而a已经被扫描完， 所以造成了c没被扫描到。
+为了解决c扫描不到的问题， gc在扫描前的标记阶段， 启用写屏障， 标记所有指针，避免只依赖对象扫描指针。
+
+-------------------------------------------------------------------------------
+协程应用外部的变量， 这个变量就是闭包变量， 虽然闭包变量没有出现在应用程序的函数参数里，
+但在go的底层， 闭包的地址是传入到协程的栈里面， 相当于闭包作为参数传给了执行协程的应用函数。
+
+
+
+
+
+
+

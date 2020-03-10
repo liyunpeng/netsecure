@@ -1,0 +1,13 @@
+type JsonResult struct {
+	Code enums.JsonResultCode `json:"code"`
+	Msg  string               `json:"msg"`
+	Obj  interface{}          `json:"obj"`
+}
+func (c *BaseController) jsonResult(code enums.JsonResultCode, msg string, obj interface{}) {
+	r := &models.JsonResult{code, msg, obj}
+	c.Data["json"] = r
+	c.ServeJSON()
+	c.StopRun()
+}
+api函数的最后一步完成输出响应
+c.jsonResult(enums.JRCodeSucc, "登录成功", data)
