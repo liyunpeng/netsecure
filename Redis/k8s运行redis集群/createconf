@@ -1,0 +1,2 @@
+#! /bin/shell
+ kubectl create configmap redis-conf --from-file=redis.conf

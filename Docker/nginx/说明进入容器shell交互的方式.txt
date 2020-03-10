@@ -1,0 +1,61 @@
+docker的任何一个容器都是一个完整的linux操作系统， 只要容器在运行， 就可进入这个容器的shell交互
+先看系统有哪些镜像
+$ sudo docker images
+REPOSITORY                 TAG                 IMAGE ID            CREATED             SIZE
+nginx                      v3                  2148ed540194        2 minutes ago       126MB
+nginx                      latest              231d40e811cd        4 weeks ago         126MB
+
+启动镜像的容器，可以打开交互， 也可以不打开。 以下是启动容器时 ，打开交互
+$ sudo docker run -it nginx:v3 /bin/bash
+root@28b6128bd0b1:/# exit
+退出容器的交互， 容器不会结束。   
+
+重新在进入容器的交互时， 可以用id指定，也可以用别名指定要进入的容器。 
+1. 以id方式
+先找到运行的容器的id：
+$ sudo docker ps | grep nginx
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                  NAMES
+7a40d4f47a25        nginx:v3            "nginx -g 'daemon of…"   43 seconds ago      Up 39 seconds       0.0.0.0:8080->80/tcp   ----
+用id进入交互
+$ sudo docker exec -it 7a40d4f47a25  bash
+root@7a40d4f47a25:/#
+
+2. 以别名方式
+这需要个前提， 在启动容器时， 要指定容器的别名， 如下指定了容器的别名为nginx123
+$ sudo docker run -d -p 8080:80 --name nginx123  nginx:v3
+7a40d4f47a25609d35ab1538d7600f93eb031965508fa88d5b8ce06aec40ca25
+在docker ps看哪些容器运行时， 最后一列会显示容器的别名：
+$ sudo docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                  NAMES
+7a40d4f47a25        nginx:v3            "nginx -g 'daemon of…"   43 seconds ago      Up 39 seconds       0.0.0.0:8080->80/tcp   nginx123
+
+现在可以用别名进入交互：
+$ sudo docker exec -it nginx123 bash
+root@7a40d4f47a25:/# 
+
+进入交互， 一般操作有：
+$ sudo docker run -it nginx:v3 /bin/bash
+
+# 查看此容器基础镜像的发行版
+root@28b6128bd0b1:/# cat /etc/issue
+Debian GNU/Linux 10 \n \l
+
+# 查看服务的相关文件
+root@28b6128bd0b1:/# ls  
+bin  boot  dev  etc  home  lib  lib64  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+root@28b6128bd0b1:/# cat /usr/share/nginx/html/index.html
+<h1>Hello, Docker!</h1>
+
+#启动容器里的nginx服务
+root@28b6128bd0b1:/# /etc/init.d/nginx restart
+[ ok ] Restarting nginx: nginx.
+
+#查看容器ip地址
+root@c432329eb901:/# cat /etc/hosts
+127.0.0.1       localhost
+::1     localhost ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+172.17.0.2      c432329eb901

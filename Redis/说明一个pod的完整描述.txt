@@ -1,0 +1,70 @@
+ubuntu1@docker-registry:~/k8s_yaml/redis$ k describe po redis-0
+Name:           redis-0
+Namespace:      default
+Priority:       0
+Node:           etcd0/192.168.0.204
+Start Time:     Mon, 30 Dec 2019 23:07:22 +0800
+Labels:         app=redis-p
+                appCluster=redis-cluster
+                controller-revision-hash=redis-56cfddcd57
+                statefulset.kubernetes.io/pod-name=redis-0
+Annotations:    cni.projectcalico.org/podIP: 192.169.3.2/32
+Status:         Running
+IP:             192.169.3.2
+Controlled By:  StatefulSet/redis
+Containers:
+  redis-c:
+    Container ID:  docker://1d8b210cc4ebdf13af101a5ae1dcea7864edc3188906efdb6dcc0d4fdd2246cb
+    Image:         redis
+    Image ID:      docker-pullable://redis@sha256:21b037b4f6964887bb12fd8d72d06c7ab1f231a58781b6ca2ceee0febfeb0d36
+    Ports:         6379/TCP, 16379/TCP
+    Host Ports:    0/TCP, 0/TCP
+    Command:
+      redis-server
+    Args:
+      /etc/redis/redis.conf
+      --protected-mode
+      no
+    State:          Running
+      Started:      Mon, 30 Dec 2019 23:07:35 +0800
+    Ready:          True
+    Restart Count:  0
+    Requests:
+      cpu:        100m
+      memory:     100Mi
+    Environment:  <none>
+    Mounts:
+      /etc/redis from redis-conf (rw)
+      /var/lib/redis from data (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-x5g8r (ro)
+Conditions:
+  Type              Status
+  Initialized       True
+  Ready             True
+  ContainersReady   True
+  PodScheduled      True
+Volumes:
+  data:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  data-redis-0
+    ReadOnly:   false
+  redis-conf:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      redis-conf
+    Optional:  false
+  default-token-x5g8r:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-x5g8r
+    Optional:    false
+QoS Class:       Burstable
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
+                 node.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  29s   default-scheduler  Successfully assigned default/redis-0 to etcd0
+  Normal  Pulling    23s   kubelet, etcd0     Pulling image "redis"
+  Normal  Pulled     17s   kubelet, etcd0     Successfully pulled image "redis"
+  Normal  Created    17s   kubelet, etcd0     Created container redis-c
+  Normal  Started    16s   kubelet, etcd0     Started container redis-c

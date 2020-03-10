@@ -1,0 +1,48 @@
+yaml文件制定mysql的登录密码为password
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: password
+mysql 有个默认用户root, 所以进到容器，可以直接用
+mysql -uroot -ppassword
+可登录到mysql服务
+
+可以直接进入mysql服务， -- 双杠后面跟着进入容器时马上执行的命令
+[user1@220-node mysql]$ k exec -it  mysql-5d7679d6db-cgv7h  -- mysql -uroot -ppassword
+
+[user1@220-node mysql]$ k get po -owide
+NAME                     READY   STATUS    RESTARTS   AGE   IP             NODE    NOMINATED NODE   READINESS GATES
+mysql-5d7679d6db-cgv7h   1/1     Running   0          48m   192.168.29.2   bogon   <none>           <none>
+
+[user1@220-node mysql]$ k get svc -owide
+NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)          AGE   SELECTOR
+kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP          10h   <none>
+mysql        NodePort    10.96.80.197   <none>        3306:31111/TCP   18m   app=mysql
+
+mysql 服务类型是NodePort, k8s容器的3306端口映射为宿主机31111端口。
+k8s的服务不会写在在哪个node主机上， 不像pod明确运行在哪个主机上
+因为service后面可以有多个node主机上的pod, 所以service 不会在具体哪个node上
+所以service 的宿主机就是master. k8s集群外部访问service, 就访问宿主机ip加service暴露给宿主机的端口就可以
+这里宿主机master 的ip是192.168.0.220
+在windows 可以：
+C:\Users\Administrator>mysql -h 192.168.0.220 -P 31111 -u root -ppassword
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 8
+Server version: 5.6.47 MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2016, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql>  create database gotest1;
+Query OK, 1 row affected (0.01 sec)
+
+mysql>
+
+用gorm 可以：
+	db, err := gorm.Open(
+		"mysql", "root:password@tcp(192.168.0.220:31111)/gotest?charset=utf8&parseTime=True&loc=Local")
+	

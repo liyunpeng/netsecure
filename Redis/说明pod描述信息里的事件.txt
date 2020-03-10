@@ -1,0 +1,30 @@
+Events:
+Type     Reason       Age   From               Message
+----     ------       ----  ----               -------
+Normal   Scheduled    2m8s  default-scheduler  Successfully assigned default/redis-0 to etcd0
+
+pod的一个事件包含：
+事件类型：有normal，有warning,  warning有时是一个错误。
+产生此事件的原因：如被调度Scheduled  ， 挂载失败等， 一个事件只有一个原因
+该事件已经过去的时间： 以k describe 为基准倒推时间
+事件的发出者： 读调度器default-scheduler， 执行挂载任务的kubelet, 
+事件里的消息内容： 成功会成功的消息， 失败也有详细的失败原因。 
+
+例举一下常见一些pod事件：
+1. Warning  FailedScheduling  15s (x2 over 16s)  default-scheduler  pod has unbound immediate PersistentVolumeClaims (repeated 3 times)
+一个警告事件，表示调度失败， 原因是pod所使用的pvc, 并没有绑定到有效的pv. 
+
+2. Normal   Scheduled    2m8s  default-scheduler  Successfully assigned default/redis-0 to etcd0
+一个成功事件， 表示调度器成功把一个pod调度到一个节点主机上， 该pod为在名字空间default下的名为redis-0的pod， 调度到的节点的主机名为为etcd0。
+
+3. 再看一个长一点的事件：
+  Warning  FailedMount  2m7s  kubelet, etcd0     MountVolume.SetUp failed for volume "nfs-pv5" : mount failed: exit status 32
+Mounting command: systemd-run
+Mounting arguments: --description=Kubernetes transient mount for /var/lib/kubelet/pods/ed8ff85a-5ad0-4afa-abe6-fe7ef87b9889/volumes/kubernetes.io~nfsnfs-pv5 --scope -- mount -t nfs 192.168.0.211:/usr/local/k8s/redis/pv5 /var/lib/kubelet/pods/ed8ff85a-5ad0-4afa-abe6-fe7ef87b9889/volumes/kubernetes.o~nfs/nfs-pv5
+Output: Running scope as unit: run-rb6162c53c44e41e79bd443d735bfb73d.scope
+mount.nfs: access denied by server while mounting 192.168.0.211:/usr/local/k8s/redis/pv5
+一个警告事件， 表示挂载失败， 原因是在执行挂载命令时， 被目标网络文件系统服务器拒绝， 这个挂载命令为：
+mount -t nfs 192.168.0.211:/usr/local/k8s/redis/pv5 /var/lib/kubelet/pods/ed8ff85a-5ad0-4afa-abe6-fe7ef87b9889/volumes/kubernetes.o~nfs/nfs-pv5
+pod的宿主机会为每一个pod分配一个用于挂载文件系统的目录， pod里容器共享这个目录， 所以宿主机需要安装nfs客户端，执行mount -t nfs这个命令有kubelet完成。
+网络文件系统是192.168.0.211:/usr/local/k8s/redis/pv5， 命令目的是把这个文件系统挂载到pod的宿主机的目录下， 这里被拒绝， 是nfs服务器的权限配置有问题， 在<<说明nfs网络文件系统>>一文中有解决办法。 
+

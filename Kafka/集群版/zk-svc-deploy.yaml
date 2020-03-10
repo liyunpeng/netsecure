@@ -1,0 +1,230 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ykszktest-n1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ykszktest-n1
+  template:
+    metadata:
+      labels:
+        app: ykszktest-n1
+    spec:
+      hostname: ykszktest-n1
+      volumes:
+        - name: ykszktest-data
+          hostPath: 
+            path: /data/ykszktest-cluster/ykszktest-data-n1
+        - name: ykszktest-logs
+          hostPath: 
+            path: /data/ykszktest-cluster/ykszktest-logs-n1
+      dnsPolicy: ClusterFirst
+      containers:
+      - name: ykszktest-n1
+        image: zookeeper:3.4.10
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: ykszktest-data
+          readOnly: false
+          mountPath: "/data/ykszktest-data"
+        - name: ykszktest-logs
+          readOnly: false
+          mountPath: "/data/ykszktest-logs"
+        ports:
+        - containerPort: 2181
+        - containerPort: 2888
+        - containerPort: 3888
+        #command: ['tail', '-f', '/etc/hosts']  
+        env:
+        - name: ZOO_MY_ID
+          value: "1"
+        - name: ZOO_SERVERS
+          value: server.1=ykszktest-n1:2888:3888 server.2=ykszktest-n2:2888:3888 server.3=ykszktest-n3:2888:3888
+        - name: ZOO_DATA_DIR
+          value: '/data/ykszktest-data'
+        - name: ZOO_DATA_LOG_DIR
+          value: '/data/ykszktest-logs'  
+
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ykszktest-n2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ykszktest-n2
+  template:
+    metadata:
+      labels:
+        app: ykszktest-n2
+    spec:
+      hostname: ykszktest-n2
+      volumes:
+        - name: ykszktest-data
+          hostPath: 
+            path: /data/ykszktest-cluster/ykszktest-data-n2
+        - name: ykszktest-logs
+          hostPath: 
+            path: /data/ykszktest-cluster/ykszktest-logs-n2
+      dnsPolicy: ClusterFirst
+      containers:
+      - name: ykszktest-n2
+        image: zookeeper:3.4.10
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: ykszktest-data
+          readOnly: false
+          mountPath: "/data/ykszktest-data"
+        - name: ykszktest-logs
+          readOnly: false
+          mountPath: "/data/ykszktest-logs"
+        ports:
+        - containerPort: 2181
+        - containerPort: 2888
+        - containerPort: 3888
+        #command: ['tail', '-f', '/etc/hosts']  
+        env:
+        - name: ZOO_MY_ID
+          value: "2"
+        - name: ZOO_SERVERS
+          value: server.1=ykszktest-n1:2888:3888 server.2=ykszktest-n2:2888:3888 server.3=ykszktest-n3:2888:3888
+        - name: ZOO_DATA_DIR
+          value: '/data/ykszktest-data'
+        - name: ZOO_DATA_LOG_DIR
+          value: '/data/ykszktest-logs'  
+
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ykszktest-n3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ykszktest-n3
+  template:
+    metadata:
+      labels:
+        app: ykszktest-n3
+    spec:
+      hostname: ykszktest-n3
+      volumes:
+        - name: ykszktest-data
+          hostPath: 
+            path: /data/ykszktest-cluster/ykszktest-data-n3
+        - name: ykszktest-logs
+          hostPath: 
+            path: /data/ykszktest-cluster/ykszktest-logs-n3
+      dnsPolicy: ClusterFirst
+      containers:
+      - name: ykszktest-n3
+        image: zookeeper:3.4.10
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: ykszktest-data
+          readOnly: false
+          mountPath: "/data/ykszktest-data"
+        - name: ykszktest-logs
+          readOnly: false
+          mountPath: "/data/ykszktest-logs"
+        ports:
+        - containerPort: 2181
+        - containerPort: 2888
+        - containerPort: 3888
+        #command: ['tail', '-f', '/etc/hosts']  
+        env:
+        - name: ZOO_MY_ID
+          value: "3"
+        - name: ZOO_SERVERS
+          value: server.1=ykszktest-n1:2888:3888 server.2=ykszktest-n2:2888:3888 server.3=ykszktest-n3:2888:3888
+        - name: ZOO_DATA_DIR
+          value: '/data/ykszktest-data'
+        - name: ZOO_DATA_LOG_DIR
+          value: '/data/ykszktest-logs' 
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ykszktest-n1
+  name: ykszktest-n1
+  namespace: default
+spec:
+  ports:
+  - port: 2181
+    protocol: TCP
+    targetPort: 2181
+    name: client
+  - port: 2888
+    protocol: TCP
+    targetPort: 2888
+    name: leader
+  - port: 3888
+    protocol: TCP
+    targetPort: 3888
+    name: leader-election
+  selector:
+    app: ykszktest-n1
+  sessionAffinity: None
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ykszktest-n2
+  name: ykszktest-n2
+  namespace: default
+spec:
+  ports:
+  - port: 2181
+    protocol: TCP
+    targetPort: 2181
+    name: client
+  - port: 2888
+    protocol: TCP
+    targetPort: 2888
+    name: leader
+  - port: 3888
+    protocol: TCP
+    targetPort: 3888
+    name: leader-election
+  selector:
+    app: ykszktest-n2
+  sessionAffinity: None
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ykszktest-n3
+  name: ykszktest-n3
+  namespace: default
+spec:
+  ports:
+  - port: 2181
+    protocol: TCP
+    targetPort: 2181
+    name: client
+  - port: 2888
+    protocol: TCP
+    targetPort: 2888
+    name: leader
+  - port: 3888
+    protocol: TCP
+    targetPort: 3888
+    name: leader-election
+  selector:
+    app: ykszktest-n3
+  sessionAffinity: None
+  type: ClusterIP

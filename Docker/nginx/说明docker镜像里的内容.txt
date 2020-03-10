@@ -1,0 +1,16 @@
+docker任何一个镜像， 都是要基于linux的某个发行版， 比如ubuntu, centos, debian. 
+其他镜像都是从基本的发行版镜像派生出来的。 
+基本发行版镜像不是很大， 一般是几十MB， 并不是iso那样的镜像的大小。 
+因为docker下有虚拟机效果的容器， 都是通过namespace，cgroup实现了资源和运行环境的隔离，进而实现虚拟机效果。
+这些技术linux玩的比较好，所以linux上的docker比其他系统上的docker运行的性能更好。
+
+docker的每个容器效果上都是一个虚拟机， 都可以通过 docker exec -it bash 进入到这个虚拟机的shell交互模式。 
+就算一个只显示hello world的容器，也是一个虚拟机， 可以进入这个容器的shell交互模式， 能够看到一个完整的linux系统目录：
+root@28b6128bd0b1:/# ls
+bin  boot  dev  etc  home  lib  lib64  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+
+镜像都是基本发行版加一个应用服务的组合，比如我们实验的nginx镜像就是debian发行版和nginx服务的组合。 
+进到交互模式， 到/etc/init.d/目录下都有这个服务的daemon文件nginxd， 在其他目录也有该服务的相关文件。 
+一般镜像里，除了服务相关文件，不会再提供其他命令和文件，比如像ifconfig, ll这样的命令都是没有的。 
+镜像的大小都不会很大， 一个nginx的镜像才20多MB， 里面是由linux发行版的。 
+拉取镜像慢， 是因为默认要到国外拉取， 可以设置国内代理， 加快下载速度。 

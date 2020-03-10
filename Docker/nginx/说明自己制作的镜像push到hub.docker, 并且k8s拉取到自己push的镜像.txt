@@ -1,0 +1,97 @@
+当前docker登录到hub.docker,  命令要设置好username , 这个username就是在hub.docker注册的dockerId：
+$ sudo docker login --username lijincheng1
+Password:
+WARNING! Your password will be stored unencrypted in /home/master/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+Login Succeeded
+login不用写出服务器地址，意味全球的存放docker镜像的服务器只有这一家。 k8s 在拉取容器镜像时， 也是从这加服务器拉取。 
+因为dockerId的全球唯一性，所以这个id会作为全球镜像名的一部分， k8s也要用这个全球镜像名拉取镜像。 
+自己的公司应该在hub.docker注册一个自己名字的dockerid。  这个要出现在k8s的yaml文件中。 
+
+将自己本地制作的docker镜像文件push到hub.docker网站
+$ sudo docker push nginx:v8
+The push refers to repository [docker.io/library/nginx]
+f2103622e6cd: Preparing
+4fc1aa8003a3: Preparing
+5fb987d2e54d: Preparing
+831c5620387f: Preparing
+denied: requested access to the resource is denied
+
+denied原因是， image的名字不对， hub.docker规定必须以docker_id/具体名字的方式来命名镜像名， dockerId就是自己在hub.docker注册的名字， 我注册的名字是lijincheng1, 所有要push的镜像的名字应该为; lijincheng1/nginx:v8
+修改镜像名， 现在的做法都是复制出一个新镜像，删除原镜像的方式：
+先找到要改的镜像名对应的镜像id：
+$ sudo docker images
+REPOSITORY                                                        TAG                 IMAGE ID            CREATED           SIZE
+nginx                                                             v8                  7837e0ef0963        4 minutes ago       126MB
+
+复制出一个新的镜像，名字符合push到hub.docker的要求：
+sudo docker tag 镜像id hub.dockerId（也有叫域账号）/原镜像名:tag名， 在此处为：
+$ sudo docker tag 7837e0ef0963 lijincheng1/nginx:v8
+
+看下复制出来的镜像
+$ sudo docker images
+REPOSITORY                                                        TAG                 IMAGE ID            CREATED           SIZE
+nginx                                                             v8                  7837e0ef0963        6 minutes ago       126MB
+lijincheng1/nginx                                                 v8                  7837e0ef0963        6 minutes ago   126MB
+
+删除原镜像：
+$$ sudo docker rmi nginx:v8
+
+把镜像push到hub.docker服务器，和login一样， push时，也不需要写服务器地址。
+$ sudo docker push lijincheng1/nginx:v8
+The push refers to repository [docker.io/lijincheng1/nginx]
+f2103622e6cd: Pushed
+4fc1aa8003a3: Mounted from library/nginx
+5fb987d2e54d: Mounted from library/nginx
+831c5620387f: Mounted from library/nginx
+v8: digest: sha256:939989b477d757ed9b13ddd630783467be042f2a8d4f4dff5cb8bd1902e48c8b size: 1155
+
+https://hub.docker.com/ 可以看到自己push的镜像
+lijincheng1 / nginx
+
+这个镜像就成为了全球都可以下载的镜像。 k8s的yaml文件可以使用这个镜像。实验如下：
+$ cat deployment.yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: deployment-nginx-v8 
+spec: 
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: deployment-web-container 
+          image: lijincheng1/nginx:v8   # 指定好刚push的镜像
+          ports:
+            - containerPort: 8081
+为了看k8s会不会去拉取镜像， 删除本地的lijincheng1/nginx:v8镜像
+$ sudo docker rmi lijincheng1/nginx:v8
+Untagged: lijincheng1/nginx:v8
+Untagged: lijincheng1/nginx@sha256:939989b477d757ed9b13ddd630783467be042f2a8d4f4dff5cb8bd1902e48c8b
+Deleted: sha256:7837e0ef0963184c7b317a25d2d7cfa3c758fd45cf97c5f998ead91ed799f709
+Deleted: sha256:e8ce411b01ca4f2c76a09421a587eee2587025f884515fe61e2cf049bfdec378
+
+$ sudo docker images | grep lijincheng1/nginx:v8
+显示为空
+
+$kubectl apply -f deployment.yaml 
+deployment.extensions/deployment-nginx-v8 created
+
+$ kubectl get deployment
+NAME                  READY   UP-TO-DATE   AVAILABLE   AGE
+deployment-nginx-v8   2/2     2            2           5m45s
+
+$ kubectl get pod
+NAME                                   READY   STATUS    RESTARTS   AGE
+deployment-nginx-v8-7489dbcdc4-bv4fp   1/1     Running   0          6s
+deployment-nginx-v8-7489dbcdc4-trx92   1/1     Running   0          6s
+
+再去docker images看本地镜像:
+$ sudo docker images | grep lijincheng1/nginx:v8
+REPOSITORY                                                        TAG                 IMAGE ID            CREATED           SIZE
+lijincheng1/nginx                                                 v8                  7837e0ef0963        6 minutes ago   126MB
+可见k8s从远端拉取了镜像 lijincheng1/nginx 到本地

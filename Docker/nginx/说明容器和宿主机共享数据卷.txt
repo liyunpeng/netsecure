@@ -1,0 +1,26 @@
+user1@ubuntu:~$ sudo docker volume ls
+DRIVER              VOLUME NAME
+local               v1
+
+user1@ubuntu:~$ sudo docker volume inspect v1
+[
+    {
+        "CreatedAt": "2019-09-14T02:30:28-07:00",
+        "Driver": "local",
+        "Labels": {},
+        "Mountpoint": "/var/snap/docker/common/var-lib-docker/volumes/v1/_data",
+        "Name": "v1",
+        "Options": {},
+        "Scope": "local"
+    }
+]
+docker 创建的数据卷是在宿主机下的， 所以/var/snap/docker/common/var-lib-docker/volumes/v1/_data是宿主机的目录
+
+挂载数据卷必须在创建容器时， v1:/data1，/data1是容器中的目录， 这个目录如果镜像里不存在，就会在容器启动时创建 这些参数的顺序不要写错
+user1@ubuntu:~$ sudo docker run -it -v v1:/tmp --name docker5 ubuntu bash
+root@affe9358ee9d:/# touch /tmp/a   
+
+在宿主机里可以看到这个在容器中创建的a, 实现了宿主机和容器的文件共享
+user1@ubuntu:~$ sudo ls /var/snap/docker/common/var-lib-docker/volumes/v1/_data/ -l
+total 0
+-rw-r--r-- 1 root root 0 Sep 14 03:03 a

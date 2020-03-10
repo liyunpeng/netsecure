@@ -1,0 +1,117 @@
+ 虚拟机添加好了一个硬盘后， 用fdisk -l 可以看到/dev/sdb，这是一个完全的裸设备
+还不算一个可以被pv, vg, lv等卷操作的磁盘设备物理分区， 
+需要用fdisk /dev/sdb  在上面创建物理分区， 选择出若干选项
+n: 建立分区
+1,; 选择主分区， 
+1  默认分区大小会沾满整个磁盘
+w；写入磁盘 
+命令完成好之后，fdisk -l会看到/dev/sdb1这个物理分区， 
+
+pv就是在这个物理分区上建立物理卷， 
+$ sudo pvcreate /dev/sdb1
+Physical volume "/dev/sdb1" successfully created.
+
+查看刚刚创建好的物理卷：
+$ sudo pvdisplay
+  --- Physical volume ---
+  PV Name               /dev/sda2
+  VG Name               cl
+  PV Size               <297.09 GiB / not usable 4.00 MiB
+  Allocatable           yes (but full)
+  PE Size               4.00 MiB
+  Total PE              76054
+  Free PE               0
+  Allocated PE          76054
+  PV UUID               cR2yND-b5Of-RWYv-UPnN-m80S-YdJC-iLmo7U
+
+PE表示卷的最小存储单元
+
+在物理卷上创建物理卷组， 可以在多个物理卷上创建一个物理卷组， 物理卷可以是不同的来来自于不同磁盘设备的物理分区， 比如/dev/sdc1, 
+ 这个物理卷组， 就相当 于一个新的磁盘，是铁板一块了。 可以在上面建立逻辑卷分区， 这种基于卷的逻辑卷分区比之间在磁盘上建立的物理分区有更大的灵活性， 
+比如可以动态的扩张分区。
+
+$ sudo vgcreate vg0 /dev/sdb1
+  Volume group "vg0" successfully created
+
+$ sudo vgdisplay
+  --- Volume group ---
+  VG Name               cl
+  System ID
+  Format                lvm2
+  Metadata Areas        1
+  Metadata Sequence No  4
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                3
+  Open LV               2
+  Max PV                0
+  Cur PV                1
+  Act PV                1
+  VG Size               <297.09 GiB
+  PE Size               4.00 MiB
+  Total PE              76054
+  Alloc PE / Size       76054 / <297.09 GiB
+  Free  PE / Size       0 / 0
+  VG UUID               qRMzdn-5qHI-srdp-TJ7K-CHL1-Umak-cuevgO
+
+物理卷组vg0创建好了， 就可以在这个卷组上面灵活的创建逻辑分区了。  
+$ sudo lvcreate -L 5G -T vg0/thinpool
+ Thin pool volume with chunk size 64.00 KiB can address at most 15.81 TiB of data.
+ Logical volume "thinpool" created.
+
+$ sudo lvcreate -V 5G -T vg0/thinpool -n datalv
+  Logical volume "datalv" created.
+
+查看创建好的逻辑卷分区：
+$ sudo lvdisplay
+  --- Logical volume ---
+  LV Path                /dev/cl/swap
+  LV Name                swap
+  VG Name                cl
+  LV UUID                4zh8X6-OiRb-zk38-2duv-pMZS-5ipQ-LtR5hk
+  LV Write Access        read/write
+  LV Creation host, time bogon, 2019-12-31 22:47:58 -0500
+  LV Status              available
+  # open                 0
+  LV Size                <2.07 GiB
+  Current LE             529
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     8192
+  Block device           253:1
+
+  --- Logical volume ---
+  LV Path                /dev/cl/home
+  LV Name                home
+  VG Name                cl
+  LV UUID                Pte3Cz-Blbz-MIAc-C2oe-CTuj-MRRR-fR0zM2
+  LV Write Access        read/write
+  LV Creation host, time bogon, 2019-12-31 22:47:59 -0500
+  LV Status              available
+  # open                 1
+  LV Size                <245.02 GiB
+  Current LE             62725
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     8192
+  Block device           253:2
+
+  --- Logical volume ---
+  LV Path                /dev/cl/root
+  LV Name                root
+  VG Name                cl
+  LV UUID                oJkz8g-2caV-0S0G-aFnS-QtU0-lVtd-9YXm8X
+  LV Write Access        read/write
+  LV Creation host, time bogon, 2019-12-31 22:48:02 -0500
+  LV Status              available
+  # open                 1
+  LV Size                50.00 GiB
+  Current LE             12800
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     8192
+  Block device           253:0

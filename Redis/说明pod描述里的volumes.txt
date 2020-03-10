@@ -1,0 +1,58 @@
+Volumes:
+  data:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  data-redis-0
+    ReadOnly:   false
+  redis-conf:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      redis-conf
+    Optional:  false
+  default-token-x5g8r:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-x5g8r
+    Optional:    false
+所有pod要使用的外部数据， 都要通过volume挂载到pod， 有三种类型的外部数据：
+1. 持久化卷
+描述信息：
+  data:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  data-redis-0
+    ReadOnly:   false
+这个就是该pod使用的pvc了， 对应的pod yaml文件中的定义：
+        volumeMounts:
+            - name: "data"
+              mountPath: "/var/lib/redis"
+    volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ "ReadWriteMany" ]
+        resources:
+          requests:
+            storage: 200M    
+
+2. 配置资源
+描述信息：
+  redis-conf:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      redis-conf
+    Optional:  false
+对应 pod里的 yaml 文件中的定义：
+volumeMounts:
+            - name: "redis-conf"
+              mountPath: "/etc/redis"
+volumes:
+        - name: "redis-conf"
+          configMap:
+            name: "redis-conf"
+            items:
+              - key: "redis.conf"
+                path: "redis.conf"
+
+3. tokern. 
+描述信息：
+default-token-x5g8r:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-x5g8r
+    Optional:    false
+这个token ， pod yaml文件没有定义， 自动生成

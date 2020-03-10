@@ -1,0 +1,19 @@
+
+因为pod的维护的需要，比如一个pod挂掉， 在另一个node主机上启动pod, 以此维护住pod的数量，直接创建的pod没法维护自己， 必须有个管理者来维护。
+所以都不直接创建pod， 而是用专门的管理者来创建Pod。 
+对于无状态的pod， 就由deployment这个管理者来创建
+对于有状态的pod， 就由statefull这个管理者来创建。 
+
+stateful创建pod时， pod的名字就是stateful的名字加一个编号， 如
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: redis
+spec:
+  serviceName: "redis-service"
+  replicas: 6
+  template:
+   spec:
+      containers:
+        - name: redis-c
+这个stateful下有6个pod, pod的名字依次为redis-0, redis-1, redis-2, redis-3, redis-4, redis-5. 

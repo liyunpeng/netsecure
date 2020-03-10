@@ -1,0 +1,66 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: zk-n1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zk-n1
+  template:
+    metadata:
+      labels:
+        app: zk-n1
+    spec:
+      hostname: zk-n1
+      volumes:
+        - name: zk-data
+          hostPath: 
+            path: /data/zk-standalone/zk-data-n1
+        - name: zk-log
+          hostPath: 
+            path: /data/zk-standalone/zk-log-n1
+      dnsPolicy: ClusterFirst
+      containers:
+      - name: zk-n1
+        image: zookeeper:3.4.10
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: zk-data
+          readOnly: false
+          mountPath: "/data/zk-data"
+        - name: zk-log
+          readOnly: false
+          mountPath: "/data/zk-log"
+        ports:
+        - containerPort: 2181
+        #command: ['tail', '-f', '/etc/hosts']  
+        env:
+        - name: ZOO_MY_ID
+          value: "1"
+        - name: ZOO_SERVERS
+          value: server.1=zk-n1:2888:3888
+        - name: ZOO_DATA_DIR
+          value: '/data/zk-data'
+        - name: ZOO_DATA_LOG_DIR
+          value: '/data/zk-log'
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: zk-n1
+  name: zk-n1
+  namespace: default
+spec:
+  ports:
+  - port: 2181
+    protocol: TCP
+    targetPort: 2181
+    name: client
+  selector:
+    app: zk-n1
+  sessionAffinity: None
+  type: ClusterIP

@@ -1,0 +1,28 @@
+查看容器的ip地址， 以下ip地址为172.17.0.2， 这是宿主机可以访问的ip，其他主机访问不到。其他主机想访问该主机上的容器的服务，必须做端口映射
+$ sudo docker exec -it nginx123 bash
+root@c432329eb901:/# cat /etc/hosts
+127.0.0.1       localhost
+::1     localhost ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+172.17.0.2      c432329eb901
+
+root@c432329eb901:/# /etc/init.d/nginx start
+root@c432329eb901:/# exit
+
+退出容器， 宿主机可以访问到容器的服务：
+$ curl http://172.17.0.2
+<h1>Hello, Docker!</h1>
+
+端口映射需要在容器启动时指定， 这样其他主机可以访问本宿主机上容器的服务，如：
+$ sudo docker run -d -p 8080:80 --name nginx123  nginx:v3
+容器的80端口映射到了宿主机的8088端口，宿主机ubuntu的ip地址为192.168.0.211， 
+用其他主机， 如windows访问ubuntu, 在windows浏览器输入
+http://192.168.0.211:8088
+页面显示：
+Hello, Docker!
+
+而http://192.168.0.211:80 则没有显示
+说明端口映射成功 

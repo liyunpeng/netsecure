@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+ 
+kind: Deployment
+ 
+metadata:
+ 
+  name: deployment-nginx-v8 
+ 
+spec:
+ 
+  replicas: 2
+ 
+  template:
+ 
+    metadata:
+ 
+      labels:
+ 
+        app: web
+ 
+    spec:
+ 
+      containers:
+ 
+        - name: deployment-web-container 
+ 
+          image: lijincheng1/nginx:v8 
+ 
+          ports:
+ 
+            - containerPort: 8081

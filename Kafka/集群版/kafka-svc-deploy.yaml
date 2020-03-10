@@ -1,0 +1,240 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ykskafkatest-n1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ykskafkatest-n1
+  template:
+    metadata:
+      labels:
+        app: ykskafkatest-n1
+    spec:
+      hostname: ykskafkatest-n1
+      volumes:
+        - name: ykskafkatest-data
+          hostPath:
+            path: /data/ykskafkatest-cluster/ykskafkatest-data-n1
+        - name: ykskafkatest-logs
+          hostPath:
+            path: /data/ykskafkatest-cluster/ykskafkatest-logs-n1
+      dnsPolicy: ClusterFirst
+      containers:
+        - name: ykskafkatest-n1
+          image: wurstmeister/kafka:1.0.1
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: ykskafkatest-data
+              readOnly: false
+              mountPath: "/kafka"
+            - name: ykskafkatest-logs
+              readOnly: false
+              mountPath: "/opt/kafka/logs"
+          ports:
+            - containerPort: 9092
+            - containerPort: 1099
+          env:
+            # broker ID,必须要有,各节点不能一致
+            - name: KAFKA_BROKER_ID
+              value: "1"
+              # 必须要有,zk集群
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: ykszktest-n1:2181,ykszktest-n2:2181,ykszktest-n3:2181/kafka
+              # 必须要有,kafka工作端口
+            - name: KAFKA_ADVERTISED_PORT
+              value: "9092"
+              # 可选
+            - name: KAFKA_ADVERTISED_HOST_NAME
+              value: ykskafkatest-n1
+              # 可选
+            - name: KAFKA_HEAP_OPTS
+              value: "-Xmx4G -Xms4G"
+              # JMX相关，可选
+            - name: KAFKA_JMX_OPTS
+              value: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=127.0.0.1 -Dcom.sun.management.jmxremote.rmi.port=1099"
+              # JMX相关，可选
+            - name: JMX_PORT
+              value: "1099"
+
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ykskafkatest-n2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ykskafkatest-n2
+  template:
+    metadata:
+      labels:
+        app: ykskafkatest-n2
+    spec:
+      hostname: ykskafkatest-n2
+      volumes:
+        - name: ykskafkatest-data
+          hostPath:
+            path: /data/ykskafkatest-cluster/ykskafkatest-data-n2
+        - name: ykskafkatest-logs
+          hostPath:
+            path: /data/ykskafkatest-cluster/ykskafkatest-logs-n2
+      dnsPolicy: ClusterFirst
+      containers:
+        - name: ykskafkatest-n1
+          image: wurstmeister/kafka:1.0.1
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: ykskafkatest-data
+              readOnly: false
+              mountPath: "/kafka"
+            - name: ykskafkatest-logs
+              readOnly: false
+              mountPath: "/opt/kafka/logs"
+          ports:
+            - containerPort: 9092
+            - containerPort: 1099
+          env:
+            - name: KAFKA_BROKER_ID
+              value: "2"
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: ykszktest-n1:2181,ykszktest-n2:2181,ykszktest-n3:2181/kafka
+            - name: KAFKA_ADVERTISED_PORT
+              value: "9092"
+            - name: KAFKA_ADVERTISED_HOST_NAME
+              value: ykskafkatest-n2
+            - name: KAFKA_HEAP_OPTS
+              value: "-Xmx4G -Xms4G"
+            - name: KAFKA_JMX_OPTS
+              value: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=127.0.0.1 -Dcom.sun.management.jmxremote.rmi.port=1099"
+            - name: JMX_PORT
+              value: "1099"
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ykskafkatest-n3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ykskafkatest-n3
+  template:
+    metadata:
+      labels:
+        app: ykskafkatest-n3
+    spec:
+      hostname: ykskafkatest-n3
+      volumes:
+        - name: ykskafkatest-data
+          hostPath:
+            path: /data/ykskafkatest-cluster/ykskafkatest-data-n3
+        - name: ykskafkatest-logs
+          hostPath:
+            path: /data/ykskafkatest-cluster/ykskafkatest-logs-n3
+      dnsPolicy: ClusterFirst
+      containers:
+        - name: ykskafkatest-n1
+          image: wurstmeister/kafka:1.0.1
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: ykskafkatest-data
+              readOnly: false
+              mountPath: "/kafka"
+            - name: ykskafkatest-logs
+              readOnly: false
+              mountPath: "/opt/kafka/logs"
+          ports:
+            - containerPort: 9092
+            - containerPort: 1099
+          env:
+            - name: KAFKA_BROKER_ID
+              value: "3"
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: ykszktest-n1:2181,ykszktest-n2:2181,ykszktest-n3:2181/kafka
+            - name: KAFKA_ADVERTISED_PORT
+              value: "9092"
+            - name: KAFKA_ADVERTISED_HOST_NAME
+              value: ykskafkatest-n3
+            - name: KAFKA_HEAP_OPTS
+              value: "-Xmx4G -Xms4G"
+            - name: KAFKA_JMX_OPTS
+              value: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=127.0.0.1 -Dcom.sun.management.jmxremote.rmi.port=1099"
+            - name: JMX_PORT
+              value: "1099"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ykskafkatest-n1
+  name: ykskafkatest-n1
+  namespace: default
+spec:
+  clusterIP: None
+  ports:
+    - port: 9092
+      protocol: TCP
+      targetPort: 9092
+      name: kafka
+    - port: 1099
+      protocol: TCP
+      targetPort: 1099
+      name: jmx
+  selector:
+    app: ykskafkatest-n1
+  sessionAffinity: None
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ykskafkatest-n2
+  name: ykskafkatest-n2
+  namespace: default
+spec:
+  clusterIP: None
+  ports:
+    - port: 9092
+      protocol: TCP
+      targetPort: 9092
+      name: kafka
+    - port: 1099
+      protocol: TCP
+      targetPort: 1099
+      name: jmx
+  selector:
+    app: ykskafkatest-n2
+  sessionAffinity: None
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ykskafkatest-n3
+  name: ykskafkatest-n3
+  namespace: default
+spec:
+  clusterIP: None
+  selector:
+  ports:
+    - port: 9092
+      protocol: TCP
+      targetPort: 9092
+      name: kafka
+    - port: 1099
+      protocol: TCP
+      targetPort: 1099
+      name: jmx
+  selector:
+    app: ykskafkatest-n3
+  sessionAffinity: None
+  type: ClusterIP

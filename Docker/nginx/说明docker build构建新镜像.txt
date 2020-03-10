@@ -1,0 +1,50 @@
+生成docker新镜像的dockerfile:
+$ cat  Dockerfile
+FROM nginx
+RUN echo '<h1>Hello, Docker!</h1>' > /usr/share/nginx/html/index.html
+
+生成docker新镜像的docker build命令:
+$ sudo docker build -t nginx:v3 .
+下面详细解释这个命令都包含了那些步骤
+首先在有dockerfile文件的路径下运行这个命令。
+命令中的. 表示当前目录，即Dockerfile就在当前目录， 也是build的上下文。 
+按照Dockerfile文件制定， 从远端拉取nginx镜像到本地
+镜像下载到本地后， 启动这个镜像的容器。
+进入容器的shell交互， 
+在shell交互下，运行命令，echo '<h1>Hello, Docker!</h1>' > /usr/share/nginx/html/index.html
+当前容器里的 /usr/share/nginx/html/index.html文件已经变为<h1>Hello, Docker!</h1>
+将当前的容器打包成一个新的镜像，然后删除当前容器 
+新镜像的名字和tag由docker build里面的-t参数制定，这里为 nginx:v3。 镜像名和tag用冒号分隔。
+新镜像的名字可以相同，也可以不相同。
+如果相同， 需要加上tag.  以区别原镜像。 
+下载过程中会显示下载进度， 采用多路下载并行的方式， 一般是三路下载， 比如下载build时下载的镜像比较大， 会有这样现在进度的log：
+3d77ce4481b1: Downloading [============>                                      ]  13.99MB/54.26MB
+7d2f32934963: Downloading [======================================>            ]  13.38MB/17.58MB
+0c5cf711b890: Downloading [===============>                                   ]  13.31MB/43.6MB
+9593dc852d6b: Waiting
+4e3b8a1eb914: Waiting
+ddcf13cc1951: Waiting
+86175f4e9cc5: Waiting
+5a08bdd82f61: Waiting
+以下是$ sudo docker build -t nginx:v3 . 命令执行结束时的log： 
+Sending build context to Docker daemon  2.048kB
+Step 1/2 : FROM nginx
+latest: Pulling from library/nginx
+000eee12ec04: Pull complete
+eb22865337de: Pull complete
+bee5d581ef8b: Pull complete
+Digest: sha256:50cf965a6e08ec5784009d0fccb380fc479826b6e0e65684d9879170a9df8566
+Status: Downloaded newer image for nginx:latest
+ ---> 231d40e811cd
+Step 2/2 : RUN echo '<h1>Hello, Docker!</h1>' > /usr/share/nginx/html/index.html
+ ---> Running in bdcdecda385e
+Removing intermediate container bdcdecda385e
+ ---> 2148ed540194
+Successfully built 2148ed540194
+Successfully tagged nginx:v3
+    
+新镜像在docker images可以看到：
+$ sudo docker images
+REPOSITORY                 TAG                 IMAGE ID            CREATED             SIZE
+nginx                      v3                  2148ed540194        2 minutes ago       126MB
+nginx                      latest              231d40e811cd        4 weeks ago         126MB

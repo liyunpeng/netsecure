@@ -1,0 +1,138 @@
+ k exec -it zk的pod名字 bash
+ 进到该pod:
+ 
+bash-4.3# cd /zookeeper-3.4.10/bin/
+bash-4.3# ls
+README.txt    zkCleanup.sh  zkCli.cmd     zkCli.sh      zkEnv.cmd     zkEnv.sh      zkServer.cmd  zkServer.sh
+进入zookeeper模式
+bash-4.3# ./zkCli.sh
+Connecting to localhost:2181
+2020-01-15 11:20:41,425 [myid:] - INFO  [main:Environment@100] - Client environment:zookeeper.version=3.4.10-39d3a4f269333c922ed3db283be479f9deacaa0f, built on 03/23/2017 10:13 GMT
+2020-01-15 11:20:41,451 [myid:] - INFO  [main:Environment@100] - Client environment:host.name=zk-n1
+2020-01-15 11:20:41,452 [myid:] - INFO  [main:Environment@100] - Client environment:java.version=1.8.0_131
+2020-01-15 11:20:41,470 [myid:] - INFO  [main:Environment@100] - Client environment:java.vendor=Oracle Corporation
+2020-01-15 11:20:41,470 [myid:] - INFO  [main:Environment@100] - Client environment:java.home=/usr/lib/jvm/java-1.8-openjdk/jre
+2020-01-15 11:20:41,472 [myid:] - INFO  [main:Environment@100] - Client environment:java.class.path=/zookeeper-3.4.10/bin/../build/classes:/zookeeper-3.4.10/bin/../build/lib/*.jar:/zookeeper-3.4.10/bin/../lib/slf4j-log4j12-1.6.1.jar:/zookeeper-3.4.10/bin/../lib/slf4j-api-1.6.1.jar:/zookeeper-3.4.10/bin/../lib/netty-3.10.5.Final.jar:/zookeeper-3.4.10/bin/../lib/log4j-1.2.16.jar:/zookeeper-3.4.10/bin/../lib/jline-0.9.94.jar:/zookeeper-3.4.10/bin/../zookeeper-3.4.10.jar:/zookeeper-3.4.10/bin/../src/java/lib/*.jar:/conf:
+2020-01-15 11:20:41,473 [myid:] - INFO  [main:Environment@100] - Client environment:java.library.path=/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64/server:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64:/usr/lib/jvm/java-1.8-openjdk/jre/../lib/amd64:/usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib
+2020-01-15 11:20:41,474 [myid:] - INFO  [main:Environment@100] - Client environment:java.io.tmpdir=/tmp
+2020-01-15 11:20:41,475 [myid:] - INFO  [main:Environment@100] - Client environment:java.compiler=<NA>
+2020-01-15 11:20:41,476 [myid:] - INFO  [main:Environment@100] - Client environment:os.name=Linux
+2020-01-15 11:20:41,477 [myid:] - INFO  [main:Environment@100] - Client environment:os.arch=amd64
+2020-01-15 11:20:41,478 [myid:] - INFO  [main:Environment@100] - Client environment:os.version=4.18.0-80.el8.x86_64
+2020-01-15 11:20:41,479 [myid:] - INFO  [main:Environment@100] - Client environment:user.name=root
+2020-01-15 11:20:41,480 [myid:] - INFO  [main:Environment@100] - Client environment:user.home=/root
+2020-01-15 11:20:41,482 [myid:] - INFO  [main:Environment@100] - Client environment:user.dir=/zookeeper-3.4.10/bin
+2020-01-15 11:20:41,510 [myid:] - INFO  [main:ZooKeeper@438] - Initiating client connection, connectString=localhost:2181 sessionTimeout=30000 watcher=org.apache.zookeeper.ZooKeeperMain$MyWatcher@3eb07fd3
+Welcome to ZooKeeper!
+2020-01-15 11:20:41,705 [myid:] - INFO  [main-SendThread(localhost:2181):ClientCnxn$SendThread@1032] - Opening socket connection to server localhost/127.0.0.1:2181. Will not attempt to authenticate using SASL (unknown error)
+JLine support is enabled
+2020-01-15 11:20:42,075 [myid:] - INFO  [main-SendThread(localhost:2181):ClientCnxn$SendThread@876] - Socket connection established to localhost/127.0.0.1:2181, initiating session
+2020-01-15 11:20:42,134 [myid:] - INFO  [main-SendThread(localhost:2181):ClientCnxn$SendThread@1299] - Session establishment complete on server localhost/127.0.0.1:2181, sessionid = 0x16fa89963850002, negotiated timeout = 30000
+WATCHER::
+WatchedEvent state:SyncConnected type:None path:null
+
+查看zk的元素
+[zk: localhost:2181(CONNECTED) 1] ls /
+[zookeeper, kafka]
+
+[zk: localhost:2181(CONNECTED) 2] ls2 /kafka
+[cluster, controller, controller_epoch, brokers, admin, isr_change_notification, consumers, log_dir_event_notification, latest_producer_id_block, config]
+cZxid = 0x2
+ctime = Wed Jan 15 10:04:28 GMT 2020
+mZxid = 0x2
+mtime = Wed Jan 15 10:04:28 GMT 2020
+pZxid = 0x1b
+cversion = 10
+dataVersion = 0
+aclVersion = 0
+ephemeralOwner = 0x0
+dataLength = 0
+numChildren = 10
+
+
+[zk: localhost:2181(CONNECTED) 4] get /kafka
+null
+cZxid = 0x2
+ctime = Wed Jan 15 10:04:28 GMT 2020
+mZxid = 0x2
+mtime = Wed Jan 15 10:04:28 GMT 2020
+pZxid = 0x1b
+cversion = 10
+dataVersion = 0
+aclVersion = 0
+ephemeralOwner = 0x0
+dataLength = 0
+numChildren = 10
+
+可以tab补全要看的
+[zk: localhost:2181(CONNECTED) 5] get /kafka/con
+controller         controller_epoch   consumers          config
+
+查看kakfa在zk保存的controller的配置信息：
+[zk: localhost:2181(CONNECTED) 5] get /kafka/controller
+{"version":1,"brokerid":1,"timestamp":"1579082679652"}
+cZxid = 0x19
+ctime = Wed Jan 15 10:04:39 GMT 2020
+mZxid = 0x19
+mtime = Wed Jan 15 10:04:39 GMT 2020
+pZxid = 0x19
+cversion = 0
+dataVersion = 0
+aclVersion = 0
+ephemeralOwner = 0x16fa89963850001
+dataLength = 54
+numChildren = 0
+
+查看kakfa在zk保存的brokers的配置信息：
+[zk: localhost:2181(CONNECTED) 6] get /kafka/brokers
+null
+cZxid = 0x7
+ctime = Wed Jan 15 10:04:28 GMT 2020
+mZxid = 0x7
+mtime = Wed Jan 15 10:04:28 GMT 2020
+pZxid = 0x12
+cversion = 3
+dataVersion = 0
+aclVersion = 0
+ephemeralOwner = 0x0
+dataLength = 0
+numChildren = 3
+
+tab看下brokers有什么
+[zk: localhost:2181(CONNECTED) 7] get /kafka/brokers/
+ids      topics   seqid
+
+查看topics信息:
+[zk: localhost:2181(CONNECTED) 7] get /kafka/brokers/topics
+null
+cZxid = 0x9
+ctime = Wed Jan 15 10:04:28 GMT 2020
+mZxid = 0x9
+mtime = Wed Jan 15 10:04:28 GMT 2020
+pZxid = 0x9
+cversion = 0
+dataVersion = 0
+aclVersion = 0
+ephemeralOwner = 0x0
+dataLength = 0
+numChildren = 0
+
+[zk: localhost:2181(CONNECTED) 8] ls /kafka/brokers/topics/
+Command failed: java.lang.IllegalArgumentException: Path must not end with / character
+
+[zk: localhost:2181(CONNECTED) 9] ls2 /kafka/brokers/topics/
+Command failed: java.lang.IllegalArgumentException: Path must not end with / character
+
+[zk: localhost:2181(CONNECTED) 10] ls2 /kafka/brokers/topics
+[]
+cZxid = 0x9
+ctime = Wed Jan 15 10:04:28 GMT 2020
+mZxid = 0x9
+mtime = Wed Jan 15 10:04:28 GMT 2020
+pZxid = 0x9
+cversion = 0
+dataVersion = 0
+aclVersion = 0
+ephemeralOwner = 0x0
+dataLength = 0
+numChildren = 0

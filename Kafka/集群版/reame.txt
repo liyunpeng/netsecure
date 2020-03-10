@@ -1,0 +1,55 @@
+[master@212-node mnt]$ cd /data/ykszktest-cluster/ykszktest-
+ykszktest-data-n1/ ykszktest-data-n2/ ykszktest-data-n3/ ykszktest-logs-n1/ ykszktest-logs-n2/ ykszktest-logs-n3/
+[master@212-node mnt]$ cd /data/ykszktest-cluster/ykszktest-
+
+[master@212-node ykszktest-logs-n1]$ ls
+version-2
+
+leader正确选举出来：
+
+[centos5@68-node ~]$ k get po
+NAME                            READY   STATUS    RESTARTS   AGE
+rc-tomcat-6m52w                 1/1     Running   0          8h
+redis-0                         1/1     Running   1          17h
+redis-1                         1/1     Running   0          132m
+redis-2                         1/1     Running   0          128m
+redis-3                         1/1     Running   0          4h5m
+redis-4                         1/1     Running   0          125m
+redis-5                         1/1     Running   0          125m
+ykszktest-n1-c477b5ff-zgtq2     1/1     Running   0          4h21m
+ykszktest-n2-6d7477b9d7-fzm6f   1/1     Running   0          4h21m
+ykszktest-n3-85654f49cf-mds5q   1/1     Running   0          86m
+[centos5@68-node ~]$ k describe ykszktest-n1-c477b5ff-zgtq2
+^C
+[centos5@68-node ~]$ k exec -it ykszktest-n1-c477b5ff-zgtq2 bash
+bash-4.3# ls
+LICENSE.txt                build.xml                  ivy.xml                    zookeeper-3.4.10.jar
+NOTICE.txt                 conf                       ivysettings.xml            zookeeper-3.4.10.jar.asc
+README.txt                 contrib                    lib                        zookeeper-3.4.10.jar.md5
+README_packaging.txt       dist-maven                 recipes                    zookeeper-3.4.10.jar.sha1
+bin                        docs                       src
+bash-4.3# cat con
+conf/    contrib/
+bash-4.3# bin/zk
+zkCleanup.sh  zkCli.cmd     zkCli.sh      zkEnv.cmd     zkEnv.sh      zkServer.cmd  zkServer.sh
+bash-4.3# bin/zk
+zkCleanup.sh  zkCli.cmd     zkCli.sh      zkEnv.cmd     zkEnv.sh      zkServer.cmd  zkServer.sh
+bash-4.3# bin/zkServer.sh status
+ZooKeeper JMX enabled by default
+Using config: /conf/zoo.cfg
+Mode: follower
+
+
+[centos5@68-node ~]$ k exec -it ykszktest-n1-c477b5ff-zgtq2 bash
+bash-4.3# bin/zk
+zkCleanup.sh  zkCli.cmd     zkCli.sh      zkEnv.cmd     zkEnv.sh      zkServer.cmd  zkServer.sh
+bash-4.3# bin/zkServer.sh status
+ZooKeeper JMX enabled by default
+Using config: /conf/zoo.cfg
+Mode: follower
+bash-4.3# exit
+exit
+[centos5@68-node ~]$ k exec -it ykszktest-n3-85654f49cf-mds5q bash
+bash-4.3#  bin/zkServer.sh status
+ZooKeeper JMX enabled by default
+Using config: /conf/zoo.cfg

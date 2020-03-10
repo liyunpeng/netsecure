@@ -1,0 +1,97 @@
+1. 启动zookeeper
+$./zookeeper-server-start.sh -daemon ../config/zookeeper.properties
+
+2. 修改kafka服务配置文件，启动kafka服务
+修改../config/server.properties
+第一次可以不修改broker id
+# broker.id=1
+listeners=PLAINTEXT://:9092   打开注释
+advertised.listeners=PLAINTEXT://192.168.0.204:9092  打开注释， 改kafka所在地址
+
+启动kafka服务
+$./kafka-server-start.sh -daemon ../config/server.properties
+
+3. 创建主题，生产者向主题中发送消息，消费者从主题中消费消息
+创建主题：
+$./kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic MyTopic
+Created topic MyTopic.
+
+$./kafka-topics.sh --list --zookeeper localhost:2181
+MyTopic
+
+$./kafka-console-producer.sh --broker-list localhost:9092 --topic MyTopic
+>[2020-01-15 09:04:56,294] WARN [Producer clientId=console-producer] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+
+解决办法：broker-list改写为PLAINTEXT方式
+$./kafka-console-producer.sh --broker-list PLAINTEXT://192.168.0.220:9092  --topic MyTopic
+>aaaaaa
+
+同一台主机打开一个消费者线程消费，可以看到生产者发来的消息
+$ ./kafka-console-consumer.sh --bootstrap-server PLAINTEXT://192.168.0.220:9092 --topic MyTopic --from-beginning
+aaaaaa
+
+4. 查看kafka服务是否正常
+[user1@220-node bin]$ sudo netstat -antp | grep 9092
+tcp6       0      0 192.168.0.220:9092      :::*                    LISTEN      5274/java
+tcp6       0      0 192.168.0.220:55644     192.168.0.220:9092      ESTABLISHED 5274/java
+tcp6       0      0 192.168.0.220:9092      192.168.0.220:55652     ESTABLISHED 5274/java
+tcp6       0      0 192.168.0.220:9092      192.168.0.220:53330     ESTABLISHED 5274/java
+tcp6       0      0 192.168.0.220:55640     192.168.0.220:9092      ESTABLISHED 24558/java
+tcp6       0      0 192.168.0.220:9092      192.168.0.220:55640     ESTABLISHED 5274/java
+tcp6       0      0 192.168.0.220:55642     192.168.0.220:9092      ESTABLISHED 24558/java
+tcp6       0      0 192.168.0.220:53330     192.168.0.220:9092      ESTABLISHED 14054/java
+tcp6       0      0 192.168.0.220:53318     192.168.0.220:9092      TIME_WAIT   -
+tcp6       0      0 192.168.0.220:55652     192.168.0.220:9092      ESTABLISHED 24558/java
+tcp6       0      0 192.168.0.220:9092      192.168.0.220:55644     ESTABLISHED 5274/java
+tcp6       0      0 192.168.0.220:9092      192.168.0.220:55642     ESTABLISHED 5274/java
+
+查看kafka-server-start.sh启动的log：
+/opt/kafka_2.12/logs/server.log：
+[2020-01-21 01:19:49,607] ERROR [KafkaServer id=0] Fatal error during KafkaServer startup. Prepare to shutdown (kafka.server.KafkaServer)
+org.apache.zookeeper.KeeperException$SessionExpiredException: KeeperErrorCode = Session expired for /brokers/topics
+        at org.apache.zookeeper.KeeperException.create(KeeperException.java:134)
+        at org.apache.zookeeper.KeeperException.create(KeeperException.java:54)
+        at kafka.zookeeper.AsyncResponse.resultException(ZooKeeperClient.scala:554)
+        at kafka.zk.KafkaZkClient.getAllTopicsInCluster(KafkaZkClient.scala:466)
+        at kafka.log.LogManager$.apply(LogManager.scala:1071)
+        at kafka.server.KafkaServer.startup(KafkaServer.scala:250)
+        at kafka.server.KafkaServerStartable.startup(KafkaServerStartable.scala:44)
+        at kafka.Kafka$.main(Kafka.scala:84)
+        at kafka.Kafka.main(Kafka.scala)
+
+/opt/kafka_2.12/logs/kafkaServer.out
+[2020-01-21 01:20:56,411] ERROR Exiting Kafka due to fatal exception (kafka.Kafka$)
+java.nio.file.NoSuchFileException: /opt/kafka_2.12/config/server.propertiesy
+        at sun.nio.fs.UnixException.translateToIOException(UnixException.java:86)
+        at sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:102)
+        at sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:107)
+        at sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:214)
+        at java.nio.file.Files.newByteChannel(Files.java:361)
+        at java.nio.file.Files.newByteChannel(Files.java:407)
+        at java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:384)
+        at java.nio.file.Files.newInputStream(Files.java:152)
+        at org.apache.kafka.common.utils.Utils.loadProps(Utils.java:563)
+        at kafka.Kafka$.getPropsFromArgs(Kafka.scala:51)
+        at kafka.Kafka$.main(Kafka.scala:67)
+        at kafka.Kafka.main(Kafka.scala)
+
+报以上错误的原因是， kafka的服务配置文件错误，
+broker.id=1
+advertised.listeners=PLAINTEXT://192.168.0.141:9092
+这两项需要修改，
+[user1@141-node kafka]$ sudo systemctl start kafka
+再次启动后，可以看到状态正常： Active: active (running)
+
+[user1@141-node kafka]$ sudo systemctl status kafka
+● kafka.service - kafka
+   Loaded: loaded (/etc/systemd/system/kafka.service; disabled; vendor preset: disabled)
+   Active: active (running) since Tue 2020-01-21 01:33:54 EST; 15s ago
+  Process: 46454 ExecStart=/opt/kafka_2.12/bin/kafka-server-start.sh -daemon /opt/kafka_2.12/config/server.properties (code=exited, stat>
+ Main PID: 46789 (java)
+    Tasks: 28 (limit: 23857)
+   Memory: 139.7M
+   CGroup: /system.slice/kafka.service
+           └─46789 java -Xmx1G -Xms1G -server -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35 -XX:+ExplicitGC>
+
+1月 21 01:33:54 141-node systemd[1]: Starting kafka...
+1月 21 01:33:54 141-node systemd[1]: Started kafka.

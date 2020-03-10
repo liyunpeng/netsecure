@@ -1,0 +1,11 @@
+#！/bin/bash
+
+set -v
+pvcreate /dev/sdb1
+vgcreate vg0 /dev/sdb1
+lvcreate -L 4G -T vg0/thinpool
+lvcreate -V 3G -T vg0/thinpool -n datalv
+
+vgdisplay
+pvdisplay
+lvdisplay
