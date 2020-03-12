@@ -3,7 +3,8 @@ yum 下载不到工具包， 实在找不到repo安装源， 可以到工具的�
 一个服务的执行文件就是一个bin文件， 不管这个服务多庞大， 就是一个bin文件。 
 因为服务启动时， 要指定配置文件， 环境变量设置的， 包括服务的生成文件的存放目录等， 
 centtos 和ubunt都有一致的规划, 
-centos8 一致没有找到， heketi的安装缘， 就到heketi的github上下载了这个bin, 然后自己手动建立了按规划建立步骤：
+centos8一直没有找到heketi的安装源， 
+就到heketi的github上下载了这个bin, 然后自己手动建立了按规划建立步骤：
 以heketi为例， 说说这个规划;
 1.  服务的启动文件， 都放在/etc/systemd/system/下，启动文件的名字，就是systemctl启动服务是的名字，  手动在这个目录下建立启动文件， heketi.service:
 

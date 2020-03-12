@@ -14,7 +14,7 @@ Mode: standalone
 kafka-topics.sh --create --topic test --zookeeper zk-n1:2181/kafka --partitions 3 --replication-factor 2
 
 kafka 没起来：
-▒版[user1@220-node 单机版]$ k logs  kafaka-n1-5bf5999cf8-bzbhn
+[user1@220-node 单机版]$ k logs  kafaka-n1-5bf5999cf8-bzbhn
 
 [2020-01-15 09:59:28,444] FATAL Fatal error during KafkaServer startup. Prepare to shutdown (kafka.server.KafkaServer)
 org.I0Itec.zkclient.exception.ZkTimeoutException: Unable to connect to zookeeper server 'ykszktest-n1:2181,ykszktest-n2:2181,ykszktest-n3:2181' with timeout of 6
@@ -38,15 +38,15 @@ org.I0Itec.zkclient.exception.ZkTimeoutException: Unable to connect to zookeeper
 原因：
 Unable to connect to zookeeper server 'ykszktest-n1:2181,ykszktest-n2:2181,ykszktest-n3:2181'
 解决办法：把kafka的yaml文件中的环境变量修改：
-          env:
-              # 必须要有,zk集群
-            - name: KAFKA_ZOOKEEPER_CONNECT
-              value: ykszktest-n1:2181,ykszktest-n2:2181,ykszktest-n3:2181/kafka
+    env:
+        # 必须要有,zk集群
+      - name: KAFKA_ZOOKEEPER_CONNECT
+        value: ykszktest-n1:2181,ykszktest-n2:2181,ykszktest-n3:2181/kafka
 改为：
-          env:
-              # 必须要有,zk集群
-            - name: KAFKA_ZOOKEEPER_CONNECT
-              value: zk-n1:2181/kafka
+    env:
+        # 必须要有,zk集群
+      - name: KAFKA_ZOOKEEPER_CONNECT
+        value: zk-n1:2181/kafka
 然后把deploy资源从k8s集群中删除，
 $ k delete deploy kafaka-n1
 deployment.apps "kafaka-n1" deleted

@@ -5,25 +5,26 @@
 /logagent/192.168.0.142/logconfig
 输入框输入：
 [
-		{
-			"topic":"nginx_log",
-			"log_path":"D:\\log1",
-			"service":"test_service",
-			"send_rate":1000
-		}
+	{
+		"topic":"nginx_log",
+		"log_path":"D:\\log1",
+		"service":"test_service",
+		"send_rate":1000
+	}
 ]
 
 输入框里写的内容实际是一组配置信息字符串，这个配置信息主要表示要监控的文件的路径全名log_path，从被监控文件读出的内容发送给kafka消息服务器的主题topic
 因为这个字符串要被服务端解析成一个配置对象，所以该字符串不能有多有多余的逗号，因为这里只有一项，大括号的后面不能有逗号
 
 输入完成后， 点提交， 服务端就会出现相应的log：
-etcd服务watch到新的键值对： etcd key = /logagent/192.168.0.142/logconfig , value = [
-                {
-                        "topic":"nginx_log",
-                        "log_path":"D:\\log1",
-                        "service":"test_service",
-                        "send_rate":1000
-                }
+etcd服务watch到新的键值对： 
+etcd key = /logagent/192.168.0.142/logconfig , value = [
+	{
+			"topic":"nginx_log",
+			"log_path":"D:\\log1",
+			"service":"test_service",
+			"send_rate":1000
+	}
 ]
 从etcd得到的配置字符串解析出的配置对象:  [{nginx_log D:\log1 test_service 1}]
 hdcloud tail管理者重新加载配置

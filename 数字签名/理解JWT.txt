@@ -19,11 +19,12 @@ func JwtHandler() *jwt.Middleware {
 	})
 }
 JwtHandler 要生成用于管理jwt验证的jwt middleware对象， 其构造此对象的过程为：
-先准备好一个16字节的一个字符串串，作为一个secret.
+先准备好一个16字节的一个字符串，作为一个secret.
 然后用此secret，sha256签名算法， 构造一个jwt管理对象。
 用此管理对象的serve
 func (m *Middleware) Serve(ctx context.Context)
 完成身份验证：
 v1.PartyFunc("/admin", func(admin iris.Party) {
 admin.Use(middleware.JwtHandler().Serve, casbinMiddleware.ServeHTTP)
-admin是个路径路由对象， use方法表示， 该路径先路由到use里的程序， 然后在走到注册的程序。
+admin是个路径路由对象， 
+use方法表示， 该路径先路由到use里的程序， 然后在走到注册的程序。
