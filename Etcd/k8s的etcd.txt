@@ -5,6 +5,7 @@ metadata:
   creationTimestamp: null
   labels:
     component: etcd
+#! /bin/bash
     tier: control-plane
   name: etcd
   namespace: kube-system
