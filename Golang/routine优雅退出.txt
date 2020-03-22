@@ -1,0 +1,60 @@
+
+	defer fmt.Println("主routine完全退出")
+	defer fmt.Println("主routine内存分析完毕")
+ 	defer profile.Start(profile.MemProfile).Stop()
+
+	si := make (chan os.Signal, 1)
+	signal.Notify(si,
+		// kill -SIGINT XXXX 或 Ctrl+c
+		os.Interrupt,
+		syscall.SIGINT, // register that too, it should be ok
+		// os.Kill等同于syscall.Kill
+		os.Kill,
+		syscall.SIGKILL, // register that too, it should be ok
+		// kill -SIGTERM XXXX
+		syscall.SIGTERM,
+	)
+	for {
+		select {
+			case <-si:
+				fmt.Println("收到中断信号， 主routine开始退出")
+				return
+		}
+	}
+
+
+2020/03/22 10:09:44 profile: caught interrupt, stopping profiles
+主routine开始退出
+主routine内存分析完毕
+主routine完全退出
+实验表明：
+主routine退出， 其他routine也会自动跟着退出，如果不采取退出措施，是以一种不可预料的方式退出， 是不安全的退出， 
+
+一般的做法是， 其他routine有个退出通道， 和一个defer watigroup.done. 
+退出通道表示开始执行退出动作， 
+waitgroup.done表示退出动作执行完毕， 
+
+主routine 通过关闭退出通道， 来控制子routinez开始执行退出动作。 
+通过waitgroup.wait 等待子routine退出， 
+这样， 子routine退出时， 主routine没有退出， 子routine可以使用主routine的资源， 保证了子routien的安全退出。 
+
+主routine一般以收到信号， 开始启动退出程序： 
+go func(){
+		for {
+			select {
+				case <- signals:
+					println("shutdown...")
+
+					close(services.ChanStop)
+					close(services.KafkaProducerObj.MsgChan)
+
+					timeout := 5 * time.Second
+					ctx, cancel := stdContext.WithTimeout(stdContext.Background(), timeout)
+					cancel()
+
+					app.Shutdown(ctx)
+					rpc.GrpcSever.Stop()
+			}
+		}
+	}()
+	
