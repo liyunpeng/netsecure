@@ -1,0 +1,13 @@
+iris路由问题， 
+get 一个uri路径，iris会把uri的最后一个字符串解析出来。 
+如
+localhost:8082/api/etcd/a/'
+iris的代码：
+party.Get("/{key:string}",  controllers.ApiEtcdGetKV)
+key := ctx.Params().Get("key")
+就系出来的key就是uri路径的斜线后的最后一个字符串a
+如果这个字符串是带有斜线等字符 ， js要调用encodeurlCompent把这个字符串变换， 得到url格式的字符串，
+正常情况下， iris应该能路由解析出这个字符串， 但做的实验有个字符串不能被路由接卸， key为/logagent/191.268.0.1/logcont,
+对应的party.Get("/{key:string}",  controllers.ApiEtcdGetKV)指定的路由处理函数ApiEtcdGetKV没有走到
+
+get 请求都会把请求放在uri尾部， 用&分开， axios.get（uri, paranms)里的params数组最终也会变成用&分开的参数字符串，  放在url尾部， 作为uri的一部分发送出去。 
