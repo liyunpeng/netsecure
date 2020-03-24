@@ -12,6 +12,7 @@ $ protoc -I . --go_out=plugins=grpc:. ./user.proto
 $ protoc --proto_path=. --micro_out=. --go_out=. proto/user/user.proto  这个命令会调用proto-micro-gen这个bin执行文件
 然后， 客户端接口，实现结构体， 和结构体使用者调用的方法
 
+这里讲grpc实现的微服务
 先看user服务端：
 // UserInfoServiceServer is the server API for UserInfoService service.  会自动生成注释
 type UserInfoServiceServer interface {
@@ -98,7 +99,7 @@ func (s *UserInfoService) GetUserInfo(ctx context.Context, req *pb.UserRequest) 
 		fmt.Printf("监听异常：%s\n", err)
 	}
 	fmt.Printf("开始监听：%s\n", addr)
-	// 2.实例化gRPC
+	// 2.实例化gRPC服务端
 	s := grpc.NewServer()
 	// 3.在gRPC上注册微服务
 	// 第二个参数类型需要接口类型的变量
@@ -108,7 +109,7 @@ func (s *UserInfoService) GetUserInfo(ctx context.Context, req *pb.UserRequest) 
 对以上代码归纳一下： 创建一个tcp监听; 准备好grpcserver， 把业务u注入到server里; 把监听的放到grpcserver里面， 并启动这个grpc server
 
 
-
+-------------------------------------------
 上面说了服务端的代码生成和业务提供者对生成代码的调用， 
 接下来看客户端的， 
 先看生成代码：

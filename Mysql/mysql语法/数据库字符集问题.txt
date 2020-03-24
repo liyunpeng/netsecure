@@ -1,0 +1,49 @@
+问题描述：
+shop项目运行初始化casbin创建表时， 报字符集错误问题
+
+解决方法：
+mysql> drop database gotest;
+Query OK, 4 rows affected (0.02 sec)
+
+mysql> create database gotest default character set=utf8;
+Query OK, 1 row affected (0.00 sec)
+
+如果用 alter database 方式， 不生效， 可能原因docker 里的服务不能重启：
+root@831da969d562:/# vi /etc/mysql/my.cnf
+bash: vi: command not found
+root@831da969d562:/# cat /etc/mysql/my.cnf
+# Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License, version 2.0,
+# as published by the Free Software Foundation.
+#
+# This program is also distributed with certain software (including
+# but not limited to OpenSSL) that is licensed under separate terms,
+# as designated in a particular file or component or in included license
+# documentation.  The authors of MySQL hereby grant you an additional
+# permission to link the program and your derivative works with the
+# separately licensed software that they have included with MySQL.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License, version 2.0, for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+
+!includedir /etc/mysql/conf.d/
+!includedir /etc/mysql/mysql.conf.d/
+
+容器内重启服务：
+root@831da969d562:/#  /etc/init.d/mysql  restart
+[info] Stopping MySQL Community Server 5.7.29.
+....
+
+结果容器不在了：
+[user1@141-node ~]$ docker ps
+CONTAINER ID        IMAGE                    COMMAND                  CREATED             STATUS              PORTS                                                NAMES
+ae3739a4f17b        wurstmeister/kafka       "start-kafka.sh"         2 hours ago         Up 2 hours          0.0.0.0:9092->9092/tcp                               kafka
+d7962679749d        wurstmeister/zookeeper   "/bin/sh -c '/usr/sb…"   4 hours ago         Up 4 hours          22/tcp, 2888/tcp, 3888/tcp,
