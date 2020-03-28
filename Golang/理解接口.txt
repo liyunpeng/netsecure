@@ -1,3 +1,19 @@
+空接口变量可以个指针, 也可以是可实例, 要看这个接口变量赋值时, 右边是地址 ,还是地址的实例子
+如
+type datatype stuct {
+i int
+}
+
+var p interface{}
+
+p = dataytpe{}   此时p 就是实例, 在使用时, 要对接口变量做类型转换, 才等得到这个实例. 
+即 p.(datatype)
+
+p = &datatype{}  此时p就是指针,   要想修改实例里成员的值, 要转的目的类型必须是指针类型：
+p.(*datatype).i = 1
+
+---
+
 interface底层实现;
 接口有两种类型:
 内部无方法的, 就是iface类型, 其_type在iface->tab->_type

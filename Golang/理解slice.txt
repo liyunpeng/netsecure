@@ -1,6 +1,5 @@
-sliece 底层实现：
+1.sliece 底层实现：
 文件 src/runtime/slice.go
-1. 基本：
 type slice struct {
 	array unsafe.Pointer
 	len   int
@@ -25,9 +24,8 @@ func makeslice(et *_type, len, cap int) slice {
 }
 
 2. nil和空切片
- nil切片和空切片在使用上没有区别， 因为都可以 做apppend, 
-
-nil切片和空切片也是常用的。
+nil切片和空切片在使用上没有区别， 因为都可以 做apppend, 
+nil切片和空切片也都是常用的。
 下面的声明得到一个nil切片：
 var slice []int
 nil 切片被用在很多标准库和内置函数中，描述一个不存在的切片的时候，就需要用到 nil 切片。
