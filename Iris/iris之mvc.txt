@@ -1,0 +1,11 @@
+iris:之mvc
+
+先new一个iris的app对象， 
+这个app通用做法， 要做到以下几个地方 :
+1. 设置iris的log级别， irsi有自己实现的log , 默认在控制航输出， 
+2.  设置好全局静态文件目录的映射， 基本的pulbic文件加映射到rul地址。
+app.HandleDir("/public", "./web/public")
+ 3. 设置好出错的页面的提示
+到此app对象要设置的就完成了。 
+看mvc对象的设置：
+以url相对路径构建一个mvc对象， 这个mvc就转么对应这个url路径

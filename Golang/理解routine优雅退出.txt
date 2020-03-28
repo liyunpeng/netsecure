@@ -57,4 +57,10 @@ go func(){
 			}
 		}
 	}()
-	
+
+-------------
+退出服务， 服务都有stop, shutdown等方法：
+GrpcSever.Serve(listenSocket)
+
+rpc.GrpcSever.Stop()
+

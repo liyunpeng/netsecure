@@ -41,6 +41,12 @@ root@e2bfe689d802:/#
 停止容器运行，但不删除容器：
 $ sudo docker stop  e2bfe689d802
 
+进入已经在运行的容器：
+mac :
+$ docker exec -it d616fef8310a /bin/sh
+linux :
+$ docker exec -it d616fef8310a /bin/bashß
+
 容器和宿主机共享数据卷
 $ sudo docker volume ls
 DRIVER              VOLUME NAME

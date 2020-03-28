@@ -1,0 +1,3 @@
+
+反射 type里取得都是类型， 成员的个数也类型范围， numfiled,  filed, (包括了type, name)
+方法也在类型了nummethod, method(i)

@@ -1,0 +1,53 @@
+interface底层实现;
+接口有两种类型:
+内部无方法的, 就是iface类型, 其_type在iface->tab->_type
+内部有方法的, 就是eface类型, 其_type在eface->_type
+eface 类型和iface 类型都在src/runtime/runtime2.go定义
+
+type iface struct {
+	tab  *itab
+	data unsafe.Pointer
+}
+
+type eface struct {
+	_type *_type
+	data  unsafe.Pointer
+}
+_type的定义在src/runtime/type.go
+type _type struct {
+	size       uintptr
+	ptrdata    uintptr // size of memory prefix holding all pointers
+	hash       uint32
+	tflag      tflag
+	align      uint8
+	fieldalign uint8
+	kind       uint8
+	alg        *typeAlg
+	// gcdata stores the GC type data for the garbage collector.
+	// If the KindGCProg bit is set in kind, gcdata is a GC program.
+	// Otherwise it is a ptrmask bitmap. See mbitmap.go for details.
+	gcdata    *byte
+	str       nameOff
+	ptrToThis typeOff
+}
+
+相等的条件是_type和data都要想等，举个例子：
+	var a interface{}
+	var d Human
+	fmt.Println("not assign a d:", a==d)
+	/*
+		运行结果:
+		not assign a d: true
+		理解:
+		虽然a是eface类型, d是iface类型,
+		但a, d比较时, 使用他们的_type和data成员比较的, 都为nil, 所以相等
+	*/
+
+形参是接口时， 接受的实参可以是对象， 也可以是指针。 
+参数类型不确定时， 用接口做形参是很普遍的做法
+接口本身是一个指针， 所以
+var i interface{}
+i := &S{}
+也是通用写法。 
+所以如果接口指针， 就是双重指针， 
+所以如果形参为接口指针，那么传入参数是一重指针传入就是语法错误
