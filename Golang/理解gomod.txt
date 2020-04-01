@@ -1,0 +1,25 @@
+下载的代码工程， 如果没有go.mod, 没有用mod管理， 一般会有vendor目录， 
+他会把自己的代码页放在vendor里面， 这有两个问题; 
+1. 代码重复，  vendor设置断点有效，  而工程代码无效
+2. vendor 里的代码修改无效， 
+所以还是需要编程go mod管理的代码。 
+正常情况下， 删除vendor目录  go mod init 工程名， go mod tidy, go mod 
+
+vendor三个目录就可以搞定。 
+中间遇到过的问题总结：
+1. 工程代码太老， 引用的第三方代码，已经变了，调用的第三方方法不存在了， 
+如go mod tidy时报错：
+can't find package 
+代码引用的包的路径变了。 
+用go mod 方式， 以i18n这个包，介绍 解决的步骤; 
+1.  把原vendor下的i18n 目录考到本地的GOPATH目录下， 
+如果有多个包有问题， 一次性的在这个步骤，都复制过去
+2. 删除原vendor目录， 如果不删除， go mod 会包vendor convert错误， 
+3  修改go.mod, 增加一行：
+replace (
+github.com/mattermost/gorp => D:\gomodpath\gorp
+）
+	github.com/nicksnyder/go-i18n/i18n => D:\gomodpath\i18n
+)
+
+注意go.mod里乜有双引号，和单引号
