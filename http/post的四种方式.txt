@@ -1,0 +1,45 @@
+1. application/x-www-from-urlencoded：
+这是默认的方式，juery等js post数据时， 默认采用的方式
+只能上传键值对，并且键值对都是间隔分开的。会将表单内的数据转换为键值对
+
+2. multipart/form-data：
+可以提价多个不同类型的数据， 
+会生成一个boundary字符串，作为各个部分的分割符， 
+
+既可以上传文件等二进制数据，也可以上传表单键值对，只是最后会转化为一条信息；
+当上传的字段是文件时，会有Content-Type来说明文件类型；content-disposition，用来说明字段的一些信息
+
+3. application/json：
+JSON 格式支持比键值对复杂得多的结构化数据，这一点也很有用。记得我几年前做一个项目时，需要提交的数据层次非常深，我就是把数据 JSON 序列化之后来提交的。不过当时我是把 JSON 字符串作为 val，仍然放在键值对里，以 x-www-form-urlencoded 方式提交。
+Google 的 AngularJS 中的 Ajax 功能，默认就是提交 JSON 字符串。例如下面这段代码：
+var data = {'title':'test', 'sub' : [1,2,3]};
+$http.post(url, data).success(function(result) {
+    ...
+});
+最终发送的请求是：
+POST http://www.example.com HTTP/1.1
+Content-Type: application/json;charset=utf-8
+{"title":"test","sub":[1,2,3]}
+这种方案，可以方便的提交复杂的结构化数据，特别适合 RESTful 的接口。各大抓包工具如 Chrome 自带的开发者工具、Firebug、Fiddler，都会以树形结构展示 JSON 数据，非常友好。但也有些服务端语言还没有支持这种方式，例如 php 就无法通过 $_POST 对象从上面的请求中获得内容。这时候，需要自己动手处理下：在请求头中 Content-Type 为 application/json 时，从 php://input 里获得原始输入流，再 json_decode 成对象。一些 php 框架已经开始这么做了。
+当然 AngularJS 也可以配置为使用 x-www-form-urlencoded 方式提交数据。
+
+4. text/xml:
+关于 XML-RPC（XML Remote Procedure Call）。它是一种使用 HTTP 作为传输协议，XML 作为编码方式的远程调用规范。典型的 XML-RPC 请求是这样的：
+POST http://www.example.com HTTP/1.1 
+Content-Type: text/xml
+
+<?xml version="1.0"?>
+<methodCall>
+    <methodName>examples.getStateName</methodName>
+    <params>
+        <param>
+            <value><i4>41</i4></value>
+        </param>
+    </params>
+</methodCall>
+XML-RPC 协议简单、功能够用，各种语言的实现都有。它的使用也很广泛，如 WordPress 的 XML-RPC Api，搜索引擎的 ping 服务等等。JavaScript 中，也有现成的库支持以这种方式进行数据交互，能很好的支持已有的 XML-RPC 服务。不过个人觉得 XML 结构还是过于臃肿，一般场景用 JSON 会更灵活方便。
+
+
+还有一种， binary， 待定
+相当于Content-Type:application/octet-stream,从字面意思得知，只可以上传二进制数据，通常用来上传文件，由于没有键值，所以，一次只能上传一个文件
+

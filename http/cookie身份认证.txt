@@ -1,0 +1,59 @@
+sessionid 存入cookie, 代表客户身份： 
+每次客户在登录时， 都会调用sessiont.start：
+func (s *Sessions) Start(ctx context.Context, cookieOptions ...context.CookieOption) *Session {
+	cookieValue := s.decodeCookieValue(GetCookie(ctx, s.config.Cookie))
+
+	if cookieValue == "" { // cookie doesn't exist, let's generate a session and set a cookie.
+		sid := s.config.SessionIDGenerator(ctx)
+
+		sess := s.provider.Init(sid, s.config.Expires)
+		sess.isNew = s.provider.db.Len(sid) == 0
+
+		s.updateCookie(ctx, sid, s.config.Expires, cookieOptions...)
+
+		return sess
+	}
+
+	return s.provider.Read(cookieValue, s.config.Expires)
+}
+获取一个sessionid, 然后把这个sessionid 设置一个cookie, 这个oookie就会被写入客户端的浏览器中， 
+这样每次客户浏览器在发送请求时， 都后有这个cookie， 这个动作时浏览器默认行为， 服务器在浏览器请求的处理里， 在调用具体的seesintkey值时， 都胡用sessinid 和  这个key拼接起来， 
+得到一个redis的key. 比如， sessionid 为123456778， sessin的key为username, 则存放这个session的redis的key为：123456778-username.  
+session.get(key )会自动做这个拼接， 如：
+func (c *OrderController) Get() mvc.Result {
+	if len(c.Session.GetString(util.SessionUserName)) > 0 {
+不同ip主机发来的请求， 都胡走这个函数，但携带的cookie里的sessionid不同， 英程程序代码不需要区分不同不同的用户， 用sessiondid和sessionkey拼接出的key自动区分了不同用户。 
+
+---
+
+session的存储： 
+session可以用mysql数据库， 也可以用redis， 因为session都有一个时限，和访问的频繁性， 一般用redis来存储。 session存储：
+sessionMangage是对所有session的一个管理， 可以在素有需要sessin回话的地方， 调用start， 创建sessionid， 和相应的cookie. 
+resssion的存储都是用sessioid 和key拼接的， 
+不是采用对象的方式， 而是采用key字符串管理的方式， 
+这也比较符合redis key的管理， 
+key 的名字的构成， 反应了对象和成员的关系， 
+比如存储一个用户记录：
+key的名字为： 数据库名：用户表名：用户 id。 
+
+redis本身是一个存放在内存里的临时的非关系数据库， 他和硬盘上的关系型数据库有许多不同
+key-valude的存放方式， 要使用速度最快的方式， 就是键值对。 
+一个key直接找到value. 先要找到这个key-value的地址， 
+这是一种典型的查找， 但redis没用采用树查找方式， 因为树相对复杂， 而且内存分布不连续， redis就用了跳表的方式 
+redis不是严格意义的数据库， 即：不严格满足 严格的原子性，一致性， 隔离性，  持久性。 
+redis不能回滚， 因为回滚回使每次加入一个kv时，会有很多动作， 所以中间出错， 不能回到之前的状态，不具备原子性， 
+不具备原子性， 就不具备一致性，因为数据关系不能前后保持一致
+因为单线程， 所以是具备隔离性。 
+持久化， 有rdb, aof, 和纯内存无持久方式， 
+rdb 相当于一个快照， 比较耗时， 一本fork一个进程来做。 
+
+键过期的删除方式 ：
+定期删除， 耗费cpu, 惰性删除， 觉得内存不够用时，再删， 耗费内存。 
+
+
+redis 设计的目的是就快速增删改查数据。 
+ 
+
+
+cookie的安全性问题， 
+cookie如果被其他主机盗取， 就等于身份被盗取， 一些玩野的js代码都可以盗取访问主机的cookie,  所以coookie要编码加密，

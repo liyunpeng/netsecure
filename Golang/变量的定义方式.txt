@@ -1,0 +1,15 @@
+变量的定义方式：
+全局变量：
+var ChanStop = make( chan bool)
+make并不是一个函数， 如果用一个函数给全局变量赋值，则语法错误：
+var ChanStop = func1( chan bool) 这是语法错误
+var Pointerfoo = map[string]int{}
+var (
+	messages    = make(chan string)
+	clientChans = make(map[ClientInfo]bool)
+)
+
+常量：
+const (
+	numElements = 10000000
+)

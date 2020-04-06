@@ -1,0 +1,4 @@
+软件包javax.servlet不存在的解决办法：
+
+从tomcat lib目录下拷贝一个servlet-api.jar的包到“JDK\jre\lib\ext”目录下
+凡是出现找不到包的情况，都可以将找到的包放到JDK\jre\lib\ext下，
