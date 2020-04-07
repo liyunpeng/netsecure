@@ -40,7 +40,7 @@ func ouputToConnection(c net.Conn, data <-chan string) {
 		fmt.Fprintf(c, " %s \r\n", v) //  需要加深理解
 	}
 }
-通道的输出侧，不会用ragne的写法， 都是单独一句写入通道语句。 这个写入通道的语句， 都放在其他通道的range里， 如：
+通道的输出侧，不会用range的写法， 都是单独一句写入通道语句。 这个写入通道的语句， 都放在其他通道的range里， 如：
 for cli := range clientChans {
 	cli.message <- msg
 }

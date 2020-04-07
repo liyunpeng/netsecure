@@ -1,3 +1,5 @@
+没有go.mod的工程代码如何变成go.mod管理的代码：
+
 下载的代码工程， 如果没有go.mod, 没有用mod管理， 一般会有vendor目录， 
 他会把自己的代码页放在vendor里面， 这有两个问题; 
 1. 代码重复，  vendor设置断点有效，  而工程代码无效
@@ -22,4 +24,6 @@ github.com/mattermost/gorp => D:\gomodpath\gorp
 	github.com/nicksnyder/go-i18n/i18n => D:\gomodpath\i18n
 )
 
-注意go.mod里乜有双引号，和单引号
+注意go.mod里没有双引号，和单引号
+
+---

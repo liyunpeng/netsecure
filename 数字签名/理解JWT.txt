@@ -44,7 +44,7 @@ secret)
 
 --------------------------------------
 jwt的iris实现为：
-github.com/iris-contrib/middleware/jwt
+import github.com/iris-contrib/middleware/jwt
 func JwtHandler() *jwt.Middleware {
 	var mySecret = []byte("HS2JDFKhu7Y1av7b")
 	return jwt.New(jwt.Config{

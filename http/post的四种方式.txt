@@ -10,7 +10,8 @@
 当上传的字段是文件时，会有Content-Type来说明文件类型；content-disposition，用来说明字段的一些信息
 
 3. application/json：
-JSON 格式支持比键值对复杂得多的结构化数据，这一点也很有用。记得我几年前做一个项目时，需要提交的数据层次非常深，我就是把数据 JSON 序列化之后来提交的。不过当时我是把 JSON 字符串作为 val，仍然放在键值对里，以 x-www-form-urlencoded 方式提交。
+JSON 格式支持比键值对复杂得多的结构化数据，这一点也很有用。
+记得我几年前做一个项目时，需要提交的数据层次非常深，我就是把数据 JSON 序列化之后来提交的。不过当时我是把 JSON 字符串作为 val，仍然放在键值对里，以 x-www-form-urlencoded 方式提交。
 Google 的 AngularJS 中的 Ajax 功能，默认就是提交 JSON 字符串。例如下面这段代码：
 var data = {'title':'test', 'sub' : [1,2,3]};
 $http.post(url, data).success(function(result) {
