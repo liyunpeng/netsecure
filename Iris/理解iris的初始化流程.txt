@@ -47,4 +47,3 @@ rc配置为：
         TName ="iris_test" # 测试数据库名称
 展开为：
 conn = root:root@(127.0.0.1:3306)/iris?charset=utf8&parseTime=True&loc=Local
-

@@ -21,7 +21,6 @@ json就直接返回json响应
 
 iris的context更丰富一些
 
-
 ----------
 控制器
 beego需要继承基类控制器
