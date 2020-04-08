@@ -1,0 +1,191 @@
+----------------
+通用首部:
+示例：
+Request URL: https://sp1.baidu.com/5b1ZeDe5KgQFm2e88IuM_a/wb.gif?type=3&fm=flow_monitor&data=%5B%7B%7D%5D&q=http%D0%AD%D2%E9head%CF%EA%BD%E2&qid=be0fa87a00022478&rsv_did=a33715f0e8149d83a99dd51f32edc703&rsv_tn=site888_3_pg&rsv_sid=30968_1430_31122_21089&t=1586329439199
+Request Method: GET
+Status Code: 200 OK
+Remote Address: 112.80.248.76:443
+Referrer Policy: unsafe-url
+
+---
+响应首部
+示例：
+HTTP/1.0 200 OK 
+Accept-Ranges: bytes
+Content-Encoding: gzip
+Content-Length: 1734
+Content-Type: image/svg+xml
+Date: Wed, 08 Apr 2020 07:04:11 GMT
+Etag: "efa-58e3d62113f40"
+Last-Modified: Mon, 22 Jul 2019 04:19:33 GMT
+Server: Apache
+Vary: Accept-Encoding,User-Agent
+
+Connection：
+表示是否需要持久连接。如果web服务器端看到这里的值为“Keep-Alive”，或者看到请求使用的是HTTP 1.1（HTTP 1.1默认进行持久连接），它就可以利用持久连接的优点，当页面包含多个元素时（例如Applet，图片），显著地减少下载所需要的时间。要实现这一点， web服务器需要在返回给客户端HTTP头信息中发送一个Content-Length（返回信息正文的长度）头，最简单的实现方法是：先把内容写入ByteArrayOutputStream，然 后在正式写出内容之前计算它的大小。
+实例：
+Connection: keep-alive
+
+Allow：
+服务器支持哪些请求方法（如GET、POST等）。
+
+Cache-Control：
+Cache-Control指定请求和响应遵循的缓存机制。在请求消息或响应消息中设置 Cache-Control并不会修改另一个消息处理过程中的缓存处理过程。请求时的缓存指令包括no-cache、no-store、max-age、 max-stale、min-fresh、only-if-cached，响应消息中的指令包括public、private、no-cache、no- store、no-transform、must-revalidate、proxy-revalidate、max-age。
+
+Date：
+提供日期和时间标志,说明报文是什么时间创建的
+表示消息发送的时间，时间的描述格式由rfc822定义。例如，Date:Mon,31Dec200104:25:57GMT。Date描述的时间表示世界标准时，换算成本地时间，需要知道用户所在的时区。 
+当前的GMT时间。你可以用setDateHeader来设置这个头以避免转换时间格式的麻烦。
+
+Content-Encoding：
+文档的编码（Encode）方法。只有在解码之后才可以得到Content-Type头指定的内容类型。
+利用gzip压缩文档能够显著地减少HTML文档的下载时间。
+Java的GZIPOutputStream可以很方便地进行gzip压缩，但只有Unix上的Netscape和Windows上的IE 4、IE 5才支持它。
+因此，Servlet应该通过查看Accept-Encoding头（即request.getHeader("Accept- Encoding")）检查浏览器是否支持gzip，为支持gzip的浏览器返回经gzip压缩的HTML页面，为其他浏览器返回普通页面。
+
+Content-Length：
+Content-Length表示内容长度。只有当浏览器使用持久HTTP连接时才需要这个数据。
+如果你想要利用持久连接的优势，可以把输出文档写入 ByteArrayOutputStram，完成后查看其大小，然后把该值放入Content-Length头，最后通过 byteArrayStream.writeTo(response.getOutputStream()发送内容。
+实例：
+Content-Type: text/html;charset=utf-8
+
+Content-Type：
+返回数据的类型（例如text/html文本类型）和字符编码格式。
+Servlet默认为text/plain，但通常需要显式地指定为text/html。
+由于经常要设置Content-Type，因此HttpServletResponse提供了一个专用的方法setContentTyep。
+
+Expires：
+应该在什么时候认为文档已经过期，从而不再缓存它
+
+Last-Modified：
+文档的最后改动时间。客户可以通过If-Modified-Since请求头提供一个日期，该请求将被视为一个条件GET，只有改动时间迟于指定时间的文档 才会返回，否则返回一个304（Not Modified）状态。
+Last-Modified也可用setDateHeader方法来设置。
+
+Location：
+表示客户应当到哪里去提取文档。用于重定向接收者到一个新URI地址。 
+Location通常不是直接设置的，而是通过HttpServletResponse的sendRedirect方法，
+该方法同时设置状态代码为302。
+
+Refresh：
+表示浏览器应该在多少时间之后刷新文档，以秒计。除了刷新当前文档之外，
+你还可以通过setHeader("Refresh", "5; URL=http://host/path")让浏览器读取指定的页面。 
+注 意这种功能通常是通过设置HTML页面HEAD区的
+＜META HTTP-EQUIV="Refresh" CONTENT="5;URL=http://host/path"＞
+实现，这是因为，自动刷新或重定向对于那些不能使用CGI或Servlet的 HTML编写者十分重要。但是，对于Servlet来说，直接设置Refresh头更加方便。 
+注意Refresh的意义是“N秒之后 刷新本页面或访问指定页面”，而不是“每隔N秒刷新本页面或访问指定页面”。因此，连续刷新要求每次都发送一个Refresh头，而发送204状态代码则 可以阻止浏览器继续刷新，不管是使用Refresh头还是
+＜META HTTP-EQUIV="Refresh" ...＞。 
+注意Refresh头不属于HTTP 1.1正式规范的一部分，而是一个扩展，但Netscape和IE都支持它。
+
+Server：
+服务器名字。Servlet一般不设置这个值，而是由Web服务器自己设置。
+
+Set-Cookie：
+设置和页面关联的Cookie。
+Servlet不应使用response.setHeader("Set-Cookie", ...)，
+而是应使用HttpServletResponse提供的专用方法addCookie。
+
+WWW-Authenticate：
+客户应该在Authorization头中提供什么类型的授权信息？
+在包含401（Unauthorized）状态行的应答中这个头是必需的。例如， response.setHeader("WWW-Authenticate", "BASIC realm=＼"executives＼"")。 
+注意Servlet一般不进行这方面的处理，而是让Web服务器的专门机制来控制受密码保护页面的访问（例如.htaccess）。
+
+---
+请求首部
+示例：
+GET http://download.google.com/somedata.exe 
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+Accept-Encoding: gzip, deflate, br
+Accept-Language: zh-CN,zh;q=0.9
+Cache-Control: no-cache
+Connection: keep-alive
+Cookie: BAIDUID=D014A91D3F9B24C32C1D292686F63A5A:FG=1; PSTM=1571628444; BIDUPSID=E26FBD21EAF0C54D711D4A55B09B29BD; BD_UPN=12314353; ispeed_lsm=2; H_PS_PSSID=30968_1430_31122_21089; BDORZ=FFFB88E999055A3F8A630C64834BD6D0; H_PS_645EC=a4e60Rlr8cH4xeLr4DhEloQc8X%2FvoIGQVHzaIgGFnZ%2FYyDB6%2BDPDhjpAPloB28v09%2Bs%2B
+Host: www.baidu.com
+Pragma: no-cache
+Referer: https://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=1&tn=site888_3_pg&wd=http%E5%8D%8F%E8%AE%AEhead%E8%AF%A6%E8%A7%A3&oq=git%2520config&rsv_pq=81b1ea0400004db1&rsv_t=e5e7L6IoWmuBJLul6idQsPpu2Z3rPE8gW9fyaVm8EJVkN9Yy3hFXZ43obFByKpMPwu4g&rqlang=cn&rsv_enter=1&rsv_dl=tb&rsv_n=2&rsv_sug3=1&bs=git%20config
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36
+
+请求首部一般包含下列字段：
+Accept、Accept-Charset、Accept-Encoding、Accept-Language、
+Authorization、From、Host、
+If-Modified-Since、If-Match、If-None-Match、
+If-Range、If-Unmodified-Since、Max-Forwards、
+Proxy-Authorization、Range、Referer、User-Agent。
+对请求头域的扩展要求通讯双方都支持，如果存在不支持的请求头域，一般将会作为实体头域处理。 
+
+Host域 
+Host域指定请求资源的Intenet主机和端口号，必须表示请求url的原始服务器或网关的位置。
+HTTP/1.1请求必须包含主机域，否则系统会以400状态码返回。 
+例如web请求URL：http://zjm-forum-test10.zjm.baidu.com:8088/test/tupian/cm
+Host域就是zjm-forum-test10.zjm.baidu.com:8088
+
+Accept域 
+指定客户端能够接收的内容类型，内容类型中的先后次序表示客户端接收的先后次序。
+Accept:text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5
+在Prototyp（1.5）的Ajax代码封装中，将Accept默认设置为“text/javascript, text/html, application/xml, text/xml, */*”。这是因为Ajax默认获取服务器返回的Json数据模式。
+在Ajax代码中，可以使用XMLHttpRequest 对象中setRequestHeader函数方法来动态设置这些Header信息。
+有可以接收的字符集， accept-charset, 和可接收的编码 accept-encoding
+
+Referer域 
+Referer域允许客户端指定请求uri的源资源地址，这可以允许服务器生成回退链表，可用来登陆、优化cache等。他也允许废除的或错误的连接由于维护的目的被追踪。
+如果请求的uri没有自己的uri地址，Referer不能被发送。如果指定的是部分uri地址，则此地址应该是一个相对地址。 
+
+Range域 
+Range域可以请求实体的一个或者多个子范围。例如， 
+表示头500个字节：bytes=0-499 
+表示第二个500字节：bytes=500-999 
+表示最后500个字节：bytes=-500 
+表示500字节以后的范围：bytes=500- 
+第一个和最后一个字节：bytes=0-0,-1 
+同时指定几个范围：bytes=500-600,601-999 
+但是服务器可以忽略此请求头，如果无条件GET包含Range请求头，响应会以状态码206（PartialContent）返回而不是以200 （OK）。 
+
+User-Agent域
+User-Agent域包含HTTP客户端运行的浏览器类型的详细信息。
+
+Accept-Language域
+指定HTTP客户端浏览器用来展示返回信息所优先选择的语言。
+实例：
+Accept-Language: zh-cn,zh;q=0.5
+这里默认为中文。
+
+Accept-Encoding域
+说明：
+指定客户端浏览器可以支持的web服务器返回内容压缩编码类型。
+表示允许服务器在将输出内容发送到客户端以前进行压缩，以节约带宽。而这里设置的就是客户端浏览器所能够支持的返回压缩格式。
+实例：
+Accept-Encoding: gzip,deflate
+备注：
+百度很多产品线中，apache在给客户端返回页面数据之前，将数据以gzip格式进行压缩。
+另外有关deflate压缩介绍：
+http://man.chinaunix.net/newsoft/ApacheMenual_CN_2.2new/mod/mod_deflate.html
+
+Accept-Charset域
+说明：
+浏览器可以接受的字符编码集。
+实例：
+Accept-Charset: gb2312,utf-8;q=0.7,*;q=0.7
+
+Content-Type域
+说明：
+显示此HTTP请求提交的内容类型。一般只有post提交时才需要设置该属性。
+实例：
+Content-type: application/x-www-form-urlencoded;charset:UTF-8
+有关Content-Type属性值主要有两种编码类型：
+（1）“application/x-www-form-urlencoded”： 表单数据向服务器提交时所采用的编码类型，默认的缺省值就是
+“application/x-www-form-urlencoded”。 然而，在向服务器发送大量的文本、包含非ASCII字符的文本或二进制数据时这种编码方式效率很低。
+（2）“multipart/form-data”： 在文件上载时，所使用的编码类型应当是“multipart/form-data”，它既可以发送文本数据，也支持二进制数据上载。
+当提交为单单数据时，可以使用
+“application/x-www-form-urlencoded”；当提交的是文件时，就需要使用“multipart/form-data”编码类型。
+
+在Content-Type属性当中还是指定提交内容的charset字符编码。一般不进行设置，它只是告诉web服务器post提交的数据采用的何种字符编码。
+
+一般在开发过程，是由前端工程与后端UI工程师商量好使用什么字符编码格式来post提交的，然后后端ui工程师按照固定的字符编码来解析提交的数据。所以这里设置的charset没有多大作用。
+
+---
+实体首部
+请求消息和响应消息都可以包含实体信息，
+实体信息一般由实体头域和实体组成。
+实体头域包含关于实体的原信息，实体头包括：
+Allow、Content-Base、Content-Encoding、Content-Language、 Content-Length、Content-Location、Content-MD5、Content-Range、Content-Type、 Etag、Expires、Last-Modified、extension-header。
+extension-header允许客户端定义新的实体头。
+实体可以是一个经过编码的字节流，它的编码方式由Content-Encoding或Content-Type定 义，它的长度由Content-Length或Content-Range定义。

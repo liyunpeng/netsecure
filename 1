@@ -16,10 +16,6 @@ oauth：
 http1.1 新特性：
 
 
-http的通用首部，有缓冲控制的conche-control
- 请求首部 , 有可以接收的字符集， accept-charset, 和可接收的编码 accept-encoding
- 响应首部，
- 实体首部
 
 
 http的问题， 以及https
@@ -42,6 +38,8 @@ http发送方从应用层到链路层， 层层加首部， 层层封包， 接�
 字段优化，对不常用或者没有必要的字段可以考虑放在另外一张表里，避免单表数据过大，字段过多。
 
 
+
+
 io.Copy
 
 
@@ -57,3 +55,19 @@ vue 的语法：
 
 
 消息系统里的消息堆积的实际问题：
+
+
+go 锁的性能
+
+
+编码
+
+
+tar –czvf jpg.tar jpg/ //将目录里所有jpg文件打包成tar.jpg
+
+
+解压abc.tar.bz2 解压到/abc/abc
+tar -xjvf abc.tar.bz2 -C /abc/abc
+
+解压abc.tar.gz 解压到/abc/abc
+tar -xzvf abc.tar.gz -C /abc/abc
