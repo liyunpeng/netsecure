@@ -21,18 +21,22 @@ kubectl create -f redis-access-service.yaml
 [user1@220-node k8s运行一个redis]$ k get po -o wide
 NAME      READY   STATUS    RESTARTS   AGE   IP              NODE       NOMINATED NODE   READINESS GATES
 redis-0   1/1     Running   0          94s   192.168.135.2   217-node   <none>           <none>
+
 [user1@220-node k8s运行一个redis]$ k get pv -owide
 NAME      CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS   REASON   AGE   VOLUMEMODE
 nfs-pv1   200M       RWX            Retain           Bound    default/data-redis-0                           71m   Filesystem
+
 [user1@220-node k8s运行一个redis]$ k get pvc -owide
 NAME           STATUS   VOLUME    CAPACITY   ACCESS MODES   STORAGECLASS   AGE   VOLUMEMODE
 data-redis-0   Bound    nfs-pv1   200M       RWX                           71m   Filesystem
+
 [user1@220-node k8s运行一个redis]$ k get statefulset -owide
 NAME    READY   AGE   CONTAINERS   IMAGES
 redis   1/1     30m   redis-c      redis
 [user1@220-node k8s运行一个redis]$ k get svc -owide
 NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE    SELECTOR
 kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   149m   <none>
+
 [user1@220-node k8s运行一个redis]$ k get po -owide
 NAME      READY   STATUS    RESTARTS   AGE   IP              NODE       NOMINATED NODE   READINESS GATES
 redis-0   1/1     Running   0          30m   192.168.135.2   217-node   <none>           <none>

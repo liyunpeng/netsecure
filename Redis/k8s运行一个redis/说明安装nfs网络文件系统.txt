@@ -40,7 +40,7 @@ drwxrwxrwx 2 root root 4096 Dec 29 10:24 pv5/
 drwxrwxrwx 2 root root 4096 Dec 29 10:24 pv6/
 
 4.  /etc/exports 配置文件内容错误， 导致nfs服务器无法穹顶
-因为改了/etc/exports这个服务配置文件， 向让配置生效， 需要重启nfs服务， restart启动， 就先stop, 后start的方式启动;
+因为改了/etc/exports这个服务配置文件，想让配置生效，需要重启nfs服务，restart启动，就先stop, 后start的方式启动
 
 停止服务：
 $ sudo /etc/init.d/nfs-kernel-server stop
@@ -66,3 +66,28 @@ $ sudo /etc/init.d/nfs-kernel-server status
 看到错误原因： exportfs: /etc/exports:2: unknown keyword "inseruce"， 这是笔误， 改成insecure, 在启动服务，服务就能正常启动了。
 
 网络文件系统nfs正常可用后, 才可以去创建pv, pvc.
+
+---------
+centos上查看服务：
+[node1@215-node ~]$ sudo systemctl status nfs-server
+● nfs-server.service - NFS server and services
+   Loaded: loaded (/usr/lib/systemd/system/nfs-server.service; disabled; vendor preset: disabled)
+  Drop-In: /run/systemd/generator/nfs-server.service.d
+           └─order-with-mounts.conf
+   Active: inactive (dead)
+[node1@215-node ~]$ sudo systemctl start  nfs-server
+[node1@215-node ~]$ sudo systemctl status nfs-server
+● nfs-server.service - NFS server and services
+   Loaded: loaded (/usr/lib/systemd/system/nfs-server.service; disabled; vendor preset: disabled)
+  Drop-In: /run/systemd/generator/nfs-server.service.d
+           └─order-with-mounts.conf
+   Active: active (exited) since Sat 2020-01-04 23:16:46 EST; 1s ago
+  Process: 95867 ExecStart=/bin/sh -c if systemctl -q is-active gssproxy; then systemctl reload gssproxy ; fi (code=exited, stat>
+  Process: 95848 ExecStart=/usr/sbin/rpc.nfsd (code=exited, status=0/SUCCESS)
+  Process: 95846 ExecStartPre=/usr/sbin/exportfs -r (code=exited, status=0/SUCCESS)
+ Main PID: 95867 (code=exited, status=0/SUCCESS)
+1月 04 23:16:45 215-node systemd[1]: Starting NFS server and services...
+1月 04 23:16:46 215-node systemd[1]: Started NFS server and services.
+
+
+nfs 没有启动， pod redis会error， nfs启动好了， pod Redis会自动变为running, 说明pod redis,一直去尝试挂载

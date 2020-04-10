@@ -1,0 +1,138 @@
+创建pv, pvc: 
+ubuntu1@docker-registry:~/k8s_yaml/redis$ k apply -f pv.yaml
+persistentvolume/nfs-pv1 created
+persistentvolume/nfs-vp2 created
+persistentvolume/nfs-pv3 created
+persistentvolume/nfs-pv4 created
+persistentvolume/nfs-pv5 created
+persistentvolume/nfs-pv6 created
+
+ubuntu1@docker-registry:~/k8s_yaml/redis$ k apply -f pvc.yaml
+persistentvolumeclaim/data-redis-0 created
+persistentvolumeclaim/data-redis-1 created
+persistentvolumeclaim/data-redis-2 created
+persistentvolumeclaim/data-redis-3 created
+persistentvolumeclaim/data-redis-4 created
+persistentvolumeclaim/data-redis-5 created
+
+创建statefulset
+ubuntu1@docker-registry:~/k8s_yaml/redis$ k apply -f statefulset.yaml
+statefulset.apps/redis created
+因为statefulset.yaml配置文件指定了replicas: 6，所以会创建6个pod
+
+因为pod启动需要一段时间，等待几分钟会看到statefulset创建的pod:
+ubuntu1@docker-registry:~/k8s_yaml/redis$ k get po -owide
+NAME      READY   STATUS    RESTARTS   AGE   IP            NODE         NOMINATED NODE   READINESS GATES
+redis-0   1/1     Running   0          61s   192.169.3.2   etcd0        <none>           <none>
+redis-1   1/1     Running   0          46s   192.169.2.2   ubuntunode   <none>           <none>
+redis-2   1/1     Running   0          34s   192.169.1.5   docker-app   <none>           <none>
+redis-3   1/1     Running   0          25s   192.169.3.3   etcd0        <none>           <none>
+redis-4   1/1     Running   0          19s   192.169.1.6   docker-app   <none>           <none>
+redis-5   1/1     Running   0          11s   192.169.2.3   ubuntunode   <none>           <none>
+
+查看其中一个pod的描述
+ubuntu1@docker-registry:~/k8s_yaml/redis$ k describe po redis-0
+Name:           redis-0
+Namespace:      default
+Priority:       0
+Node:           etcd0/192.168.0.204
+Start Time:     Mon, 30 Dec 2019 23:07:22 +0800
+Labels:         app=redis-p
+                appCluster=redis-cluster
+                controller-revision-hash=redis-56cfddcd57
+                statefulset.kubernetes.io/pod-name=redis-0
+Annotations:    cni.projectcalico.org/podIP: 192.169.3.2/32
+Status:         Running
+IP:             192.169.3.2
+Controlled By:  StatefulSet/redis
+Containers:
+  redis-c:
+    Container ID:  docker://1d8b210cc4ebdf13af101a5ae1dcea7864edc3188906efdb6dcc0d4fdd2246cb
+    Image:         redis
+    Image ID:      docker-pullable://redis@sha256:21b037b4f6964887bb12fd8d72d06c7ab1f231a58781b6ca2ceee0febfeb0d36
+    Ports:         6379/TCP, 16379/TCP
+    Host Ports:    0/TCP, 0/TCP
+    Command:
+      redis-server
+    Args:
+      /etc/redis/redis.conf
+      --protected-mode
+      no
+    State:          Running
+      Started:      Mon, 30 Dec 2019 23:07:35 +0800
+    Ready:          True
+    Restart Count:  0
+    Requests:
+      cpu:        100m
+      memory:     100Mi
+    Environment:  <none>
+    Mounts:
+      /etc/redis from redis-conf (rw)
+      /var/lib/redis from data (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-x5g8r (ro)
+Conditions:
+  Type              Status
+  Initialized       True
+  Ready             True
+  ContainersReady   True
+  PodScheduled      True
+Volumes:
+  data:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  data-redis-0
+    ReadOnly:   false
+  redis-conf:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      redis-conf
+    Optional:  false
+  default-token-x5g8r:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-x5g8r
+    Optional:    false
+QoS Class:       Burstable
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
+                 node.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  29s   default-scheduler  Successfully assigned default/redis-0 to etcd0
+  Normal  Pulling    23s   kubelet, etcd0     Pulling image "redis"
+  Normal  Pulled     17s   kubelet, etcd0     Successfully pulled image "redis"
+  Normal  Created    17s   kubelet, etcd0     Created container redis-c
+  Normal  Started    16s   kubelet, etcd0     Started container redis-c
+
+---------------------------------------------  
+创建redis集群的对外服务：
+ubuntu1@docker-registry:~/k8s_yaml/redis$ k apply -f headless-service.yaml
+
+
+[centos5@68-node redis]$ k get svc
+NAME            TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                         AGE
+kubernetes      ClusterIP   10.96.0.1      <none>        443/TCP                         45h
+redis-service   ClusterIP   None           <none>        6379/TCP                        4m13s
+svc-1-name      NodePort    10.96.75.221   <none>        8081:30001/TCP,8085:30720/TCP   44h
+
+[centos5@68-node redis]$ k describe svc redis-service
+Name:              redis-service
+Namespace:         default
+Labels:            app=redis
+Annotations:       kubectl.kubernetes.io/last-applied-configuration:
+                     {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"redis"},"name":"redis-service","namespace":"default"},"s...
+Selector:          app=redis-p,appCluster=redis-cluster
+Type:              ClusterIP
+IP:                None
+Port:              redis-port  6379/TCP
+TargetPort:        6379/TCP
+Endpoints:         192.168.168.193:6379,192.168.173.72:6379,192.168.184.67:6379 + 3 more...
+Session Affinity:  None
+Events:            <none>
+
+ubuntu1@docker-registry:~/k8s_yaml/redis$ k apply -f redis-access-service.yaml
+
+[centos5@68-node redis]$ k get svc -owide
+NAME                   TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                         AGE   SELECTOR
+kubernetes             ClusterIP   10.96.0.1      <none>        443/TCP                         46h   <none>
+redis-access-service   ClusterIP   10.96.93.123   <none>        6379/TCP                        29m   app=redis-p,appCluster=redis-cluster
+redis-service          ClusterIP   None           <none>        6379/TCP                        60m   app=redis-p,appCluster=redis-cluster
+svc-1-name             NodePort    10.96.75.221   <none>        8081:30001/TCP,8085:30720/TCP   45h   name=rc-tomcat-template-label

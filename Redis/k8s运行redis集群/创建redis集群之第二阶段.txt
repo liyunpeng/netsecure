@@ -1,0 +1,83 @@
+ # 在第一阶段已经启动的6个redis节点基础上, 选择其中三个， 创建成三个master。 三个msster节点为redis-0, redis-1, redis-2
+root@ubuntu:/# redis-trib.py create \
+  `dig +short redis-0.redis-service.default.svc.cluster.local`:6379 \
+  `dig +short redis-1.redis-service.default.svc.cluster.local`:6379 \
+  `dig +short redis-2.redis-service.default.svc.cluster.local`:6379
+
+Redis-trib 0.5.1 Copyright (c) HunanTV Platform developers
+INFO:root:Instance at 192.168.173.72:6379 checked
+INFO:root:Instance at 192.168.224.194:6379 checked
+INFO:root:Instance at 192.168.99.129:6379 checked
+INFO:root:Add 5462 slots to 192.168.173.72:6379
+INFO:root:Add 5461 slots to 192.168.224.194:6379
+INFO:root:Add 5461 slots to 192.168.99.129:6379
+
+# 为redis-0 Master节点添加Slave节点，Slave节点为redis-3
+root@ubuntu:/# redis-trib.py replicate \
+   --master-addr `dig +short redis-0.redis-service.default.svc.cluster.local`:6379 \
+   --slave-addr `dig +short redis-3.redis-service.default.svc.cluster.local`:6379
+
+Redis-trib 0.5.1 Copyright (c) HunanTV Platform developers
+INFO:root:Instance at 192.168.251.66:6379 has joined 192.168.173.72:6379; now set replica
+INFO:root:Instance at 192.168.251.66:6379 set as replica to edf719dcffa78650f83aa0f7bffadaf6375f87ca
+
+# 为redis-1 Master节点添加Slave节点，Slave节点为redis-4
+root@ubuntu:/# redis-trib.py replicate \
+   --master-addr `dig +short redis-1.redis-service.default.svc.cluster.local`:6379 \
+   --slave-addr `dig +short redis-4.redis-service.default.svc.cluster.local`:6379
+
+Redis-trib 0.5.1 Copyright (c) HunanTV Platform developers
+INFO:root:Instance at 192.168.184.67:6379 has joined 192.168.99.129:6379; now set replica
+INFO:root:Instance at 192.168.184.67:6379 set as replica to 2a577214e3a34895a2e0f1bf536b2f69d8a32c88
+
+# 为redis-2 Master节点添加Slave节点，Slave节点为redis-5
+root@ubuntu:/# redis-trib.py replicate \
+   --master-addr `dig +short redis-2.redis-service.default.svc.cluster.local`:6379 \
+   --slave-addr `dig +short redis-5.redis-service.default.svc.cluster.local`:6379
+
+Redis-trib 0.5.1 Copyright (c) HunanTV Platform developers
+INFO:root:Instance at 192.168.168.193:6379 has joined 192.168.224.194:6379; now set replica
+INFO:root:Instance at 192.168.168.193:6379 set as replica to aa942957ca63658b423a1f1bce541fe2ebf11cd1
+
+-----------------------------------------
+在redis-2节点查看集群信息
+[centos5@68-node redis]$ kubectl exec -it redis-2 /bin/bash
+root@redis-2:/data#  /usr/local/bin/redis-cli -c
+
+查看集群的所有节点：
+127.0.0.1:6379> cluster nodes
+a542871509355f2828aaf564a5835d755f212ad4 192.168.168.193:6379@16379 slave aa942957ca63658b423a1f1bce541fe2ebf11cd1 0 1578136015982 5 connected
+8f031886caee2625c1024addbba1cee0956bf2be 192.168.184.67:6379@16379 slave 2a577214e3a34895a2e0f1bf536b2f69d8a32c88 0 1578136015000 4 connected
+a46a631678af1b56fda774c48df65506df8bc14a 192.168.251.66:6379@16379 slave edf719dcffa78650f83aa0f7bffadaf6375f87ca 0 1578136015000 3 connected
+edf719dcffa78650f83aa0f7bffadaf6375f87ca 192.168.173.72:6379@16379 master - 0 1578136014953 0 connected 0-5461
+aa942957ca63658b423a1f1bce541fe2ebf11cd1 192.168.224.194:6379@16379 myself,master - 0 1578136014000 1 connected 5462-10922
+2a577214e3a34895a2e0f1bf536b2f69d8a32c88 192.168.99.129:6379@16379 master - 0 1578136014000 2 connected 10923-16383
+
+
+127.0.0.1:6379> cluster info
+cluster_state:ok
+cluster_slots_assigned:16384
+cluster_slots_ok:16384
+cluster_slots_pfail:0
+cluster_slots_fail:0
+cluster_known_nodes:6    // 集群中有6个节点
+cluster_size:3
+cluster_current_epoch:5
+cluster_my_epoch:1
+cluster_stats_messages_ping_sent:633
+cluster_stats_messages_pong_sent:647
+cluster_stats_messages_meet_sent:4
+cluster_stats_messages_sent:1284
+cluster_stats_messages_ping_received:646
+cluster_stats_messages_pong_received:637
+cluster_stats_messages_meet_received:1
+cluster_stats_messages_received:1284
+
+
+===========================================
+在192.168.0.215上看nfs上的数据，redis生成文件会存在这里：
+[node1@215-node redis]$ ll /usr/local/k8s/redis/pv3
+总用量 8
+-rw-r--r--. 1 root root   0 1月   4 03:23 appendonly.aof
+-rw-r--r--. 1 root root 175 1月   4 06:02 dump.rdb
+-rw-r--r--. 1 root root 813 1月   4 06:04 nodes.conf

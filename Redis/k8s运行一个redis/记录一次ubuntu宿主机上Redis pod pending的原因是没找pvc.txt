@@ -98,10 +98,8 @@ kubectl批量删除pvc
 同理 批量删除 pv
  kubectl get pv  | awk '{print $1}' |grep -v  NAME |xargs kubectl delete pv
 
-
  node1@docker-app:~$ sudo /etc/init.d/nfs-kernel-server stop
  [ ok ] Stopping nfs-kernel-server (via systemctl): nfs-kernel-server.service.
-
 
  node1@docker-app:~$ sudo /etc/init.d/nfs-kernel-server start
  [....] Starting nfs-kernel-server (via systemctl): nfs-kernel-server.serviceJob for nfs-server.service canceled.
