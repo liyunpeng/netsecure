@@ -1,0 +1,28 @@
+---
+gz格式的压缩和解压
+zvf是固定的， 
+前面加上c, 表示压缩， 
+前面加上x，表示解压， 
+参数顺序，先写源文件，后写目标目标文件
+
+将jpg整个目录打包成a.tar.gz：
+tar czvf b.tar.gz a/
+
+b.tar.gz解压之后，就是一个a目录：
+tar zxvf b.tar.gz
+a/
+
+解压abc.tar.gz 解压到/abc/abc
+tar xzvf abc.tar.gz -C /abc/abc
+
+---
+除了gz压缩格式，还有
+解压abc.tar.bz2 解压到/abc/abc
+tar -xjvf abc.tar.bz2 -C /abc/abc
+
+命令选项：
+vf表示列出命令执行的文件
+z表示压缩文件的格式为gz
+j表示压缩文件的格式为bz2
+c表示压缩
+c表示解压
