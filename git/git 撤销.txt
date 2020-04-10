@@ -1,0 +1,22 @@
+git 撤销：
+因为要撤销刚刚提交， 将刚刚的提交打包成patch 
+git format-patch -1 b503d89fd3cc01945a25b9ecb74ed8d7e7f84955
+
+撤销当前提交， 回退当前提交
+git reset --hard a6945a88ac1a74e427d15fb862ed4216eff3ef8f
+
+代码恢复如初， patch打进去
+git apply ~/0001-Defect-No.-AR000D7OQT.patch
+
+push到远程仓库的指定分支：
+$ git branch -a
+* local
+  remotes/korg/huawei_xian/sprdroid9.0_wear_huawei_cus
+  remotes/korg/huawei_xian/sprdroid9.0_wear_huawei_cus_W19.46.1
+  remotes/korg/huawei_xian/sprdroid9.0_wear_huawei_cus_W19.49.5
+  remotes/korg/hw/cbg/EMUIWear/debug-Nick_Merge_TEMP1101
+  remotes/korg/master
+  remotes/m/hw/cbg/EMUIWear/debug-Nick_Merge_TEMP1101 -> korg/hw/cbg/EMUIWear/debug-Nick_Merge_TEMP1101
+
+push到远程仓库的指定分支：
+git push korg HEAD:refs/for/hw/cbg/EMUIWear/debug-Nick_Merge_TEMP1101

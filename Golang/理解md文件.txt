@@ -1,0 +1,11 @@
+readme.md的md是markdown的缩写， marrdowns是博客变成语言， 
+有自己的语法， 
+标题有大标题，小标题
+还有6个等级的标题， 
+有在线编辑器， 
+在线编辑器：stackedit
+
+网址：http://mahua.jser.me/
+
+网址：https://stackedit.io/
+可以边写边看到效果。 先这么多吧， 用着再查工具手册。 

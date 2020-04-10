@@ -16,7 +16,7 @@ docker run -d -v /usr/share/ca-certificates/:/etc/ssl/certs -p 4001:4001 -p 2380
  -initial-cluster etcd0=http://${HostIP}:2380 \
  -initial-cluster-state new
 
-3. 检查etcd是否正常运行
+3. mac系统上检查etcd是否正常运行
 bogon:shop admin1$ lsof -i :2379
 COMMAND    PID   USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
 com.docke  484 admin1   33u  IPv6 0x17835531a21375af      0t0  TCP *:2379 (LISTEN)

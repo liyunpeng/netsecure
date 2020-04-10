@@ -1,4 +1,6 @@
 etcd v3 操作： 
+先声明为v3, 默认还是v2
+$ export ETCDCTL_API=3
 
 通过写入etcd来测试CentOS/RHEL 8上的etcd安装：
 
