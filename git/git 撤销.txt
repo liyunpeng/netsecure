@@ -20,3 +20,23 @@ $ git branch -a
 
 push到远程仓库的指定分支：
 git push korg HEAD:refs/for/hw/cbg/EMUIWear/debug-Nick_Merge_TEMP1101
+
+-----
+
+git fetch, 
+git rebase只有在有本地提交后，才能rebase
+shop$ git fetch
+shop$ git rebase
+error: cannot rebase: You have unstaged changes.
+error: additionally, your index contains uncommitted changes.
+error: Please commit or stash them.
+shop$ git add .
+shop$ git commit . -m "整理footer模板"
+[master 32c9380] 整理footer模板
+ 14 files changed, 124 insertions(+), 132 deletions(-)
+ create mode 100644 models/goods.go
+ rename web/views/{index.html => home.html} (95%)
+ create mode 100644 web/views/shared/footer.html
+shop$ git rebase
+First, rewinding head to replay your work on top of it...
+Applying: 整理footer模板
