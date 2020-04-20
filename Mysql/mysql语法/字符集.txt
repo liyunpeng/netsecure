@@ -1,1 +1,2 @@
 数据库字符集必须在开始的时候设置好， 如果已经存入了数据， 
+mysql> create database gotest default character set=utf8;
