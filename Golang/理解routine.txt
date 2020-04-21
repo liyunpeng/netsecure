@@ -1,0 +1,2 @@
+主协程如何等其余协程完再操作
+我的回答： 把请求交给routine去做， 请求资源也要传给routine,  有时，当routine在执行时， 请求嫌执行的时间长， 请求退出了， 这时routine也要退出， 有时routine里又启动了routine,    用context可以很方便的控制routine的退出。  context的目的也在于此，所有创建context都用withcancel, withtimeout方法。  用通道信号也能实现， 但不如conttext方便。 

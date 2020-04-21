@@ -3,3 +3,8 @@ select 的每个case 必须是通道的操作，或者从通道读取数据， �
 典型写法：
 
 switch 一般处理类型的判断， 每个case 都是一个具体的类型， 
+
+---
+select可以用于什么，常用语gorotine的完美退出  
+我的回答：  通道done读取阻塞， 阻塞解除， 执行退出动作， 退出动作执行完毕， defer被执行， 一般defer里做sync.done() , 这样主程序， sync wait()阻塞解除， 以此保证主程序在所有routine都完全退出再退出
+网上参考：golang 的 select 就是监听 IO 操作，当 IO 操作发生时，触发相应的动作每个case语句里必须是一个IO操作，确切的说，应该是一个面向channel的IO操作
