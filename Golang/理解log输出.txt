@@ -1,0 +1,56 @@
+type point struct{
+    x,y int
+}
+ 
+func test(i , j int) int{ return i+j;}
+ 
+func main(){
+    p := point{1,2}
+ 
+    fmt.Printf("%d\n",p)    // {1 2}
+     
+    fmt.Printf("%+v\n",p)   // {x:1 y:2}
+     
+    fmt.Printf("%#v\n",p)   // main.point{x:1, y:2}
+ 
+    //输出类型
+    fmt.Printf("%T\n",p)    // main.point
+ 
+    //输出函数签名
+    fmt.Printf("%T\n",test) //func(int ,int) int
+
+
+----
+ fatal 
+ log包除了有Print系列的函数，还有Fatal以及Panic系列的函数，其中Fatal表示程序遇到了致命的错误，需要退出，这时候使用Fatal记录日志后，然后程序退出，也就是说Fatal相当于先调用Print打印日志，然后再调用os.Exit(1)退出程序。
+
+---
+panic
+同理Panic系列的函数也一样，表示先使用Print记录日志，然后调用panic()函数抛出一个恐慌，这时候除非使用recover()函数，否则程序就会打印错误堆栈信息，然后程序终止。
+
+
+---
+日志定制
+var (
+    Info *log.Logger
+    Warning *log.Logger
+    Error * log.Logger
+)
+
+func init(){
+    errFile,err:=os.OpenFile("errors.log",os.O_CREATE|os.O_WRONLY|os.O_APPEND,0666)
+    if err!=nil{
+        log.Fatalln("打开日志文件失败：",err)
+    }
+
+    Info = log.New(os.Stdout,"Info:",log.Ldate | log.Ltime | log.Lshortfile)
+    Warning = log.New(os.Stdout,"Warning:",log.Ldate | log.Ltime | log.Lshortfile)
+    Error = log.New(io.MultiWriter(os.Stderr,errFile),"Error:",log.Ldate | log.Ltime | log.Lshortfile)
+
+}
+
+func main() {
+    Info.Println("飞雪无情的博客:","http://www.flysnow.org")
+    Warning.Printf("飞雪无情的微信公众号：%s\n","flysnow_org")
+    Error.Println("欢迎关注留言")
+}

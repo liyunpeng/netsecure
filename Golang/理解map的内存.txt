@@ -1,0 +1,77 @@
+---
+map内存的释放
+1. 删除 map 中的所有 key，map 占用内存仍处于「使用状态」， 1.12.7版本以后，删除元素以后, 执行GC时，会释放内存。 GC可以是手动GC，也可以是自动GC。
+2. map置为 nil，map 占用的内存才处于「空闲状态」。
+3. 处于空闲状态内存，一定时间内在下次申请的可重复被使用，不必再向操作系统申请。
+
+package main                                                                                                
+import (
+    "fmt"
+    "runtime"
+)   
+       
+var intMap map[int]int
+var cnt = 8192
+       
+func initMap() {
+    intMap = make(map[int]int, cnt)
+       
+    for i := 0; i < cnt; i++ {
+        intMap[i] = i 
+    }  
+}   
+       
+func printMemStats() {
+    var m runtime.MemStats
+    runtime.ReadMemStats(&m)
+    fmt.Printf("HeapAlloc = %v HeapIdel= %v HeapSys = %v  HeapReleased = %v\n", m.HeapAlloc/1024, m.HeapIdle/1024, m.HeapSys/1024,  m.HeapReleased/1024)
+}
+
+func main() {
+    //程序启动占用内存
+    printMemStats()
+  
+    //map 第一次初始化
+    initMap()
+    runtime.GC()
+    printMemStats()
+    fmt.Printf("map len's %d\n", len(intMap))
+    
+    for i := 0; i < cnt; i++ {
+        //delete 所有 key
+        delete(intMap, i)
+    }                                                                                                   
+    
+    fmt.Printf("map len's %d\n", len(intMap))
+    
+    runtime.GC()
+    printMemStats()
+    
+    //map 置为nil
+    intMap = nil
+    runtime.GC()
+    printMemStats()
+    
+    //map 第二次初始化
+    initMap()
+    runtime.GC()
+    printMemStats()
+    
+}
+
+打印结果：
+HeapAlloc = 45 HeapIdel= 552 HeapSys = 768  HeapReleased = 0   -> 程序启动占用内存
+HeapAlloc = 358 HeapIdel= 192 HeapSys = 736  HeapReleased = 0  -> map 第一次初始化
+map len's 8192
+map len's 0
+HeapAlloc = 358 HeapIdel= 192 HeapSys = 736  HeapReleased = 0 -> delete 所有 key
+HeapAlloc = 46 HeapIdel= 512 HeapSys = 736  HeapReleased = 0  -> map 置为 nil
+HeapAlloc = 358 HeapIdel= 192 HeapSys = 736  HeapReleased = 0 -> map 第二次初始化
+
+说明：
+HeapSys：程序向应用程序申请的内存
+HeapAlloc：堆上目前分配的内存
+HeapIdle：堆上目前没有使用的内存
+HeapReleased：回收到操作系统的内存
+
+

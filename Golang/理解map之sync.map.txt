@@ -1,0 +1,26 @@
+
+---
+并发安全：
+map不是并发安全的，sync.map并发安全，且虽然用到了锁，但是显著减少了锁的争用。 
+sync.map出现之前，如果想要实现并发安全的map，只能自行构建，使用sync.Mutex或sync.RWMutex，再加上原生的map就可以轻松做到，sync.map也用到了锁，但是在尽可能的避免使用锁，因为使用锁意味着要把一些并行化的东西串行化，会降低程序性能，因此能用原子操作就不要用锁，但是原子操作局限性比较大，只能对一些基本的类型提供支持，在sync.map中将两者做了比较完美的结合。
+存取删操作的算法复杂度与map一样，都是O(1)
+不会做类型检查。 
+sync.map只是go语言标准库中的一员，而不是语言层面的东西，也正是因为这一点，go语言的编译器不会对其中的键和值进行特殊的类型检查
+
+
+---
+sync.map的设计目的
+最终目标是： 在多routine时，保证并发安全下，性能比map更快。
+Go 团队成员发现当使用 sync.RWMutex 的代码被部署在「很多核 」的 CPU 上高并发读的场景下，它的性能远低于理想值。所以使用 sync.RWMutex 封装的数据结构中读取数据的性能会受很大影响。
+
+sync.Map 类型是针对两种常见用例进行优化的：
+1. 当给定的 key 只写入一次但读多次的时候，比如不断增长的缓存
+2.  当多个 goroutines 读取、写入和覆盖 map 不相交的键集合（我理解就是每个 goroutine 只负责部分 key 的读取、写入和覆盖）
+
+---
+map与sync.map性能对比
+模拟后端 map 的使用方式——多个 goroutine 对同一 map 同时执行读取、写入和删除的操作，预计map 的性能要比 sync.Map 的性能要好，但是发现 sync.Map 性能略胜一筹，
+BenchmarkOperateSyncMap8Work-4     	  500000	      3297 ns/op	     256 B/op	      23 allocs/op
+BenchmarkOperateMap8Work-4         	  300000	      7122 ns/op	      16 B/op	       1 allocs/op
+BenchmarkOperateSyncMap256Work-4   	   10000	    118631 ns/op	    8227 B/op	     767 allocs/op
+BenchmarkOperateMap256Work-4       	    5000	    301040 ns/op	      67 B/op	       1 allocs/op
