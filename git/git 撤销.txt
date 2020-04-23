@@ -40,3 +40,15 @@ shop$ git commit . -m "整理footer模板"
 shop$ git rebase
 First, rewinding head to replay your work on top of it...
 Applying: 整理footer模板
+
+本地有修改的， 没有提交：
+E:\web-front\vue-router\baoge>git rebase
+Cannot rebase: You have unstaged changes.
+Please commit or stash them.
+
+E:\web-front\vue-router\baoge>git checkout -f .
+
+本地都提交了：
+E:\web-front\vue-router\baoge>git rebase
+First, rewinding head to replay your work on top of it...
+Fast-forwarded master to refs/remotes/origin/master.
