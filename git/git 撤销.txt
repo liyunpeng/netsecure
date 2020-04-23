@@ -52,3 +52,32 @@ E:\web-front\vue-router\baoge>git checkout -f .
 E:\web-front\vue-router\baoge>git rebase
 First, rewinding head to replay your work on top of it...
 Fast-forwarded master to refs/remotes/origin/master.
+
+
+---
+没有rebase, 不能push
+D:\goworkspace\netsecure>git push
+To github.com:liyunpeng/netsecure.git
+ ! [rejected]        master -> master (non-fast-forward)
+error: failed to push some refs to 'git@github.com:liyunpeng/netsecure.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
+D:\goworkspace\netsecure>git rebase
+First, rewinding head to replay your work on top of it...
+Applying: update
+
+D:\goworkspace\netsecure>git push
+remote: Resolving deltas:  25% (1/4)ounting objects: 8, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (8/8), done.
+Writing objects: 100% (8/8), 4.21 KiB | 4.21 MiB/s, done.
+Total 8 (delta 4), reused 0 (delta 0)
+remote: Resolving deltas: 100% (4/4), completed with 4 local objects.
+To github.com:liyunpeng/netsecure.git
+   dac8f36..d1ddbbd  master -> master
+
+---
+只有git fetch, 没有git rebase, 本地看到的代码还不是同步下来的代码
