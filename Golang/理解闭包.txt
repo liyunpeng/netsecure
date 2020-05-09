@@ -1,2 +1,134 @@
-协程应用外部的变量， 这个变量就是闭包变量， 虽然闭包变量没有出现在应用程序的函数参数里，
-但在go的底层， 闭包的地址是传入到协程的栈里面， 相当于闭包作为参数传给了执行协程的应用函数。
+闭包的主要意义： 缩小变量作用域，减少对全局变量的污染。
+
+---
+示例1： 
+下面的累加如果用全局变量进行实现，全局变量容易被其他人污染。
+同时，所有我要实现n个累加器，那么每次需要n个全局变量。
+利用闭包，每个生成的累加器myAdder1, myAdder2 := adder(), adder()有自己独立的sum，sum可以看作为myAdder1.sum与myAdder2.sum。
+
+利用闭包可以实现有自身状态的函数！
+
+package main
+
+import (
+	"fmt"
+)
+
+func adder() func(int) int {
+	sum := 0
+	return func(x int) int {
+		sum += x
+		return sum
+	}
+}
+
+func main() {
+	myAdder := adder()
+	
+	// 从1加到3
+	for i := 1; i <= 3; i++ {
+		myAdder(i)
+	}
+	
+	fmt.Println("myAdder(0)=", myAdder(0))
+	fmt.Println("myAdder(10)", myAdder(10))
+	
+}
+输出：
+myAdder(0)= 6
+myAdder(10) 16
+---
+示例2：
+利用闭包实现斐波拉契数列
+package main
+
+import (
+	"fmt"
+)
+
+func fibonacci() func() int {
+	b0 := 0
+	b1 := 1
+	return func() int {
+		tmp := b0 + b1
+		b0 = b1
+		b1 = tmp
+		return b1
+	}
+
+}
+
+func main() {
+	myFibonacci := fibonacci()
+	for i := 1; i <= 5; i++ {
+		fmt.Println(myFibonacci())
+	}
+}
+
+输出：
+1
+2
+3
+5
+8
+
+上面两个示例程序， 表明闭包可以当作静态变量用
+
+---
+易错点
+func B() []func() {
+	b := make([]func(), 3, 3)
+	for i := 0; i < 3; i++ {
+		b[i] = func() {
+			fmt.Println(i)
+		}
+	}
+	return b
+}
+
+func main() {
+	c := B()
+	c[0]()
+	c[1]()
+	c[2]()
+}
+
+改正：
+func B() []func() {
+	b := make([]func(), 3, 3)
+	for i := 0; i < 3; i++ {
+		j := i
+		b[i] = func() {
+			fmt.Println(j)
+		}
+	}
+	return b
+}
+
+func main() {
+	c := B()
+	c[0]()
+	c[1]()
+	c[2]()
+}
+
+
+---
+闭包与函数
+闭包是一个函数值，它引用了函数体之外的变量。 这个函数可以对这个引用的变量进行访问和赋值；这个函数被“绑定”在这个变量上。
+如：
+func adder() func(int) int {
+	sum := 0
+	return func(x int) int {
+		sum += x
+		return sum
+	}
+}
+这个sum就是闭包变量
+
+---
+闭包与协程
+协程如果引用了协程外部的变量， 这个变量就是闭包变量， 
+虽然闭包变量没有出现在应用程序的函数参数里，
+但在go的底层， 闭包的地址是传入到协程的栈里面， 
+相当于闭包作为参数传给了执行协程的应用函数。
