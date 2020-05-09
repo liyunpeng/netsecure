@@ -9,7 +9,7 @@ var p interface{}
 两种赋值语句：
 1. p = dataytpe{}   
 此时p就是实例, 在使用时, 要对接口变量做类型转换, 才等得到这个实例. 
-即 p.(datatype)
+即 p.(datatype).i = 1
 
 2. p = &datatype{} 
 此时p就是指针,  要想修改实例里成员的值, 要转的目的类型必须是指针类型：
@@ -68,32 +68,33 @@ type _type struct {
 var i interface{}
 i := &S{}
 也是通用写法。 
-所以如果接口指针， 就是双重指针， 
+所以如果用接口指针， 就是双重指针， 
 所以如果形参为接口指针，那么传入参数如果是一重指针传入，就会语法错误
 
 
 ----
-        var t1 interface{} = 2
-        v, ok := t1.(int)
-        if ok {
-                fmt.Println("int:", v)
-        } else {
-                fmt.Println("v:", v)
-        }
+接口的断言：
+var t1 interface{} = 2
+v, ok := t1.(int)
+if ok {
+        fmt.Println("int:", v)
+} else {
+        fmt.Println("v:", v)
+}
 
-        func main() {
+func main() {
 
-        var t1 interface{} = "abc"
+	var t1 interface{} = "abc"
 
-        switch v := t1.(type) {
+	switch v := t1.(type) {
 
-        case int:
-                fmt.Println("int:", v)
+		case int:
+		        fmt.Println("int:", v)
 
-        case string:
-                fmt.Println("string:", v)
+		case string:
+		        fmt.Println("string:", v)
 
-        default:
-                fmt.Println("unknown type:", v)
-        }
+		default:
+		        fmt.Println("unknown type:", v)
+	}
 }
