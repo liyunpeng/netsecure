@@ -81,3 +81,11 @@ To github.com:liyunpeng/netsecure.git
 
 ---
 只有git fetch, 没有git rebase, 本地看到的代码还不是同步下来的代码
+
+---
+撤销最近一次提交：
+git reset --hard HEAD
+这个只能使用一次
+
+撤销到指定的提交点：
+git reset --hard 812269738af44cb95423a36731b97f4fb7d9addd

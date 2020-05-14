@@ -16,7 +16,7 @@ func deferproc(siz int32, fn *funcval) { // arguments of fn follow fn
 把fn出入到goroutine链表里
 在函数return前， 调用
 func deferreturn(arg0 uintptr) {
-把fn从goountine从链表里取出来， 然后执行。  所以defer多出来的调用不仅仅是一个call语句。 
+把fn从goountine从链表里取出来，然后执行。 所以defer多出来的调用不仅仅是一个call语句。
 defer 会拷贝参数， 还有一些延迟， 网上有测试， 单纯一个defer， 里面什么都不做， 也要增加耗时20ns.
 所以defer非常耗时
 defer的用法; defer应该只用来捕获panic的处理，其他资源释放等操作，锁释放等操作，
