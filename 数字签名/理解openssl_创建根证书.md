@@ -1,7 +1,8 @@
 指导文件： https://www.cnblogs.com/sparkdev/p/10369313.html
 
-1. 准备好前提条件，这里为创建好需要的目录
+### 一. 准备好前提条件，这里为创建好需要的目录
 需要创建的目标目录：
+```
 rootca
 rootca/certs/           # 存放新建的证书
 rootca/db/              # spenssl 用来存放信息的目录
@@ -12,8 +13,10 @@ rootca/newcerts/
 rootca/db/index
 rootca/db/serial
 rootca/db/crlnumber
-
+```
 用脚本createOpensslDir.sh完成以上目录的创建：
+
+```
 $ cat createOpensslDir.sh
 #!/bin/bash
 # create rootca dir certs db private crl newcerts under rootca dir
@@ -42,6 +45,10 @@ fi
 if [ ! -d rootca/newcerts ]; then
     mkdir -p rootca/newcerts
 fi
+
+```
+执行命令， 查看结果
+```
 $ ./createOpensslDir.sh  
 
 $ ls *   
@@ -49,9 +56,10 @@ createOpensslDir.sh
 
 rootca:
 certs csr crl  db  newcerts  private  rootca.cnf 
-
-===================================================================================================================
-2. 创建rootca.cnf配置文件
+```
+---
+### 二. 创建rootca.cnf配置文件
+```
 $ cat rootca.cnf
 # OpenSSL root CA configuration file.
 # v1
@@ -138,10 +146,11 @@ subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid,issuer
 keyUsage = critical, digitalSignature
 extendedKeyUsage = critical, OCSPSigning
+```
 
-===================================================================================================================
-
-3. 创建root私钥
+---
+### 三. 创建root私钥
+```
 $ cd rootca
 $ openssl genrsa -aes256 -out private/rootca.key.pem 4096
 Generating RSA private key, 4096 bit long modulus
@@ -150,35 +159,52 @@ Generating RSA private key, 4096 bit long modulus
 e is 65537 (0x10001)
 Enter pass phrase for private/rootca.key.pem:  输入123456 即设置一个密码， 用这个私钥去生成公钥或证书时，要用到这个密码
 Verifying - Enter pass phrase for private/rootca.key.pem:  重复输入123456 确认
-    
-    genrsa 表示生成rsa私钥，-aes256表示对私钥用aes256进行加密。
-    理解一下加密算法，
-    rsa是非对称加密， 加解密用的钥匙不一样，rsa用时较多
-    aes是des的改进，des在早期加解密使用，因为容易破解，已经被aes取代，des和aes都是对称加密，即加密和解密的钥匙相同
-        
+```
+命令参数解释：   
+* genrsa 表示生成rsa私钥，
+* -aes256表示对私钥用aes256进行加密。  
+理解一下加密算法，
+* rsa是非对称加密， 即加解密用的钥匙不一样。rsa用时较多
+* aes是对称加密， 即加密和解密的钥匙相同。 aes是des的改进， des在早期加解密使用，因为容易破解，已经被aes取代，des和aes都是对称加密，
+   
+
+查看结果：
+```        
 $ cat private/rootca.key.pem
 -----BEGIN RSA PRIVATE KEY-----
 Proc-Type: 4,ENCRYPTED
 DEK-Info: AES-256-CBC,DA8E0F08E733FD9B2C007453590759D7
 省略中间大段字符串
 -----END RSA PRIVATE KEY-----
-
-===================================================================================================================
-4. 创建根证书的请求文件 Certificate Signing Requests(csr) 
+```
+---
+### 四. 用rootca.cnf配置文件创建根证书请求文件 
+根证书请求文件英文名为Certificate Signing Requests(csr) 
+#### 生成pem格式的证书请求文件
+```
 $ openssl req -new -config rootca.cnf -sha256 -key private/rootca.key.pem -out csr/rootca.csr.pem
-    req -new 表示生成的请求文件。
-    因为使用了配置文件，命令中省去了很多参数，如：
-    因为rootca.cnf指定了：
-    x509_extensions = v3_ca
-    所以命令不需写-x509，请求的证书也是x509格式，
-    解释下x509，x509标准规定了证书需要包括的信息和信息的格式。
-    具体的，x509格式的证书要包括版本号（integer）、序列号（integer）、签名算法（object）、颁布者（set）、有效期（utc_time）、主体（set）、主体公钥（bit_string）、主体公钥算法（object）、签名值（bit_string）。
-    
-    因为rootca.cnf指定了：
-    default_days = 3750
-    所以命令不需写-days 3750， 证书的有效期为3750天， k8s的证书设置356天，k8s的证书也是这个参数。
-    
-    因为rootca.cnf里有这些内容：
+```
+命令参数解释, 因为使用了配置文件，命令中省去了很多参数。 
+  * req -new 表示生成的请求文件。  
+  * 因为rootca.cnf指定了： 
+```
+x509_extensions = v3_ca
+```  
+所以命令不需写-x509，请求的证书也是x509格式，  
+>解释下x509，x509标准规定了证书需要包括的信息和信息的格式。  
+>具体x509格式的证书要包括以下内容：  
+>版本号（integer）、序列号（integer）、签名算法（object）、  
+>颁布者（set）、有效期（utc_time）、主体（set）、主体公钥（bit_string）、
+>主体公钥算法（object）、签名值（bit_string）。
+
+  * 因为rootca.cnf指定了：  
+```  
+default_days = 3750
+```  
+所以命令中不需写-days 3750， 证书的有效期为3750天， k8s的证书设置356天，k8s的证书也是这个参数。
+
+   * 因为rootca.cnf里有这些内容：
+```
 [ req_distinguished_name ]
 countryName = CN
 stateOrProvinceName = ShaanXi
@@ -187,9 +213,12 @@ organizationName = NickLi Ltd
 organizationalUnitName = NickLi Ltd CA
 commonName = NickLi Root CA
 emailAddress = ljfpower@163.com
-    所以就不需要手动输入国家名，城市，公司名，用户名，邮箱等证书需要的用户信息。   
+```
+所以就不需要手动输入国家名，城市，公司名，用户名，邮箱等证书需要的用户信息。   
 
+#### 查看生成的证书请求文件的内容
 查看生成的证书请求文件rootca.csr.pem具体内容，就是最后证书的实际内容，请求代表预演一下。
+```
 $ openssl req -text -noout -in csr/rootca.csr.pem
 Certificate Request:
     Data:
@@ -268,10 +297,11 @@ Certificate Request:
          03:da:fc:ba:8f:0e:0d:af:c3:93:d3:42:28:3c:c8:91:45:68:
          00:05:9d:4c:b2:3f:dc:2b:1d:fd:c4:8b:53:ff:df:e5:38:56:
          e2:9d:d2:c6:7b:26:ce:f2
-
-===================================================================================================================
-5. 创建CA的根证书
-有了前一步中生成的 csr，我们就可以通过下面的命令生成 CA 的根证书了：
+```
+---
+### 五. 创建CA的根证书
+#### 用之前生成的rootca.csr.pem证书请求文件创建根证书：
+```
 /rootca$  openssl ca -selfsign \
 >     -config rootca.cnf \
 >     -in csr/rootca.csr.pem \
@@ -310,9 +340,12 @@ Sign the certificate? [y/n]:y
 1 out of 1 certificate requests certified, commit? [y/n]y
 Write out database with 1 new entries
 Data Base Updated
-上面在Enter pass phrase的提示中输入私钥的密码 123456，并同意其它的确认提示，后面都选y， 最终完成了根证书的生成操作。
+```
+上面在Enter pass phrase的提示中输入私钥的密码 123456，并同意其它的确认提示，后面都选y。     
+最终完成了根证书的生成操作。
 
-查看根证书的信息：
+#### 查看根证书的信息：
+```
 /rootca$ openssl x509 -noout -text -in certs/rootca.cert.pem
 Certificate:
     Data:
@@ -410,9 +443,11 @@ Certificate:
          e2:10:4b:98:6e:31:0d:ae:1a:ef:b8:f5:ed:b3:d7:21:6b:a6:
          ef:94:d4:06:97:43:51:c1:02:0c:9d:65:88:5a:52:78:eb:06:
          28:6d:14:2f:58:4a:13:4a
+```
 
-===================================================================================================================
-6. 列出所有生成的文件
+---
+### 六. 列出所有生成的文件
+```
 $ find
 .
 ./rootca
@@ -434,4 +469,5 @@ $ find
 ./rootca/db/index
 ./rootca/rootca.cnf               
 ./createOpensslDir.sh
+```
     总结生成的顺序，先生成私钥文件，由私钥文件生成根证书的请求文件，由根证书请求文件生成根证书
