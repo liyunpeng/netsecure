@@ -1,0 +1,10 @@
+1. protoc安装
+brew install protobuf
+
+2.protoc-gen-go
+go get -u github.com/golang/protobuf/protoc-gen-go
+在gopath/bin/会下出现protoc-gen-go
+
+3.安装protoc-gen-micro
+go get github.com/micro/protoc-gen-micro
+在gopath/bin/会下出现protoc-gen-micro

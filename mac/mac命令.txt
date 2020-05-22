@@ -1,0 +1,14 @@
+ cp -r  ~/goworkspace/opensource/shopping/order/ ./
+结尾有/， 表示把目录下的内容靠过去， order总目录不会拷贝 
+$ ls
+Dockerfile      go.mod          plugin.go
+Makefile        go.sum          proto
+README.md       handler         repository
+config.json     main.go         subscriber
+database.go     model
+
+
+cp -r  ~/goworkspace/opensource/shopping/order ./
+order总目录会拷贝
+$ ls
+order
