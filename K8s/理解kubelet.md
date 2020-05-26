@@ -1,9 +1,13 @@
-* kubelet 是运行在每个节点上的主要的“节点代理”，每个节点都会启动 kubelet进程，用来处理 Master 节点下发到本节点的任务，按照 PodSpec 描述来管理Pod 和其中的容器（PodSpec 是用来描述一个 pod 的 YAML 或者 JSON 对象）。
+### 一. kubelete的工作方式
 
-* 当一个 pod 完成调度，与一个 node 绑定起来之后，这个 pod 就会触发 kubelet 在循环控制里注册的 handler，上图中的 HandlePods 部分。此时，通过检查 pod 在 kubelet 内存中的状态，kubelet 就能判断出这是一个新调度过来的 pod，从而触发 Handler 里的 ADD 事件对应的逻辑处理。然后 kubelet 会为这个 pod 生成对应的 podStatus，接着检查 pod 所声明的 volume 是不是准备好了，然后调用下层的容器运行时。如果是 update 事件的话，kubelet 就会根据 pod 对象具体的变更情况，调用下层的容器运行时进行容器的重建。
+#### 每个节点都会运行kubelet进程，处理master下发到本节点的任务
+ kubelet 是运行在每个节点上的主要的“节点代理”，每个节点都会启动 kubelet进程，用来处理 Master 节点下发到本节点的任务，按照 PodSpec 描述来管理Pod 和其中的容器（PodSpec 是用来描述一个 pod 的 YAML 或者 JSON 对象）。
+
+#### pod 就会触发 kubelet 在循环控制里注册的handler
+ 当一个 pod 完成调度，与一个 node 绑定起来之后，这个 pod 就会触发 kubelet 在循环控制里注册的 handler，上图中的 HandlePods 部分。此时，通过检查 pod 在 kubelet 内存中的状态，kubelet 就能判断出这是一个新调度过来的 pod，从而触发 Handler 里的 ADD 事件对应的逻辑处理。然后 kubelet 会为这个 pod 生成对应的 podStatus，接着检查 pod 所声明的 volume 是不是准备好了，然后调用下层的容器运行时。如果是 update 事件的话，kubelet 就会根据 pod 对象具体的变更情况，调用下层的容器运行时进行容器的重建。
 kubelet 通过各种机制（主要通过 apiserver ）获取一组 PodSpec 并保证在这些 PodSpec 中描述的容器健康运行。
 
-### kubelet 通过四个端口完成功能
+#### kubelet 通过四个端口完成功能
  kubelet 默认监听四个端口，分别为 10250 、10255、10248、4194。
 ```gotemplate
 LISTEN     0      128          *:10250                    *:*                   users:(("kubelet",pid=48500,fd=28))
@@ -11,6 +15,10 @@ LISTEN     0      128          *:10255                    *:*                   
 LISTEN     0      128          *:4194                     *:*                   users:(("kubelet",pid=48500,fd=13))
 LISTEN     0      128    127.0.0.1:10248                    *:*                   users:(("kubelet",pid=48500,fd=23))
 ```
+
+### 二. kubelet的职责
+
+kubelet负责管理pods和它们上面的容器，images镜像、volumes、etc。
 #### 定期请求 apiserver 获取自己所应当处理的任务 
 10250（kubelet API）：kubelet server 与 apiserver 通信的端口，定期请求 apiserver 获取自己所应当处理的任务，通过该端口可以访问获取 node 资源以及状态。
 
@@ -45,6 +53,26 @@ $ curl  http://127.0.0.1:10255/pods
 // 节点信息接口,提供磁盘、网络、CPU、内存等信息
 $ curl http://127.0.0.1:10255/spec/
 ```
+#### 镜像和容器的清理工作 
+镜像和容器的清理工作，保证节点上镜像不会占满磁盘空间，退出的容器不会占用太多资源
+
+#### 定时获取pod的期望状态，并设法让pod达到这个状态
+kubelet定时从某个地方获取节点上 pod/container 的期望状态（运行什么容器、运行的副本数量、网络或者存储如何配置等等），并调用对应的容器平台接口达到这个状态。
+核心功能：
+
+
+kubelet 除了这个最核心的功能之外，还有很多其他功能：
+* 定时汇报当前节点的状态给 apiserver，以供调度的时候使用
+* 运行 HTTP Server，对外提供节点和 pod 信息，如果在 debug 模式下，还包括调试信息等等…
+* kubelet 会从 master 上读取信息，但其实 kubelet 还可以从其他地方获取节点的 pod 信息。
+
+目前 kubelet 支持三种数据源：
+* 本地文件
+* 通过 url 从网络上某个地址来获取信息
+* API Server：从 kubernetes master 节点获取信息
+  kubelet负责维护容器的生命周期，同时也负责Volume（CVI）和网络（CNI）的管理；
+  Container runtime负责镜像管理以及Pod和容器的真正运行（CRI）；
+
 
 ###  kubelet 组件中的模块
 kubelet 组件中的模块
@@ -78,23 +106,3 @@ kubelet 组件中的模块
 13、runtimeManager containerRuntime 负责 kubelet 与不同的 runtime 实现进行对接，实现对于底层 container 的操作，初始化之后得到的 runtime 实例将会被之前描述的组件所使用。可以通过 kubelet 的启动参数 --container-runtime 来定义是使用docker 还是 rkt，默认是 docker。
 
 14、podManager podManager 提供了接口来存储和访问 pod 的信息，维持 static pod 和 mirror pods 的关系，podManager 会被statusManager/volumeManager/runtimeManager 所调用，podManager 的接口处理流程里面会调用 secretManager 以及 configMapManager。
-
----
-核心功能：
-* kubelet负责管理pods和它们上面的容器，images镜像、volumes、etc。
-* kubelet定时从某个地方获取节点上 pod/container 的期望状态（运行什么容器、运行的副本数量、网络或者存储如何配置等等），并调用对应的容器平台接口达到这个状态。
-
-
-kubelet 除了这个最核心的功能之外，还有很多其他功能：
-* 定时汇报当前节点的状态给 apiserver，以供调度的时候使用
-* 镜像和容器的清理工作，保证节点上镜像不会占满磁盘空间，退出的容器不会占用太多资源
-* 运行 HTTP Server，对外提供节点和 pod 信息，如果在 debug 模式下，还包括调试信息等等…
-集群状态下，kubelet 会从 master 上读取信息，但其实 kubelet 还可以从其他地方获取节点的 pod 信息。
-
-目前 kubelet 支持三种数据源：
-* 本地文件
-* 通过 url 从网络上某个地址来获取信息
-* API Server：从 kubernetes master 节点获取信息
-  kubelet负责维护容器的生命周期，同时也负责Volume（CVI）和网络（CNI）的管理；
-  Container runtime负责镜像管理以及Pod和容器的真正运行（CRI）；
-
