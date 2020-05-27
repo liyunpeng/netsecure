@@ -1,3 +1,12 @@
 
 反射 type里取得都是类型， 成员的个数也类型范围， numfiled,  filed, (包括了type, name)
 方法也在类型了nummethod, method(i)
+
+
+反射最常见的使用场景是做对象的序列化（serialization，有时候也叫Marshal & Unmarshal）。
+例如，Go语言标准库的encoding/json、encoding/xml、encoding/gob、encoding/binary等包就大量依赖于反射功能来实现。
+
+golang反射最常见的应用场景，可以参考下 Java 的反射应用场景。
+Java反射应用在 Serialize（序列化），在golang中序列化与反序列化表示为 marshal、unmarshal
+
+
