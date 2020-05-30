@@ -1,3 +1,4 @@
+```gotemplate
 Containers:
   redis-c:
     Container ID:  docker://1d8b210cc4ebdf13af101a5ae1dcea7864edc3188906efdb6dcc0d4fdd2246cb
@@ -23,19 +24,25 @@ Containers:
       /etc/redis from redis-conf (rw)
       /var/lib/redis from data (rw)
       /var/run/secrets/kubernetes.io/serviceaccount from default-token-x5g8r (ro)
-
+```
 Mounts: 描述了容器外部的资源挂载到了容器里的哪些目录 
+```
       /etc/redis from redis-conf (rw)
       /var/lib/redis from data (rw)
-对应的pod的yaml文件的定义：
-          volumeMounts:
-            - name: "redis-conf"
-              mountPath: "/etc/redis"
-            - name: "data"
-              mountPath: "/var/lib/redis"
+```
+这部分对应的pod的yaml文件的定义：
+```
+  volumeMounts:
+    - name: "redis-conf"
+      mountPath: "/etc/redis"  这是容器中的目录，即指定名叫redis-conf的资源挂载到容器中的/etc/hosts目录
+    - name: "data"
+      mountPath: "/var/lib/redis"
+
+```
 mountPath指定了容器里的目录，
-name:指定了容器外部的资源， 这些资源必须在volumes里定义， 即：
-      volumes:
+name:指定了容器外部的资源， 这些资源必须在pod的yaml中volumes定义：
+```
+    volumes:
         - name: "redis-conf"
           configMap:
             name: "redis-conf"
@@ -50,3 +57,5 @@ name:指定了容器外部的资源， 这些资源必须在volumes里定义， 
         resources:
           requests:
             storage: 200M
+
+```
