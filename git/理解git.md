@@ -89,3 +89,9 @@ git reset --hard HEAD
 
 撤销到指定的提交点：
 git reset --hard 812269738af44cb95423a36731b97f4fb7d9addd
+
+解决github下载慢的问题：
+在/etc/hosts下添加：
+192.30.253.112 github.com
+151.101.185.194 github.global.ssl.fastly.net
+即省去了域名解析的时间

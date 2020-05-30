@@ -6,10 +6,6 @@ redis-service          ClusterIP   None           <none>        6379/TCP        
 svc-1-name             NodePort    10.96.75.221   <none>        8081:30001/TCP,8085:30720/TCP   46h   name=rc-tomcat-template-label
 
 [centos5@68-node redis]$ redis-cli -h 10.96.93.123
-10.96.93.123:6379> client-info
-(error) ERR unknown command `client-info`, with args beginning with:
-10.96.93.123:6379> client-info
-[centos5@68-node redis]$ redis-cli -h 10.96.93.123
 10.96.93.123:6379> cluster info
 cluster_state:ok
 cluster_slots_assigned:16384
