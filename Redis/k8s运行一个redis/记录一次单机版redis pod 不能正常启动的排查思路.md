@@ -1,10 +1,16 @@
+
+get pod 看到有redis pod没有运行起来
+```
 [user1@220-node ~]$ k get po -o wide
 NAME                         READY   STATUS        RESTARTS   AGE   IP               NODE       NOMINATED NODE   READINESS GATES
 kafaka-n1-7b9df4dd8d-2p4tf   1/1     Running       6          87m   192.168.68.135   220-node   <none>           <none>
 redis-0                      1/1     Terminating   0          30h   192.168.135.2    217-node   <none>           <none>
 zk-n1-6784764cc9-25ph4       1/1     Running       0          87m   192.168.68.136   220-node   <none>           <none>
+```
 
-查看pod详情：
+本文讲述一下redis pod异常的排查步骤
+### （一） 查看pod详情：
+```
 [user1@220-node ~]$ kd po redis-0
 Name:                      redis-0
 Namespace:                 default
@@ -75,14 +81,26 @@ Events:
   ----     ------         ----                 ----               -------
   Warning  FailedKillPod  32s (x2 over 2m32s)  kubelet, 217-node  error killing pod: failed to "KillContainer" for "redis-c" with KillContainerError: "rpc error: code = Unknown desc = operation timeout: context deadline exceeded"
   Normal   Killing        31s (x3 over 4m34s)  kubelet, 217-node  Stopping container redis-c
-     详情里未能显示rpc的超时错误， 
-rpc error: code = Unknown desc = operation timeout: 
-     没能显示出更具体的原因 。 后来排查得知， 这里的rpc超时是因为redis pod所挂载的pv 是nfs网络文件系统， 而nfs网络文件系统服务并没有启动。 解决办法是启动nfs服务即可。 
-说一下nfs， nfs不同于glusterfs,  nfs不是集群式的文件系统，所以只需要一台主机启动nfs服务即可，启动后， 其他主机调用nfs 客户端工具访问nfs服务即可。 
-nfs不是集群，存储硬盘只在nfs服务所在的主机上。 
-而glusterfs是一个glusterfs集群，需要每台主机都要启动glusterfs服务， 存储硬盘要在多台主机上。 
 
-再看pod 的log记录,  这个log是pod里面服务打印出的log.  是应用服务的log, 不是k8s系统的log。
+```
+ Warning Events显示rpc的超时错误: 
+```
+rpc error: code = Unknown desc = operation timeout: 
+
+```
+没能显示出更具体的原因
+后来排查得知，这里的rpc超时是因为redis pod所挂载的pv 是nfs网络文件系统， 而nfs网络文件系统服务并没有启动。 
+
+解决办法是启动nfs服务即可。 
+
+> 说一下nfs，nfs不同于glusterfs, nfs不是集群式的文件系统，所以只需要一台主机启动nfs服务即可，启动后， 其他主机调用nfs 客户端工具访问nfs服务即可。 
+nfs不是集群，存储硬盘只在nfs服务所在的主机上。 
+
+> glusterfs是一个glusterfs集群，需要每台主机都要启动glusterfs服务， 存储硬盘要在多台主机上。 
+
+### （二） 查看pod 的log记录  
+这个log是pod里面服务打印出的log，这是是容器中运行的应用服务的log, 不是k8s系统的log。
+```
 [user1@220-node ~]$ k logs redis-0
 1:C 15 Jan 2020 08:17:07.715 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo   redis 开始启动
 1:C 15 Jan 2020 08:17:07.716 # Redis version=5.0.7, bits=64, commit=00000000, modified=0, pid=1, just started    redis版本号
@@ -97,10 +115,12 @@ linux内核功能THP需要关闭，
 1:M 16 Jan 2020 14:30:46.030 # User requested shutdown...
 1:M 16 Jan 2020 14:30:46.030 * Calling fsync() on the AOF file.                   AOF 持久化
 1:M 16 Jan 2020 14:30:46.031 # Redis is now ready to exit, bye bye...           
+```
 应用服务的log, 每一条都是由分析意义， 不像有些大系统log,  很多个模块的log混杂在一起，真正有无分析意义的log占不到10%
-     redis log只是有停止信号， 真正原因也没有显示出来
+redis log只是有停止信号， 真正原因也没有显示出来
 
-看pvc, pv:
+### （三） 查看pvc, pv:
+```
 [user1@220-node ~]$ k get pvc
 NAME           STATUS   VOLUME    CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-redis-0   Bound    nfs-pv1   200M       RWX                           31h
@@ -121,9 +141,12 @@ Access Modes:  RWX
 VolumeMode:    Filesystem
 Mounted By:    redis-0
 Events:        <none>
+```
 pvc 显示正常， bound， 而且没有异常events
 
 查看pv：
+
+```
 [user1@220-node ~]$ k get pv
 NAME      CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS   REASON   AGE
 nfs-pv1   200M       RWX            Retain           Bound    default/data-redis-0                           31h
@@ -150,28 +173,41 @@ Source:
     Path:      /usr/local/k8s/redis/pv1
     ReadOnly:  false
 Events:        <none>
-pv 也正常， 列出了底层存储的文件系统类型，这里为NFS.   NFS服务ip地址， NFS服务在哪台主机，nfs文件系统的硬盘就在哪台主机。 
-nfs文件系统的硬盘挂载到硬盘所在主机的哪个目录，这里挂载目录为 /usr/local/k8s/redis/pv1
+```
+pv 也正常， 这里Source列出了： 
+* 底层存储的文件系统类型，这里为NFS. 
+* NFS服务ip地址，192.168.0.220，NFS服务在哪台主机，nfs文件系统的硬盘就在哪台主机。 
+* nfs文件系统的硬盘挂载到硬盘所在主机的哪个目录，这里挂载目录为 /usr/local/k8s/redis/pv1
 
+### （四） 到pv描述的nfs服务地址的主机上，查看这个主机上有没有启动nfs服务
 知道了NFS服务的ip地址，就要到这个ip地址的主机检查一下， nfs服务有没有正常启动。 
-
-主机名为220-node的主机的ip地址为192.168.0.220， 直接看下
+主机名为220-node的主机的ip地址为192.168.0.220，到这个主机上查看服务状态： 
+ ```gotemplate
 [user1@220-node redis]$ sudo systemctl status nfs-server.service
 ● nfs-server.service - NFS server and services
    Loaded: loaded (/usr/lib/systemd/system/nfs-server.service; disabled; vendor preset: disabled)
   Drop-In: /run/systemd/generator/nfs-server.service.d
            └─order-with-mounts.conf
    Active: inactive (dead)
+```
 服务没有启动， 这是pod redis不能启动的真正根本原因了。 
 
-[user1@220-node redis]$ sudo exportfs -vs
-exportfs -vs 为空， nfs服务确实没有启动。 
 
-启动nfs服务：
+```
+[user1@220-node redis]$ sudo exportfs -vs
+
+```
+exportfs -vs 为空，说明nfs服务确实没有启动。 
+
+### （五） 解决办法： 到pv描述的nfs所在的主机上启动nfs服务
+```
 [user1@220-node redis]$ sudo systemctl start nfs-server.service
+```
 终端没有log提示， centos8下启动kafka服务也没有log提示，这是centos8启动的一种处理方式， 如果没有错误， 就不会有log提示。 
 
 exportfs看下：
+
+```
 [user1@220-node redis]$ sudo exportfs -vs
 /usr/local/k8s/redis/pv1  *(sync,wdelay,hide,no_subtree_check,sec=sys,rw,secure,no_root_squash,no_all_squash)
 /usr/local/k8s/redis/pv2  *(sync,wdelay,hide,no_subtree_check,sec=sys,rw,secure,no_root_squash,no_all_squash)
@@ -180,18 +216,25 @@ exportfs看下：
 /usr/local/k8s/redis/pv5  *(sync,wdelay,hide,no_subtree_check,sec=sys,rw,secure,no_root_squash,no_all_squash)
 /usr/local/k8s/redis/pv6  *(sync,wdelay,hide,no_subtree_check,sec=sys,rw,secure,no_root_squash,no_all_squash)
 
+```
 nfs服务启动好了，pod redis就自动好了：
+
+```
 [user1@220-node redis]$ k get po -o wide
 NAME                         READY   STATUS    RESTARTS   AGE     IP               NODE       NOMINATED NODE   READINESS GATES
 kafaka-n1-7b9df4dd8d-2p4tf   1/1     Running   6          105m    192.168.68.135   220-node   <none>           <none>
 redis-0                      1/1     Running   0          4m39s   192.168.135.6    217-node   <none>           <none>
 zk-n1-6784764cc9-25ph4       1/1     Running   0          105m    192.168.68.136   220-node   <none>           <none>
 
+```
 用redis-cli客户端工具命令，连接到k8s集群里pod里的redis服务：
+
+```
 [user1@220-node ~]$ cd /usr/local/redis/bin
 [user1@220-node bin]$ ./redis-cli -h 192.168.135.6 -p 6379
 192.168.135.6:6379> set a b
 OK
 192.168.135.6:6379> get a
 "b"
+```
 测试成功， 问题解决

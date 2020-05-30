@@ -1,4 +1,10 @@
-单机版与集群版的redis区别：redis.conf不同，pv只要一个，pvc只要一个，其他相同
+单机版与集群版的redis区别：
+* redis.conf不同，
+* pv只要一个，
+* pvc只要一个，
+其他相同
+
+
 1. 宿主机系统需要安装nfs和redis, nfs提供网络文件系统，redis提供测试命令redis-cli
    执行本地安装目录下的安装nfs服务的脚本，和安装redis的脚本
 
