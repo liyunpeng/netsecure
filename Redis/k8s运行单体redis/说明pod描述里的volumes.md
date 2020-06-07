@@ -1,8 +1,6 @@
-
-
-## voluems组描述了本pod使用的所有外部资源
-```gotemplate
-
+## voluems
+Volumes组描述了本pod使用的所有外部资源
+```
 Volumes:
   data:
     Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
@@ -22,7 +20,6 @@ Volumes:
 
 ### 1. 持久化卷
 描述信息：
-
 ```
   data:
     Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
@@ -33,7 +30,7 @@ Volumes:
 这个就是该pod使用的pvc了， 对应的pod yaml文件中的定义：
 
 ```
-        volumeMounts:
+   volumeMounts:
             - name: "data"
               mountPath: "/var/lib/redis"
     volumeClaimTemplates:
@@ -49,8 +46,8 @@ Volumes:
 volumeClaimTemplates里的名字会和当前pod的名字以及pod在集群里的序号，自动组合出pvc的名字， 
 这里组合出的pvc的名字就是data-redis-0. 
 这个名字正好符合pvc yaml中的名字定义： 
-```
 
+```
 apiVersion: v1
  kind: PersistentVolumeClaim
  metadata:
@@ -61,9 +58,8 @@ apiVersion: v1
    resources:
      requests:
        storage: 200M
-
 ```
-2. 配置资源
+### 2. 配置资源
 描述信息：
 
 ```
@@ -87,9 +83,8 @@ volumes:
           path: "redis.conf"
 
 ```
-3. 身份tokern
-描述信息：
-
+### 3. 身份tokern
+描述信息
 ```
 default-token-x5g8r:
     Type:        Secret (a volume populated by a Secret)
@@ -99,7 +94,8 @@ default-token-x5g8r:
 这个token，pod yaml文件没有定义，自动生成
 
 
-## mounts组描述了外部资源挂载到容器的哪个目录
+## Mounts
+Mounts组描述了外部资源挂载到容器的哪个目录
 ```
     Mounts:
       /etc/redis from redis-conf (rw)
@@ -118,7 +114,6 @@ Mounts: 描述了容器外部的资源挂载到了容器里的哪些目录
       mountPath: "/etc/redis"  这是容器中的目录，即指定名叫redis-conf的资源挂载到容器中的/etc/hosts目录
     - name: "data"  对应的实际资源名为data-redis-0
       mountPath: "/var/lib/redis"
-
 ```
 
 name:指定了容器外部的资源，是volume中描述的，这些资源必须在pod的yaml中volumes定义：

@@ -1,4 +1,4 @@
-k8s的授权    
+## k8s的授权    
 一个角色就是一组权限的集合，
 比如市长对交通局的局长有一定的权限，如果市长标签绑定到一个人，他就有了市长这个权限
 k8s世界里，也用角色来管理权限， 
@@ -11,10 +11,14 @@ pod 都用有默认的sa，如果需要特定的sa可以在pod定义文件yaml�
 pod拥有了sa, 就拥有了绑定到这个sa上的所有角色的权限。 
     角色有个体角色和群集角色，角色也是k8s的资源，可以创建查看：
 查看所有个体角色
+```gotemplate
+
 [master@212-node ~]$ k get role
 No resources found in default namespace.
 
+```
 查看所有集群角色：
+```
 [master@212-node ~]$ k get clusterrole
 NAME                                                                   AGE
 admin                                                                  29h
@@ -74,7 +78,9 @@ system:public-info-viewer                                              29h
 system:volume-scheduler                                                29h
 view                                                                   29h
 
+```
 查看某一个集群角色的详细描述：
+```
 [master@212-node ~]$ kd clusterrole foo
 Name:         foo
 Labels:       <none>
@@ -86,13 +92,18 @@ PolicyRule:
   pods/status  []                 []              [get list watch create]
   pods         []                 []              [get list watch create]
 
+```
 创建一个集群角色绑定，即将集群角色foo绑定到指定的serviceaccount,  servicecount 只存在与一个namespace, 不能像角色一样全局存在，所以要带上namespace名字，构成全名，
 这里的指定的serviceaccount的全名就default:heketi-service-account 
+```
 [master@212-node ~]$ k create clusterrolebinding my-ca-view --clusterrole=foo --serviceaccount=default:heketi-service-account --namespace=default
 clusterrolebinding.rbac.authorization.k8s.io/my-ca-view created
 
+```
 3. serviceaccount与secrets 
+```
 [master@212-node ~]$ k get secrets
 NAME                                 TYPE                                  DATA   AGE
 default-token-24p4w                  kubernetes.io/service-account-token   3      29h
 heketi-service-account-token-h9rzt   kubernetes.io/service-account-token   3      28h
+```
