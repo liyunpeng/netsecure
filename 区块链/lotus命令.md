@@ -1,23 +1,30 @@
-```gotemplate
+```
 [fil@yangzhou010010019017 ~]$ ./lotus wallet balance
 49.999900675992993622
 ```
+
+```
 ./lotus wallet export t3qji2z3u2e243cboxl32irkokkkvbj4moktuapni64ig6pwdpcun5mqr5xcsj346avwd6ek6opue2gwqjj6fa
+```
 
-./lotus-message wallet import --nonce=52 7b2254797065223a22626c73222c22507269766174654b6579223a22473230664e33767566356d5133534b614c466c496862625a46416e5555744d382f334e38417a634d5756733d227d
+```
+$ ./lotus-message wallet import --nonce=52 7b2254797065223a22626c73222c22507269766174654b6579223a22473230664e33767566356d5133534b614c466c496862625a46416e5555744d382f334e38417a634d5756733d227d
 
+```
 获取t3地址
+```
 [fil@yangzhou010010019017 ~]$ [fil@yangzhou010010019017 ~]$ ./lotus wallet list
  t3tdha666hzopozcjnkarijatngjhmshoca3g4qdcvdp7pregoxk6mkhkflwup2yck7flmlga6mt7iicgmf6ra
-
+```
 
 [fil@yangzhou010010019017 ~]$ ./lotus state get-actor
 2020-06-14T11:27:42.345+0800	WARN	main	must pass address of actor to get
-./lotus state get-actor
 
 [root@yangzhou010010019017 ~]# cat /etc/redhat-release
 CentOS Linux release 7.6.1810 (Core)
 
+接下来需要等待节点同步数据，可以通过以下方式跟踪同步状态：
+```
 [fil@yangzhou010010019017 ~]$ ./lotus sync status
 sync status:
 worker 0:
@@ -41,15 +48,30 @@ worker 2:
 	Stage: complete
 	Height: 16925
 	Elapsed: 11.793627683s
+```
+其中 height: 是当前同步的区块高度。如果同步完成了这个值会编程 0， 
+也可以去 https://lotus-metrics.kittyhawk.wtf/chain 查看当前开发网络最新区块高度和其他网络指标。
 
-查询balance	
+
+　　
+可以新打开一个终端窗口，检查是否已连接到网络：
+./lotus net peers | wc -l
+
+　　
+查询actor的账户余额， 即balance
+	
 [fil@yangzhou010010019017 ~]$ ./lotus state get-actor t3tdha666hzopozcjnkarijatngjhmshoca3g4qdcvdp7pregoxk6mkhkflwup2yck7flmlga6mt7iicgmf6ra
 Address:	t3tdha666hzopozcjnkarijatngjhmshoca3g4qdcvdp7pregoxk6mkhkflwup2yck7flmlga6mt7iicgmf6ra
 Balance:	49.999532350421657008
 Nonce:		11
 Code:		bafkqadlgnfwc6mjpmfrwg33vnz2a
 Head:		bafy2bzacecac2a7ymjpcva5gnb6jysdqoayyfjclozzkirg5nlh2u7eelhqw6
-
+   
+  Actor：
+  
+  Filecoin网络中的Actor可以类比以太坊网络中的账户（一般账户或者智能合约账户）。每个Actor有自己的地址，余额，也可以维护自己的状态，同时Actor提供一些函数调用（也正是这些函数调用触发Actor的状态变化）。Filecoin的状态机，包括所有Actor的状态。
+  Actor的状态，包括：账户信息（Balance），类型（Code），以及序号（Nonce）。Actor的定义在actor/actor.go中。
+  
 [fil@yangzhou010010019017 ~]$ ./lotus sync wait
 Worker 0: Target: [bafy2bzacebxaqrchyvcuumqogczibhlzr6oe3b2l56wyjckdj6qvq5c65467a bafy2bzacebofds5jygmv5ztmckwxom2lhkmiyhrmljrd5xzpz33pwezg4pwpo 
 
@@ -79,9 +101,6 @@ Market (Locked):  0
 
 
 ### 查看块的编号
-[fil@yangzhou010010019017 sealed]$ ls | grep 2481
-s-t02481-3000
-
 [fil@yangzhou010010019017 sealed]$ ls | grep 2481
 s-t02481-3000
 
