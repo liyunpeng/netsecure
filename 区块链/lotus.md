@@ -32,6 +32,25 @@ fil      36548 33056  0 14:24 pts/0    00:00:00 grep --color=auto lotus
 [2] 22125
 生成.lotus目录
 
+### config.sjon 配置
+[fil@yangzhou010010019017 ~]$ cat config.json
+{
+  "port": "3456",
+  "dbConfig": {
+    "dbConnString": "root:Ipfs@123ky@tcp(10.10.19.15:3306)/lotus17?loc=Local&parseTime=true",
+    "dbType": "mysql",
+    "dbDebugMode": true
+  },
+  "sealerSleepDurationSeconds":60,
+  "lockLifeCircleMinutes": 40,
+  "sectorStoreZoneMap": {
+    "2048": 3078,
+    "8388608": 12582912,
+    "34359738368": 51539607552,
+    "536870912": 805306368
+  }
+}
+
 [fil@yangzhou010010019017 ~]$ ./lotus sync status
 2020-06-13T15:05:39.909+0800	WARN	main	could not get API info:
     github.com/filecoin-project/lotus/cli.GetRawAPI
@@ -115,6 +134,8 @@ nohup: ignoring input
 39825 pts/0    Sl     0:00 ./lotus-server
 [fil@yangzhou010010019017 ~]$ nohup ./lotus  daemon  >lotus.log 2>&1  &
 
+
+### 借用其他主机的 ./lotus/datatstore 文件， 节省lotus时间
 [fil@yangzhou010010019017 ~]$ cd .lotus/
 
 [fil@yangzhou010010019017 .lotus]$ ls -a
@@ -122,8 +143,6 @@ nohup: ignoring input
 [fil@yangzhou010010019017 .lotus]$ rm -rf datastore/
 
 别人把他的机器上的datastore拷贝到的机上， 
-[fil@yangzhou010010019017 .lotus]$ ls
-api  config.toml  datastore  keystore  repo.lock  token
 
 [fil@yangzhou010010019017 .lotus]$ du -sch datastore/
 1.6G	datastore/
