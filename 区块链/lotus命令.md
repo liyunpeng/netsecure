@@ -58,20 +58,7 @@ worker 2:
 ./lotus net peers | wc -l
 
 　　
-查询actor的账户余额， 即balance
-	
-[fil@yangzhou010010019017 ~]$ ./lotus state get-actor t3tdha666hzopozcjnkarijatngjhmshoca3g4qdcvdp7pregoxk6mkhkflwup2yck7flmlga6mt7iicgmf6ra
-Address:	t3tdha666hzopozcjnkarijatngjhmshoca3g4qdcvdp7pregoxk6mkhkflwup2yck7flmlga6mt7iicgmf6ra
-Balance:	49.999532350421657008
-Nonce:		11
-Code:		bafkqadlgnfwc6mjpmfrwg33vnz2a
-Head:		bafy2bzacecac2a7ymjpcva5gnb6jysdqoayyfjclozzkirg5nlh2u7eelhqw6
-   
-  Actor：
-  
-  Filecoin网络中的Actor可以类比以太坊网络中的账户（一般账户或者智能合约账户）。每个Actor有自己的地址，余额，也可以维护自己的状态，同时Actor提供一些函数调用（也正是这些函数调用触发Actor的状态变化）。Filecoin的状态机，包括所有Actor的状态。
-  Actor的状态，包括：账户信息（Balance），类型（Code），以及序号（Nonce）。Actor的定义在actor/actor.go中。
-  
+
 [fil@yangzhou010010019017 ~]$ ./lotus sync wait
 Worker 0: Target: [bafy2bzacebxaqrchyvcuumqogczibhlzr6oe3b2l56wyjckdj6qvq5c65467a bafy2bzacebofds5jygmv5ztmckwxom2lhkmiyhrmljrd5xzpz33pwezg4pwpo 
 
@@ -108,3 +95,15 @@ s-t02481-3000
 
 把跳版机当前目录的下所有文件同步到17主机上的/home/fil目录下
 [root@yangzhou010010001015 20200612]# scp -rpP 62534 * 10.10.19.17:/home/fil
+
+
+查看全网算力
+$ lotus-storage-miner state power
+
+查看指定矿工的算力
+$ lotus-storage-miner state power <miner>
+
+查看指定矿工的扇区密封状态
+$ lotus-storage-miner state sectors <miner>
+
+
