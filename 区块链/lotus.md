@@ -13,7 +13,7 @@ drwxr-xr-x 8 fil fil       133 Jun 12 17:12 datastore.bak
 
 [fil@yangzhou010010019017 ~]$ nohup ./lotus-server >lotus-server.log 2>&1 &
 [1] 33250
-
+FORCE_NO_LOCAL_MPOOL=true  RUST_LOG=info TRUST_PARAMS=1  RUST_BACKTRACE=1     nohup ./lotus  daemon    --server-api=http://10.10.1.20:3456   >lotus.log 2>&1  &
 
 [fil@yangzhou010010019017 ~]$ ps -ef | grep lotus
 fil      36548 33056  0 14:24 pts/0    00:00:00 grep --color=auto lotus
@@ -147,22 +147,18 @@ lotus正常了， 就可以获取t3地址了
 t3tdha666hzopozcjnkarijatngjhmshoca3g4qdcvdp7pregoxk6mkhkflwup2yck7flmlga6mt7iicgmf6ra
 
 到
+```gotemplate
 https://t01000.miner.interopnet.kittyhawk.wtf/miner.html
-输入上面的t3, 选择出块的大小为512M， 等1分钟左右的时间， 有：
+```
+
+输入上面的t3, 选择出块的大小为512M， 等1分钟左右的时间， 有申请到的矿工t3 地址：
+```
 [CREATING STORAGE MINER]
 Gas Funds:   bafy2bzacec5er4ppu7bdb5353b4nsgblxeiimqok4jordl3q2fsitfxwqkuma - OK
 Miner Actor: bafy2bzacebwugyhusftdb7tyrxknwvnaiggzlrzopkgvdtsqdfgl67rilruve - OK
 New storage miners address is: t02481
 To initialize the storage miner run the following command:
 lotus-storage-miner init --actor=t02481 --owner=t3tdha666hzopozcjnkarijatngjhmshoca3g4qdcvdp7pregoxk6mkhkflwup2yck7flmlga6mt7iicgmf6ra
+```
 
 
-https://t01000.miner.interopnet.kittyhawk.wtf/wait.html?f=bafy2bzacec5er4ppu7bdb5353b4nsgblxeiimqok4jordl3q2fsitfxwqkuma&m=bafy2bzacebwugyhusftdb7tyrxknwvnaiggzlrzopkgvdtsqdfgl67rilruve&o=t3tdha666hzopozcjnkarijatngjhmshoca3g4qdcvdp7pregoxk6mkhkflwup2yck7flmlga6mt7iicgmf6ra
-申请到的矿工t3 地址：
-
-[CREATING STORAGE MINER]
-Gas Funds:   bafy2bzacec5er4ppu7bdb5353b4nsgblxeiimqok4jordl3q2fsitfxwqkuma - OK
-Miner Actor: bafy2bzacebwugyhusftdb7tyrxknwvnaiggzlrzopkgvdtsqdfgl67rilruve - OK
-New storage miners address is: t02481
-To initialize the storage miner run the following command:
-lotus-storage-miner init --actor=t02481 --owner=t3tdha666hzopozcjnkarijatngjhmshoca3g4qdcvdp7pregoxk6mkhkflwup2yck7flmlga6mt7iicgmf6ra
