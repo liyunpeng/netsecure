@@ -1,9 +1,7 @@
-### 需要在表中新增记录
+## lotus-server启动签的准备 
 
-
-### lotus-server启动签的准备 
-
-检查所有挂在点：
+### nfs挂载点的准备
+##### 检查所有挂在点：
 ```
 root@yangzhou010010019017 fil]# df -h
 文件系统        容量  已用  可用 已用% 挂载点
@@ -24,16 +22,18 @@ shm              64M     0   64M    0% /var/lib/docker/containers/5717cf2b70e20b
 overlay         2.0T   93G  2.0T    5% /var/lib/docker/overlay2/95cb42c1924211e42bde298635caa68862c9589404abe07022e2ab002535e7cf/merged
 ```
 
-递归盖面nfs目录下所有文件的属主
+#####  挂载nfs文件系统
 ```
-[root@yangzhou010010019017 mnt]# chown -R fil:fil nfs
-[root@yangzhou010010019017 mnt]# chmod -R 777 nfs/
+[root@yangzhou010010019017 ~]# mount -t nfs -o hard,nolock,rw,user,rsize=1048576,wsize=1048576,vers=3 10.10.4.23:/mnt/storage  /mnt/nfs/10.10.4.23
 ```
 
-查看新的挂载点：
+若要开机挂载， 就在rc.local中加：
 ```
-[root@yangzhou010010019017 ~]# mount -t nfs -o hard,nolock,rw,user,rsize=1048576,wsize=1048576,vers=3 10.10.4.23:/mnt/storage  /mnt/nfs/10.10.4.23^c
+root@yangzhou010010019017 ~]# cat /etc/rc.local
+```
 
+##### 查看新的挂载点
+```
 [root@yangzhou010010019017 mnt]# df -h
 文件系统                 容量  已用  可用 已用% 挂载点
 /dev/sda2                2.0T   93G  2.0T    5% /
@@ -53,22 +53,41 @@ overlay                  2.0T   93G  2.0T    5% /var/lib/docker/overlay2/118a859
 shm                       64M     0   64M    0% /var/lib/docker/containers/5717cf2b70e20b83dbcf68f297bfc1392011b3b58d0f57c0a973f1f86aa34599/mounts/shm
 overlay                  2.0T   93G  2.0T    5% /var/lib/docker/overlay2/95cb42c1924211e42bde298635caa68862c9589404abe07022e2ab002535e7cf/merged
 10.10.4.23:/mnt/storage  160T  273G  152T    1% /mnt/nfs/10.10.4.23
+```
 
+到挂在点下的目录，看有无内容
+```
 [root@yangzhou010010019017 mnt]# cd nfs/10.10.4.23/
-
 [root@yangzhou010010019017 10.10.4.23]# ll
 总用量 40
 drwxrwxr-x 537 fil fil 20480 6月  13 14:00 cache
 drwxrwxr-x   2 fil fil 20480 6月  13 14:00 sealed
-root@yangzhou010010019017 fil]# vi config.json
 ```
 
-开机挂在， 就在rc.local中加：
+#####  递归改变nfs目录下所有文件的属主
 ```
-root@yangzhou010010019017 ~]# cat /etc/rc.local
+[root@yangzhou010010019017 mnt]# chown -R fil:fil nfs
+[root@yangzhou010010019017 mnt]# chmod -R 777 nfs/
 ```
 
-测试数据库联通：
+#### sealed 存放最后计算出的区块：
+矿工号为t02481， lotus全部过程搭建好后， 可以在sealed看到计算出的区块
+```
+[fil@yangzhou010010019017 sealed]$ pwd
+/mnt/nfs/10.10.4.23/sealed
+fil@yangzhou010010019017 sealed]$ ll | grep 2481
+-rw-rw-r-- 1 fil fil 536870912 Jun 13 18:17 s-t02481-3000
+-rw-rw-r-- 1 fil fil 536870912 Jun 13 19:43 s-t02481-3002
+-rw-rw-r-- 1 fil fil 536870912 Jun 13 19:43 s-t02481-3003
+-rw-rw-r-- 1 fil fil 536870912 Jun 13 23:42 s-t02481-3004
+-rw-rw-r-- 1 fil fil 536870912 Jun 14 00:01 s-t02481-3005
+-rw-rw-r-- 1 fil fil 536870912 Jun 14 13:40 s-t02481-3006
+-rw-rw-r-- 1 fil fil 536870912 Jun 14 13:40 s-t02481-3007
+-rw-rw-r-- 1 fil fil 536870912 Jun 14 15:11 s-t02481-3008
+```
+ 
+### 数据库准备
+#### 测试数据库联通：
 ```gotemplate
 [root@yangzhou010010019017 fil]# telnet 10.10.19.15 3306
 Trying 10.10.19.15...
@@ -77,11 +96,15 @@ Escape character is '^]'.
 J
 5.7.30
 ```
+#### 数据库表中添加记录行：
+打开 mysqlbench,  在fconfigs, groups表中添加数据 
 
-config.json 中修改数据库
+#### config.json 中修改数据库
 [root@yangzhou010010019017 fil]# vi Config.json
+将"dbConnString":后的内容改为
+"root:Ipfs@123ky@tcp(10.10.19.15:3306)/lotus17?loc=Local&parseTime=true",
+  
 
-### config.json由lotus-server读取
 
 ```
 [fil@yangzhou010010019017 ~]$ cat config.json
@@ -102,10 +125,10 @@ config.json 中修改数据库
   }
 }
 ```
-lotus-server把数据保存到数据库中， 配置文件制定了数据库的地址
+config.json由lotus-server读取,  lotus-server把数据保存到数据库中， 配置文件制定了数据库的地址
 
 
-###  所有应该跑起来的进程
+###  期望最后应该跑起来的进程
 ```
 [fil@yangzhou010010019017 ~]$ ps -ef | grep lotus
 fil       1113     1  0 Jun13 ?        00:23:28 ./lotus-storage-miner run --mode=remote-wdposter --server-api=http://10.10.19.17:3456 --dist-path=/mnt --nosync
@@ -117,13 +140,6 @@ fil      39825     1  0 Jun13 ?        00:00:35 ./lotus-server
 fil      22667     1 22 Jun13 ?        09:20:20 ./force-remote-worker
 ```
 
-
-### 数据库准备
-表中添加记录行：
-
-在fconfigs, groups表中添加数据 
-
-### 启动 
-
+### 启动lotus-server
 fil@yangzhou010010019017 ~]$ nohup ./lotus-server >lotus-server.log 2>&1 &
 [1] 33250

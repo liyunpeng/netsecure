@@ -19,10 +19,13 @@ FORCE_BUILDER_P1_WORKERS=1 FORCE_BUILDER_TASK_DELAY=25m TRUST_PARAMS=1 RUST_LOG=
 ```
 
 #### 启动searler的参数
-FORCE_BUILDER_P1_WORKERS 要和config.toml中的有PreCommitPhase1的worker数目相同
+FORCE_BUILDER_P1_WORKERS 不必和config.toml中的有PreCommitPhase1的worker数目相同
 [[worker]]
 num = 1
 supported_phase = ["PreCommitPhase1","PreCommitPhase2","CommitPhase1","CommitPhase2"]
 wait_sec = 60
 
-FORCE_BUILDER_TASK_TOTAL_NUM 要和config.toml中所有的worker总和相同
+config.toml设置为1， FORCE_BUILDER_P1_WORKERS可以设置为1-
+
+FORCE_BUILDER_TASK_TOTAL_NUM  一般是 FORCE_BUILDER_P1_WORKERS  的2倍加1 
+

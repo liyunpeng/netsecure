@@ -47,6 +47,8 @@ NAME:
 USAGE:
    lotus-storage-miner run [command options] [arguments...]
 
+
+
 OPTIONS:
    --api value                   (default: "2345")
    --enable-gpu-proving          enable use of GPU for mining operations (default: true)
@@ -88,22 +90,33 @@ Done
 Mode: poster
 Miner: t02481
 Sector Size: 512 MiB
-Byte Power:   512 MiB / 135 TiB (0.0003%) .  算力 。 
-Actual Power: 512 Mi / 101 Ti (0.0004%)     算力太小，  
- 没有出块
+Byte Power:   512 MiB / 135 TiB (0.0003%) .  算力 。   硬盘
+Actual Power: 512 Mi / 101 Ti (0.0004%)     算力太小，  没有出块
 	Committed: 512 MiB
 	Proving: 512 MiB
-Expected block win rate: 0.0691/day (every 347h13m20s)
+Expected block win rate: 0.0691/day (every 347h13m20s)    表示1天只能出0.06个块， 
 
 Miner Balance: 0.00009932400698959
 	PreCommit:   0
 	Locked:      0.000096344821570454
 	Available:   0.000002979185419136
-Worker Balance: 49.999900675992993622
+Worker Balance: 49.999900675992993622   
 Market (Escrow):  0
 Market (Locked):  0
 
+Miner Balance: 0.00009932400698959  
+算力包括硬盘指标， 和带宽指标， 
+1个单位的硬盘指标 是 135TB
+1个贷款指标是  101 Ti
 
+自己的算力是自己拥有的和这个指标的比值。 
+
+Miner Balance: 0.00009932400698959  挖矿的手续费用
+	PreCommit:   0
+	Locked:      0.000096344821570454   要抵押的费用
+	Available:   0.000002979185419136    
+	
+Worker Balance: 49.999900675992993622     剩余的钱数
 ### 查看块的编号
 [fil@yangzhou010010019017 sealed]$ ls | grep 2481
 s-t02481-3000
