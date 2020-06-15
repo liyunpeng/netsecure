@@ -1,4 +1,34 @@
-force-remote-worker读取config.toml文件：
+### force-remote-worker完成一个任务的6个阶段
+ 6个阶段， 被划分到4个进程，真实环境下， 每个进程运行在单独的一个主机上。 
+ 这些主机被化作一个组。 
+ 每个P都有自己所在组的编号
+ 同一个任务的
+#### P1
+P1 起Nfs , P1到P6共享此nfs。
+P1，P2向nfs写， 
+P3, p6 从nfs读。 
+
+P1 10个worker,  即10个P1，同时跑  
+P1 用 intel要 32个小时 
+P1 用 amd 只用3个小时， 
+
+输出块的大小与时间对应
+512M：    25分钟
+32G：  60个小时
+ 
+#### P2与P3合并
+P3产生数据， 并且copy
+
+#### P4与P5合并
+P4 耗时1个小时多
+p5 copy 耗时20分钟， p4, p5可以同时， 
+
+#### P6
+p6 clean: 本地临时 500G，结果为32G的块， 32G传出去， 就可以删除500G
+
+
+### config.toml 说明
+force-remote-worker读取config.toml文件。
 ```
 [fil@yangzhou010010019017 ~]$ cat config.toml
 scheduler_url = "http://10.10.19.17:3456"
@@ -18,20 +48,18 @@ num = 1
 supported_phase = ["CopyTask","CleanTask"]
 wait_sec = 60
 ```
----
+
+####  限速
 copy_limit_mb_per_sec = 500
-500是限速度， 因为P1 到P6 都在使用网络， 对每个P限制最大速度
+500是限速度， 因为P1到P6 都在使用网络， 对每个P限制最大速度
 
-
-supported_phase = ["PreCommitPhase1","PreCommitPhase2","CommitPhase1","CommitPhase2"]
-
-一个work做这4个事情， 
-
-
+#### force-remote-worker查询任务的频率
 wait_sec = 60
 force-remote-worker 每60秒 到sealer 分发的task表读任务，  读到任务就把is-taken字段 指1， 表示这个任务已经被 orce-remote-worker领取
 
-一般合理的设置是
+#### P1 到 P6 的编排
+supported_phase = ["PreCommitPhase1","PreCommitPhase2","CommitPhase1","CommitPhase2"]
+表示一个work做这4个事情， 
 
-
+### 启动force-remote-worker
 RUST_LOG=debug BELLMAN_PROOF_THREADS=3 RUST_BACKTRACE=1 nohup ./force-remote-worker > force-remote-worker.log 2>&1 &

@@ -1,4 +1,4 @@
-## lotus-server启动签的准备 
+## lotus-server启动前的准备 
 
 ### nfs挂载点的准备
 ##### 检查所有挂在点：
@@ -88,7 +88,7 @@ fil@yangzhou010010019017 sealed]$ ll | grep 2481
  
 ### 数据库准备
 #### 测试数据库联通：
-```gotemplate
+```
 [root@yangzhou010010019017 fil]# telnet 10.10.19.15 3306
 Trying 10.10.19.15...
 Connected to 10.10.19.15.
@@ -100,12 +100,11 @@ J
 打开 mysqlbench,  在fconfigs, groups表中添加数据 
 
 #### config.json 中修改数据库
+
 [root@yangzhou010010019017 fil]# vi Config.json
 将"dbConnString":后的内容改为
 "root:Ipfs@123ky@tcp(10.10.19.15:3306)/lotus17?loc=Local&parseTime=true",
   
-
-
 ```
 [fil@yangzhou010010019017 ~]$ cat config.json
 {
