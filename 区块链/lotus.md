@@ -1,93 +1,30 @@
+[fil@yangzhou010010019017 ~]$ ./lotus-storage-miner info
+Mode: poster
+Miner: t02599
+Sector Size: 512 MiB
+Byte Power:   0 B / 266 TiB (0.0000%)
+Actual Power: 0  / 225 Ti (0.0000%)
+	Committed: 0 B
+	Proving: 0 B
 
-[fil@yangzhou010010019017 ~]$ ll
-total 321356
--rwxr-xr-x 1 fil fil       382 Jun 13 14:18 config.json
--rwxr-xr-x 1 fil fil       346 Jun 10 19:53 config.toml
-drwxr-xr-x 8 fil fil       133 Jun 12 17:12 datastore.bak
--rwxr-xr-x 1 fil fil  35292704 Jun  9 11:23 force-remote-worker
--rwxr-xr-x 1 fil fil 100177939 Jun 12 09:41 lotus
--rwxr-xr-x 1 fil fil  74882880 Jun  9 16:29 lotus-message
--rwxr-xr-x 1 fil fil  18585101 Jun  9 09:29 lotus-server
--rwxr-xr-x 1 fil fil 100112843 Jun 12 09:41 lotus-storage-miner
-
-
-[fil@yangzhou010010019017 ~]$ nohup ./lotus-server >lotus-server.log 2>&1 &
-[1] 33250
-FORCE_NO_LOCAL_MPOOL=true  RUST_LOG=info TRUST_PARAMS=1  RUST_BACKTRACE=1     nohup ./lotus  daemon    --server-api=http://10.10.1.20:3456   >lotus.log 2>&1  &
-
-[fil@yangzhou010010019017 ~]$ ps -ef | grep lotus
-fil      36548 33056  0 14:24 pts/0    00:00:00 grep --color=auto lotus
-[1]+  Exit 2                  nohup ./lotus-server > lotus-server.log 2>&1
+Miner Balance: 0
+	PreCommit:   0
+	Locked:      0
+	Available:   0
+Worker Balance: 50
+Market (Escrow):  0
+Market (Locked):  0
 
 
-[fil@yangzhou010010019017 ~]$ ps -x
-  PID TTY      STAT   TIME COMMAND
-31561 ?        Ssl   41:00 filebeat -c /usr/share/filebeat.yml -e
-33056 pts/0    S      0:00 -bash
-39825 pts/0    Sl     0:00 ./lotus-server
-39898 pts/0    R+     0:00 ps -x
 
 
-[fil@yangzhou010010019017 ~]$ nohup ./lotus  daemon  >lotus.log 2>&1 &
-[2] 22125
-生成.lotus目录
-
-### config.sjon 配置
-[fil@yangzhou010010019017 ~]$ cat config.json
-{
-  "port": "3456",
-  "dbConfig": {
-    "dbConnString": "root:Ipfs@123ky@tcp(10.10.19.15:3306)/lotus17?loc=Local&parseTime=true",
-    "dbType": "mysql",
-    "dbDebugMode": true
-  },
-  "sealerSleepDurationSeconds":60,
-  "lockLifeCircleMinutes": 40,
-  "sectorStoreZoneMap": {
-    "2048": 3078,
-    "8388608": 12582912,
-    "34359738368": 51539607552,
-    "536870912": 805306368
-  }
-}
-
-[fil@yangzhou010010019017 ~]$ ./lotus sync status
-2020-06-13T15:05:39.909+0800	WARN	main	could not get API info:
-    github.com/filecoin-project/lotus/cli.GetRawAPI
-        /builds/ForceMining/lotus-force/cli/cmd.go:151
-  - could not get api endpoint:
-    github.com/filecoin-project/lotus/cli.GetAPIInfo
-        /builds/ForceMining/lotus-force/cli/cmd.go:134
-  - API not running (no endpoint)
-
-[fil@yangzhou010010019017 ~]$ tail  lotus.log
-nohup: ignoring input
-2020-06-13T15:04:29.051+0800	INFO	main	lotus repo: /home/fil/.lotus
-2020-06-13T15:04:29.051+0800	INFO	repo	Initializing repo at '/home/fil/.lotus'
-2020-06-13T15:04:29.053+0800	INFO	build	Fetching /var/tmp/filecoin-proof-parameters/v26-stacked-proof-of-replication-merkletree-poseidon_hasher-8-0-0-sha256_hasher-032d3138d22506ec0082ed72b2dcba18df18477904e35bafee82b3793b06832f.vk from https://proofs.filecoin.io/ipfs/
-2020-06-13T15:04:29.053+0800	INFO	build	GET https://proofs.filecoin.io/ipfs/QmdJ15DMGPooye5NaPcRfXUdHUDibcN7hKjbmTGuu1K4AQ
- 4.60 KiB / 4.60 KiB [========================================================================================================================================================] 100.00% 14.88 MiB/s 0s
-2020-06-13T15:04:30.671+0800	INFO	build	Parameter file /var/tmp/filecoin-proof-parameters/v26-stacked-proof-of-replication-merkletree-poseidon_hasher-8-0-0-sha256_hasher-032d3138d22506ec0082ed72b2dcba18df18477904e35bafee82b3793b06832f.vk is ok
-2020-06-13T15:04:30.671+0800	INFO	build	Fetching /var/tmp/filecoin-proof-parameters/v26-proof-of-spacetime-fallback-merkletree-poseidon_hasher-8-8-0-0377ded656c6f524f1618760bffe4e0a1c51d5a70c4509eedae8a27555733edc.vk from https://proofs.filecoin.io/ipfs/
-2020-06-13T15:04:30.671+0800	INFO	build	GET https://proofs.filecoin.io/ipfs/QmXB63ExriFjB4ywWnXTnFwCcLFfCeEP3h15qtL5i7F4aX
- 1.16 MiB / 2.37 MiB [========================================================================>---------------------------------------------------------------------------]  48.99% 11.14 KiB/s 01m50s[fil@yangzhou010010019017 ~]
 说明在运算证明， 这个是非常耗时的过程， 
 
 所以拷贝了其他运算好的证明文件
 
-重启lotus
-[fil@yangzhou010010019017 ~]$ ps -ef | grep lotus
-fil      22125 33056  0 15:04 pts/0    00:00:00 ./lotus daemon
-fil      25475 33056  0 15:08 pts/0    00:00:00 grep --color=auto lotus
-fil      39825 33056  0 14:27 pts/0    00:00:00 ./lotus-server
-
-[fil@yangzhou010010019017 ~]$ kill -9 22125
-在看下， 确实结束。
-
-
 ###  证明文件的准备
 看下证明文件
-```cassandraql
+```
 
 ```
 [fil@yangzhou010010019017 ~]$ cd /var/tmp/filecoin-proof-parameters/
@@ -178,7 +115,8 @@ fil@yangzhou010010019017 ~]$ ./lotus sync status
   - API not running (no endpoint)
 fil@yangzhou010010019017 filecoin-proof-parameters]$ ls
 scp.log
-v26-proof-of-spacetime-fallback-merkletree-poseidon_hasher-8-0-0-0cfb4f178bbb71cf2ecfcd42accce558b27199ab4fb59cb78f2483fe21ef36d9.vk
+v26-proof-of-spacetime-fallback-merkletree-p
+oseidon_hasher-8-0-0-0cfb4f178bbb71cf2ecfcd42accce558b27199ab4fb59cb78f2483fe21ef36d9.vk
 v26-proof-of-spacetime-fallback-merkletree-poseidon_hasher-8-8-0-0377ded656c6f524f1618760bffe4e0a1c51d5a70c4509eedae8a27555733edc.vk
 v26-stacked-proof-of-replication-merkletree-poseidon_hasher-8-0-0-sha256_hasher-032d3138d22506ec0082ed72b2dcba18df18477904e35bafee82b3793b06832f.vk
 v26-stacked-proof-of-replication-merkletree-poseidon_hasher-8-8-0-sha256_hasher-82a357d2f2ca81dc61bb45f4a762807aedee1b0a53fd6c4e77b46a01bfef7820.params
@@ -186,13 +124,12 @@ v26-stacked-proof-of-replication-merkletree-poseidon_hasher-8-8-0-sha256_hasher-
 
 
 [fil@yangzhou010010019017 ~]$ ./lotus sync wait
-Worker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsWorker 0: Target: [bafy2bzacecyub22tos5seyynmeoxk2vwfm3v3g7sewske4vsw6msm2i3oatda bafy2bzaceaapnwcmoyhmv5tnkixtwkiycqbnpguebgxwscsxeej46vgktcmvc bafy2bzacebkadtos7wtoixn3qnonsp62sehbavcatmteimllhelsuencvwafc bafy2bzaceckgipbtxjrjloq3emiyfbvguuoqpt4u6g5wpbm3pl4xz727vpxxa]	State: message sync	Height: 15655^C
+...
+]	State: message sync	Height: 15655^C
 lotus确认正常
 
 
 ### 查看高度
-
-
 
 ### 获取新的t3地址
 lotus正常了， 就可以获取t3地址了

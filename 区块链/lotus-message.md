@@ -21,21 +21,5 @@ CREATE TABLE `signed_msgs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-获取lotus-message启动时需要的network名字
-[fil@yangzhou010010019017 ~]$ curl http://127.0.0.1:1234/rpc/v0 -X POST -H "Content-Type: application/json" -d '{"method": "Filecoin.StateNetworkName"}'
-{"jsonrpc":"2.0","result":"interop"}
-
-启动lotus-message:
-nohup ./lotus-message daemon  --network="interop" > lotus-message.log 2>&1 &
-
-正式环境， 应该类似这样的名字：
-启动lotus-message程序： nohup ./lotus-message daemon  --network="localnet-2f993f25-318f-4d5b-ad87-c79c4ac52806" > lotus-message.log 2>&1 &
-
-获取lotus-message连接的lotus地址
- ./lotus net listen
- 
-连接lotus
- ./lotus-message net connect /ip4/10.10.1.20/tcp/41613/p2p/12D3KooWNAhSZNdjAGfNvKHbaPu6ToKFydiy6gBKrVVHRYzwfY2e
- 
  
  
