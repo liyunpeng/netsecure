@@ -26,11 +26,10 @@ CREATE TABLE `signed_msgs` (
 {"jsonrpc":"2.0","result":"interop"}
 
 启动lotus-message:
-启动lotus-message程序： nohup ./lotus-message daemon  --network="interop" > lotus-message.log 2>&1 &
+nohup ./lotus-message daemon  --network="interop" > lotus-message.log 2>&1 &
 
 正式环境， 应该类似这样的名字：
 启动lotus-message程序： nohup ./lotus-message daemon  --network="localnet-2f993f25-318f-4d5b-ad87-c79c4ac52806" > lotus-message.log 2>&1 &
-
 
 获取lotus-message连接的lotus地址
  ./lotus net listen

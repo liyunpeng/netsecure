@@ -1,28 +1,7 @@
-```
-[fil@yangzhou010010019017 ~]$ ./lotus wallet balance
-49.999900675992993622
-```
 
-```
-./lotus wallet export t3qji2z3u2e243cboxl32irkokkkvbj4moktuapni64ig6pwdpcun5mqr5xcsj346avwd6ek6opue2gwqjj6fa
-```
 
-```
-$ ./lotus-message wallet import --nonce=52 7b2254797065223a22626c73222c22507269766174654b6579223a22473230664e33767566356d5133534b614c466c496862625a46416e5555744d382f334e38417a634d5756733d227d
 
-```
-获取t3地址
-```
-[fil@yangzhou010010019017 ~]$ [fil@yangzhou010010019017 ~]$ ./lotus wallet list
- t3tdha666hzopozcjnkarijatngjhmshoca3g4qdcvdp7pregoxk6mkhkflwup2yck7flmlga6mt7iicgmf6ra
-```
-
-[fil@yangzhou010010019017 ~]$ ./lotus state get-actor
-2020-06-14T11:27:42.345+0800	WARN	main	must pass address of actor to get
-
-[root@yangzhou010010019017 ~]# cat /etc/redhat-release
-CentOS Linux release 7.6.1810 (Core)
-
+### 查看同步
 接下来需要等待节点同步数据，可以通过以下方式跟踪同步状态：
 ```
 [fil@yangzhou010010019017 ~]$ ./lotus sync status
@@ -49,23 +28,61 @@ worker 2:
 	Height: 16925
 	Elapsed: 11.793627683s
 ```
-其中 height: 是当前同步的区块高度。如果同步完成了这个值会编程 0， 
+其中 height: 是当前同步的区块高度。
+
+如果同步完成了这个值会编程 0， 
 也可以去 https://lotus-metrics.kittyhawk.wtf/chain 查看当前开发网络最新区块高度和其他网络指标。
 
 
-　　
-可以新打开一个终端窗口，检查是否已连接到网络：
+#### 查看连接节点数量
 ./lotus net peers | wc -l
 
-　　
 
+### 
+```
+[fil@yangzhou010010019017 ~]$ ./lotus-storage-miner run -h
+NAME:
+   lotus-storage-miner run - Start a lotus storage miner process
+
+USAGE:
+   lotus-storage-miner run [command options] [arguments...]
+
+OPTIONS:
+   --api value                   (default: "2345")
+   --enable-gpu-proving          enable use of GPU for mining operations (default: true)
+   --nosync                      don't check full-node sync status (default: false)
+   --manage-fdlimit              manage open file limit (default: true)
+   --server-api value             [$SERVER_API]
+   --outsource-gpu               enable use of outsource GPU for mining operations (default: false)
+   --outsource-sealcommitphase2  enable use of outsource seal commit phase2 for mining operations (default: false)
+   --mode value                  standalone mode
+   --groups value                groups split by a delimiter eg: 1,2,3,4,5,6
+   --miner value                 miner actor id for standalone mode sealer [$FORCE_MINER_ACTOR]
+   --dist-path value             path for persistent sector files [$FORCE_MINER_DIST_PATH]
+   --local-path value            path for persistent sector files [$FORCE_MINER_LOCAL_PATH]
+   --enable-self-deal            enable self-deal for pledged sectors (default: false) [$FORCE_MINER_ENABLE_SELF_DEAL]
+   --help, -h                    show help (default: false)
+```
+　　
+#### 实时看到同步区块高度
 [fil@yangzhou010010019017 ~]$ ./lotus sync wait
 Worker 0: Target: [bafy2bzacebxaqrchyvcuumqogczibhlzr6oe3b2l56wyjckdj6qvq5c65467a bafy2bzacebofds5jygmv5ztmckwxom2lhkmiyhrmljrd5xzpz33pwezg4pwpo 
 
+区块高度同步完成退出
+lotus sync wait
+Target: [bafy2bzacedm7m4gfctogyii7fzhn4a3n66x5v5kvee33z26pve63qup7bhuts]	State: complete	Height: 2594
+Done
 
 [fil@yangzhou010010019017 ~]$ ./lotus chain list
 15792: (Jun 13 16:08:00) [ bafy2bzacecjjabsxfkpvpxj5prfmsqjf363a62b2swfmt5765qggkdrwxx7co: t01845,bafy2bzacea34hx2pi4pnax7t77bejwvvdfa6utk56legofi6d2w5wbwiq2ges: 
 
+[fil@yangzhou010010019017 ~]$ du -sch .lotus/datastore/
+2.6G	.lotus/datastore/
+2.6G	total
+
+[fil@yangzhou010010019017 ~]$ du -sch  /var/tmp/filecoin-proof-parameters/
+178G	/var/tmp/filecoin-proof-parameters/
+178G	total
 
 [fil@yangzhou010010019017 ~]$ ./lotus-storage-miner info
 Mode: poster
@@ -95,7 +112,6 @@ s-t02481-3000
 
 把跳版机当前目录的下所有文件同步到17主机上的/home/fil目录下
 [root@yangzhou010010001015 20200612]# scp -rpP 62534 * 10.10.19.17:/home/fil
-
 
 查看全网算力
 $ lotus-storage-miner state power
@@ -145,29 +161,23 @@ lotus-storage-miner info // lotus-storage-miner 存储矿工点逻辑，有独�
 （4.）配置文件
 ~/.lotusstorage/config.toml
 
-otus 命令
+lotus 命令
 1，查看区块高度
 2，扇区查看
 3，查看创建的块
 1，查看区块高度
 watch -d -n 1 'lotus chain getblock $(lotus chain head | head -n 1) | jq .Height'
-1
-
 
 watch -d -n 1 'date -d @$(lotus chain getblock $(lotus chain head | head -n 1) | jq .Timestamp)'
-1
 
-
-2，扇区查看
-本节点扇区列表
-# lotus-storage-miner sectors list
+### 2，扇区查看
+#### 本节点扇区列表
+$ lotus-storage-miner sectors list
 1: PreCommitFailed	sSet: NO	pSet: NO	tktH: 17998	seedH: 0	deals: [509748]
 2: SealCommitFailed	sSet: NO	pSet: NO	tktH: 18572	seedH: 18637	deals: [524978]	
-1
-2
-3
-扇区状态查看
-# lotus-storage-miner sectors status 1
+
+#### 扇区状态查看
+$ lotus-storage-miner sectors status 1
 SectorID:	1
 Status:	PreCommitFailed
 CommD:		fcbeeaccf316d229fea7b14af2c44f86f324dd4b5f87910d89396b86aa4f0d0f
@@ -180,25 +190,41 @@ Proof:
 Deals:		[509748]
 Retries:		0
 Last Error:		entering state PreCommitFailed: found message with equal nonce as the one we are looking for (F:bafy2bzaceadspgtd5izfs5wivroa244reux6yyxxdtcmzpb5fvbxvbqydzbum n 2, TS: bafy2bzacebi474pboqkrmnpkbaf4iyovqsoqpxuszigkggkfkjulm5wjrspdc n2)
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-节点ID
-# lotus net id
-1
-3，查看创建的块
+
+$ lotus net id
+
+#### 查看创建的块
 在最近1000个区块中t01475创建的块
-# lotus-storage-miner chain list --count 1000 | grep t01475 | wc -l
+$ lotus-storage-miner chain list --count 1000 | grep t01475 | wc -l
 992
 
+###  钱包操作 
+```
+[fil@yangzhou010010019017 ~]$ ./lotus wallet balance
+49.999900675992993622
+```
 
+```
+./lotus wallet export t3qji2z3u2e243cboxl32irkokkkvbj4moktuapni64ig6pwdpcun5mqr5xcsj346avwd6ek6opue2gwqjj6fa
+```
+
+```
+$ ./lotus-message wallet import --nonce=52 7b2254797065223a22626c73222c22507269766174654b6579223a22473230664e33767566356d5133534b614c466c496862625a46416e5555744d382f334e38417a634d5756733d227d
+
+```
+获取t3地址
+```
+[fil@yangzhou010010019017 ~]$ [fil@yangzhou010010019017 ~]$ ./lotus wallet list
+ t3tdha666hzopozcjnkarijatngjhmshoca3g4qdcvdp7pregoxk6mkhkflwup2yck7flmlga6mt7iicgmf6ra
+```
+
+[fil@yangzhou010010019017 ~]$ ./lotus state get-actor
+2020-06-14T11:27:42.345+0800	WARN	main	must pass address of actor to get
+
+[root@yangzhou010010019017 ~]# cat /etc/redhat-release
+CentOS Linux release 7.6.1810 (Core)
+
+创建钱包地址
+# lotus wallet list
+# lotus wallet new bls
+t3

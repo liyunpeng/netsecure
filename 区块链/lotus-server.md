@@ -81,30 +81,49 @@ J
 config.json 中修改数据库
 [root@yangzhou010010019017 fil]# vi Config.json
 
-config.json由lotus读取
+### config.json由lotus-server读取
+
 ```
-[root@yangzhou010010019017 fil]# vi config.json
+[fil@yangzhou010010019017 ~]$ cat config.json
+{
+  "port": "3456",
+  "dbConfig": {
+    "dbConnString": "root:Ipfs@123ky@tcp(10.10.19.15:3306)/lotus17?loc=Local&parseTime=true",
+    "dbType": "mysql",
+    "dbDebugMode": true
+  },
+  "sealerSleepDurationSeconds":60,
+  "lockLifeCircleMinutes": 40,
+  "sectorStoreZoneMap": {
+    "2048": 3078,
+    "8388608": 12582912,
+    "34359738368": 51539607552,
+    "536870912": 805306368
+  }
+}
+```
+lotus-server把数据保存到数据库中， 配置文件制定了数据库的地址
+
+
+###  所有应该跑起来的进程
+```
+[fil@yangzhou010010019017 ~]$ ps -ef | grep lotus
+fil       1113     1  0 Jun13 ?        00:23:28 ./lotus-storage-miner run --mode=remote-wdposter --server-api=http://10.10.19.17:3456 --dist-path=/mnt --nosync
+fil       6765     1 20 Jun13 ?        08:22:15 ./lotus daemon --server-api=http://10.10.19.17:3456 --msg-api=http://10.10.19.17:5678/rpc/v0
+root      8513     1  0 Jun13 ?        00:23:46 ./lotus-storage-miner run --mode=remote-sealer --server-api=http://10.10.19.17:3456 --dist-path=/mnt --nosync --groups=1
+fil      18297     1  0 Jun13 ?        00:05:44 ./lotus-message daemon --network=interop
+fil      39825     1  0 Jun13 ?        00:00:35 ./lotus-server
+[fil@yangzhou010010019017 ~]$ ps -ef | grep forc
+fil      22667     1 22 Jun13 ?        09:20:20 ./force-remote-worker
 ```
 
+
+### 数据库准备
 表中添加记录行：
 
+在fconfigs, groups表中添加数据 
+
+### 启动 
 
 fil@yangzhou010010019017 ~]$ nohup ./lotus-server >lotus-server.log 2>&1 &
 [1] 33250
-
-fil@yangzhou010010019017 ~]$ ./lotus sync status
-2020-06-13T15:05:39.909+0800	WARN	main	could not get API info:
-    github.com/filecoin-project/lotus/cli.GetRawAPI
-        /builds/ForceMining/lotus-force/cli/cmd.go:151
-  - could not get api endpoint:
-    github.com/filecoin-project/lotus/cli.GetAPIInfo
-        /builds/ForceMining/lotus-force/cli/cmd.go:134
-  - API not running (no endpoint)
-fil@yangzhou010010019017 filecoin-proof-parameters]$ ls
-scp.log
-v26-proof-of-spacetime-fallback-merkletree-poseidon_hasher-8-0-0-0cfb4f178bbb71cf2ecfcd42accce558b27199ab4fb59cb78f2483fe21ef36d9.vk
-v26-proof-of-spacetime-fallback-merkletree-poseidon_hasher-8-8-0-0377ded656c6f524f1618760bffe4e0a1c51d5a70c4509eedae8a27555733edc.vk
-v26-stacked-proof-of-replication-merkletree-poseidon_hasher-8-0-0-sha256_hasher-032d3138d22506ec0082ed72b2dcba18df18477904e35bafee82b3793b06832f.vk
-v26-stacked-proof-of-replication-merkletree-poseidon_hasher-8-8-0-sha256_hasher-82a357d2f2ca81dc61bb45f4a762807aedee1b0a53fd6c4e77b46a01bfef7820.params
-
-

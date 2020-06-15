@@ -1,4 +1,4 @@
-
+### lotus-server.log    
 ```
 [fil@yangzhou010010019017 ~]$ tail -100f lotus-server.log
 [2020-06-13 14:27:41]  [3.85ms]  CREATE TABLE `tasks` (`id` bigint(20) unsigned AUTO_INCREMENT,`sector_id` bigint(20) unsigned,`task_type` int(11),`miner` bigint(20) unsigned,`finished` tinyint(1) COMMENT '0表示未完成 1表示完成',`is_taken` int(10) unsigned COMMENT '0表示未被领取，1表示被领取',`ip` varchar(20),`params` longblob,`result` longblob,`err_msg` varchar(255),`result_status` int(11) COMMENT '0表示正常，1表示不正常可重启，2表示不正常不可重启',`worker_id` varchar(255),`create_time` datetime,`update_time` datetime , PRIMARY KEY (`id`))
