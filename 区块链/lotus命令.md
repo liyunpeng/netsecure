@@ -105,5 +105,100 @@ $ lotus-storage-miner state power <miner>
 
 查看指定矿工的扇区密封状态
 $ lotus-storage-miner state sectors <miner>
+------------
+1.加入测试网络
+（1.）删除原有点数据
+rm -rf ~/.lotus ~/.lotusstorage
+（2.）设置网关
+IPFS_GATEWAY="https://proof-parameters.s3.cn-south-1.jdcloud-oss.com/ipfs/"
+（3.）启动守护进程
+lotus daemon
+（4.）查看网络连接数
+lotus net peers | wc -l
+（5.）同步数据
+lotus sync wait
+（6.）创建钱包
+lotus wallet new bls
+示例：lotus wallet new bls
+t3wkzqsqsyo7fcyp7mll6tvhqp7wkynu7d2znksz4cq4qxhxnyl5q6wlwp2krp6rnk4l2lepsacsmnisvkcdna
+(7)获取测试币
+https://lotus-faucet.kittyhawk.wtf/funds.html
+（8.）查看钱包余额
+lotus wallet balance t3wkzqsqsyo7fcyp7mll6tvhqp7wkynu7d2znksz4cq4qxhxnyl5q6wlwp2krp6rnk4l2lepsacsmnisvkcdna
+（9.）发送filecoin给其他地址
+lotus send
+（10.）查看最新点出块高度，以及出块时间
+https://stats.testnet.filecoin.io/d/z6FtI92Zz/chain?orgId=1&refresh=45s&from=now-30m&to=now&kiosk
+
+2.filecoin测试网络页面
+https://stats.testnet.filecoin.io/d/z6FtI92Zz/chain/?orgId=1&refresh=45s&from=now-30m&to=now&kiosk
+
+3.挖矿
+（1.）设置环境变量
+IPFS_GATEWAY="https://proof-parameters.s3.cn-south-1.jdcloud-oss.com/ipfs/"
+（2.）安装 启动矿工
+make lotus-seal-worker //lotus-seal-worker 编译lotus-seal-worker
+lotus-seal-worker run //LOTUS_STORAGE_PATH 进行鉴权
+
+（3.）查看矿工是否已经连接到存储矿
+lotus-storage-miner info // lotus-storage-miner 存储矿工点逻辑，有独立的进程，通过节点提交信息和时空工作量证明来存储节点信息
+（4.）配置文件
+~/.lotusstorage/config.toml
+
+otus 命令
+1，查看区块高度
+2，扇区查看
+3，查看创建的块
+1，查看区块高度
+watch -d -n 1 'lotus chain getblock $(lotus chain head | head -n 1) | jq .Height'
+1
+
+
+watch -d -n 1 'date -d @$(lotus chain getblock $(lotus chain head | head -n 1) | jq .Timestamp)'
+1
+
+
+2，扇区查看
+本节点扇区列表
+# lotus-storage-miner sectors list
+1: PreCommitFailed	sSet: NO	pSet: NO	tktH: 17998	seedH: 0	deals: [509748]
+2: SealCommitFailed	sSet: NO	pSet: NO	tktH: 18572	seedH: 18637	deals: [524978]	
+1
+2
+3
+扇区状态查看
+# lotus-storage-miner sectors status 1
+SectorID:	1
+Status:	PreCommitFailed
+CommD:		fcbeeaccf316d229fea7b14af2c44f86f324dd4b5f87910d89396b86aa4f0d0f
+CommR:		e657feab945d01929d32d7ad47fc3ec469ed44a86c31c7766d9761ee609f6738
+Ticket:		17e5aec42bca1b0f2b8905067eb5837262367a0618b66f5bb37f9b535e4caeb6
+TicketH:		17998
+Seed:		0000000000000000000000000000000000000000000000000000000000000000
+SeedH:		0
+Proof:
+Deals:		[509748]
+Retries:		0
+Last Error:		entering state PreCommitFailed: found message with equal nonce as the one we are looking for (F:bafy2bzaceadspgtd5izfs5wivroa244reux6yyxxdtcmzpb5fvbxvbqydzbum n 2, TS: bafy2bzacebi474pboqkrmnpkbaf4iyovqsoqpxuszigkggkfkjulm5wjrspdc n2)
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+节点ID
+# lotus net id
+1
+3，查看创建的块
+在最近1000个区块中t01475创建的块
+# lotus-storage-miner chain list --count 1000 | grep t01475 | wc -l
+992
 
 
