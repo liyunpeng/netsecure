@@ -140,5 +140,6 @@ fil      22667     1 22 Jun13 ?        09:20:20 ./force-remote-worker
 ```
 
 ### 启动lotus-server
-fil@yangzhou010010019017 ~]$ nohup ./lotus-server >lotus-server.log 2>&1 &
-[1] 33250
+```
+$ nohup ./lotus-server >lotus-server.log 2>&1 &
+```

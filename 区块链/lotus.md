@@ -95,13 +95,7 @@ nohup: ignoring input
 结尾正常
 
 
-###  lotus.log分析
-连接到lotus-server, 读取到actor信息：
-```
-2020-06-13T18:20:08.337+0800    ESC[34mINFOESC[0m       serverapi       init meta server with url http://10.10.19.17:3456
-2020-06-13T18:20:08.337+0800    ESC[34mINFOESC[0m       serverapi       server url:http://10.10.19.17:3456
-2020-06-13T18:20:08.339+0800    ESC[34mINFOESC[0m       serverapi       getActorInfo:{"code":0,"msg":"","data":{"miner":"t02481","worker":"t3tdha666hzopozcjnkarijatngjhmshoca3g4qdcvdp7pregoxk6mkhkflwup2yck7flmlga6mt7iicgmf6ra"}}
-```
+
 
 ### 查看同步状态
 
