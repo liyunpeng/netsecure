@@ -1,4 +1,5 @@
 需要的文件如下：
+```
 [fil@yangzhou010010019017 ~]$ ll
 total 321356
 -rwxr-xr-x 1 fil fil       382 Jun 13 14:18 config.json
@@ -9,6 +10,7 @@ drwxr-xr-x 8 fil fil       133 Jun 12 17:12 datastore.bak
 -rwxr-xr-x 1 fil fil  74882880 Jun  9 16:29 lotus-message
 -rwxr-xr-x 1 fil fil  18585101 Jun  9 09:29 lotus-server
 -rwxr-xr-x 1 fil fil 100112843 Jun 12 09:41 lotus-storage-miner
+```
 
 ###（一） lotus 链同步
 lotus主要是同步链的高度，只有把链的高度同步好以后， 才可以做后续动作， 包括
@@ -68,7 +70,12 @@ lotus 高度同步好后， 才可以申请t3地址：
 t3utkcsylxz6m5wpbjb22uan6ngmj3oqcs2j3tts3ib72nklc7dkq5fjsq3adv3bvia2rrtlqdf2ki6lbwjh7q
 ```
 
-到网站上申请, 得到如下信息： 
+到网站上申请：
+```
+https://t01000.miner.interopnet.kittyhawk.wtf/miner.html
+```
+输入上面new bls 生成的t3地址, 选择出块的大小为512M， 点击 createminer 按钮。 
+1分钟左右的时间， 会显示申请到的矿工t0，和t3地址, 得到如下信息： 
 ```
 [CREATING STORAGE MINER]
 Gas Funds:   bafy2bzaceb4u5mlywr7lkn4v6rrakgoa7vsz64o7prl752tkeilnt2ge53ffq - OK

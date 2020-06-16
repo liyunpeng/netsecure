@@ -138,11 +138,9 @@ lotus正常了， 就可以获取t3地址了
 t3tdha666hzopozcjnkarijatngjhmshoca3g4qdcvdp7pregoxk6mkhkflwup2yck7flmlga6mt7iicgmf6ra
 
 到
-```
-https://t01000.miner.interopnet.kittyhawk.wtf/miner.html
-```
 
-输入上面的t3, 选择出块的大小为512M， 等1分钟左右的时间， 有申请到的矿工t3 地址：
+
+
 ```
 [CREATING STORAGE MINER]
 Gas Funds:   bafy2bzacec5er4ppu7bdb5353b4nsgblxeiimqok4jordl3q2fsitfxwqkuma - OK
@@ -151,5 +149,21 @@ New storage miners address is: t02481
 To initialize the storage miner run the following command:
 lotus-storage-miner init --actor=t02481 --owner=t3tdha666hzopozcjnkarijatngjhmshoca3g4qdcvdp7pregoxk6mkhkflwup2yck7flmlga6mt7iicgmf6ra
 ```
+
+
+### lotus的开发
+interfil 是官方的
+
+不需要官方申请
+
+私链, 私下玩一下，
+
+官方：
+lotus 我们在 lotus上开发的 
+
+poster 
+
+合进我们开发的代码
+
 
 
