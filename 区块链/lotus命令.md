@@ -1,4 +1,46 @@
 
+### lotus 命令选项参数
+```
+[fil@yangzhou010010019017 ~]$ ./lotus -h
+NAME:
+   lotus - Filecoin decentralized storage network client
+
+USAGE:
+   lotus [global options] command [command options] [arguments...]
+
+VERSION:
+   0.4.0+git.4b923c9ce
+
+COMMANDS:
+   daemon   Start a lotus daemon process
+   help, h  Shows a list of commands or help for one command
+   basic:
+     send     Send funds between accounts
+     sendmsg  Send message to an actor with specific subcmd
+     wallet   Manage wallet
+     client   Make deals, store data, retrieve data
+     msig     Interact with a multisig wallet
+     paych    Manage payment channels
+     version  Print version
+   developer:
+     auth          Manage RPC permissions
+     mpool         Manage message pool
+     state         Interact with and query filecoin chain state
+     chain         Interact with filecoin blockchain
+     log           Manage logging
+     wait-api      Wait for lotus api to come online
+     fetch-params  Fetch proving parameters
+   network:
+     net   Manage P2P Network
+     sync  Inspect or interact with the chain syncer
+
+GLOBAL OPTIONS:
+   --help, -h     show help (default: false)
+   --version, -v  print the version (default: false)
+```
+
+
+
 
 
 ### 查看同步
@@ -36,41 +78,12 @@ worker 2:
 
 #### 查看连接节点数量
 ./lotus net peers | wc -l
-
-
-### 
-```
-[fil@yangzhou010010019017 ~]$ ./lotus-storage-miner run -h
-NAME:
-   lotus-storage-miner run - Start a lotus storage miner process
-
-USAGE:
-   lotus-storage-miner run [command options] [arguments...]
-
-
-
-OPTIONS:
-   --api value                   (default: "2345")
-   --enable-gpu-proving          enable use of GPU for mining operations (default: true)
-   --nosync                      don't check full-node sync status (default: false)
-   --manage-fdlimit              manage open file limit (default: true)
-   --server-api value             [$SERVER_API]
-   --outsource-gpu               enable use of outsource GPU for mining operations (default: false)
-   --outsource-sealcommitphase2  enable use of outsource seal commit phase2 for mining operations (default: false)
-   --mode value                  standalone mode
-   --groups value                groups split by a delimiter eg: 1,2,3,4,5,6
-   --miner value                 miner actor id for standalone mode sealer [$FORCE_MINER_ACTOR]
-   --dist-path value             path for persistent sector files [$FORCE_MINER_DIST_PATH]
-   --local-path value            path for persistent sector files [$FORCE_MINER_LOCAL_PATH]
-   --enable-self-deal            enable self-deal for pledged sectors (default: false) [$FORCE_MINER_ENABLE_SELF_DEAL]
-   --help, -h                    show help (default: false)
-```
 　　
 #### 实时看到同步区块高度
 [fil@yangzhou010010019017 ~]$ ./lotus sync wait
 Worker 0: Target: [bafy2bzacebxaqrchyvcuumqogczibhlzr6oe3b2l56wyjckdj6qvq5c65467a bafy2bzacebofds5jygmv5ztmckwxom2lhkmiyhrmljrd5xzpz33pwezg4pwpo 
 
-区块高度同步完成退出
+区块高度同步完成, 显示done退出
 lotus sync wait
 Target: [bafy2bzacedm7m4gfctogyii7fzhn4a3n66x5v5kvee33z26pve63qup7bhuts]	State: complete	Height: 2594
 Done
@@ -86,37 +99,6 @@ Done
 178G	/var/tmp/filecoin-proof-parameters/
 178G	total
 
-[fil@yangzhou010010019017 ~]$ ./lotus-storage-miner info
-Mode: poster
-Miner: t02481
-Sector Size: 512 MiB
-Byte Power:   512 MiB / 135 TiB (0.0003%) .  算力 。   硬盘
-Actual Power: 512 Mi / 101 Ti (0.0004%)     算力太小，  没有出块
-	Committed: 512 MiB
-	Proving: 512 MiB
-Expected block win rate: 0.0691/day (every 347h13m20s)    表示1天只能出0.06个块， 
-
-Miner Balance: 0.00009932400698959
-	PreCommit:   0
-	Locked:      0.000096344821570454
-	Available:   0.000002979185419136
-Worker Balance: 49.999900675992993622   
-Market (Escrow):  0
-Market (Locked):  0
-
-Miner Balance: 0.00009932400698959  
-算力包括硬盘指标， 和带宽指标， 
-1个单位的硬盘指标 是 135TB
-1个贷款指标是  101 Ti
-
-自己的算力是自己拥有的和这个指标的比值。 
-
-Miner Balance: 0.00009932400698959  挖矿的手续费用
-	PreCommit:   0
-	Locked:      0.000096344821570454   要抵押的费用
-	Available:   0.000002979185419136    
-	
-Worker Balance: 49.999900675992993622     剩余的钱数
 ### 查看块的编号
 [fil@yangzhou010010019017 sealed]$ ls | grep 2481
 s-t02481-3000
@@ -208,10 +190,12 @@ $ lotus net id
 
 #### 查看创建的块
 在最近1000个区块中t01475创建的块
+```
 $ lotus-storage-miner chain list --count 1000 | grep t01475 | wc -l
 992
+```
 
-###  钱包操作 
+####  钱包操作 
 ```
 [fil@yangzhou010010019017 ~]$ ./lotus wallet balance
 49.999900675992993622
@@ -228,16 +212,20 @@ $ ./lotus-message wallet import --nonce=52 7b2254797065223a22626c73222c225072697
 获取t3地址
 ```
 [fil@yangzhou010010019017 ~]$ [fil@yangzhou010010019017 ~]$ ./lotus wallet list
- t3tdha666hzopozcjnkarijatngjhmshoca3g4qdcvdp7pregoxk6mkhkflwup2yck7flmlga6mt7iicgmf6ra
+t3tdha666hzopozcjnkarijatngjhmshoca3g4qdcvdp7pregoxk6mkhkflwup2yck7flmlga6mt7iicgmf6ra
 ```
 
+### 获取状态
 [fil@yangzhou010010019017 ~]$ ./lotus state get-actor
 2020-06-14T11:27:42.345+0800	WARN	main	must pass address of actor to get
 
-[root@yangzhou010010019017 ~]# cat /etc/redhat-release
-CentOS Linux release 7.6.1810 (Core)
 
-创建钱包地址
-# lotus wallet list
-# lotus wallet new bls
-t3
+
+
+#### lotus的开发
+跳班机root用户目录下的lotus是interfil， 是官方的
+
+我们的lotus 在 lotus官方的基础上开发的， 需要合进我们开发的代码， 私链上可以用， 不需要官方申请
+
+内部开发的是用：
+https://stats.testnet.filecoin.io/d/3j4oi32ore0rfjos/chain-internal

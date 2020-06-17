@@ -100,8 +100,35 @@ Escape character is '^]'.
 J
 5.7.30
 ```
+
+#### 复制数据库
+跳板机登陆到10.10.19.15
+```
+[root@yangzhou010010001015 ~]# ssh -p 62534 10.10.19.15
+Last login: Wed Jun 17 08:39:23 2020
+[root@yangzhou010010019015 ~]# ifconfig
+bond0: flags=5187<UP,BROADCAST,RUNNING,MASTER,MULTICAST>  mtu 1500
+        inet 10.10.19.15  netmask 255.255.0.0  broadcast 10.10.255.255
+```
+
+创建数据库lotus17a
+```
+[root@yangzhou010010019015 ~]# mysql -uroot -pIpfs@123ky
+mysql> create database `lotus17a` ；
+mysql> exit 
+```
+
+数据库lotus的所有表复制到lotus17a：
+```
+[root@yangzhou010010019015 ~]#  mysqldump lotus -u root -pIpfs@123ky --add-drop-table | mysql lotus17a -u root -pIpfs@123ky
+mysqldump: [Warning] Using a password on the command line interface can be insecure.
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[root@yangzhou010010019015 ~]# exit
+```
+
+
 #### 数据库表中添加记录行：
-打开 mysqlbench,  在fconfigs, groups表中添加数据 
+打开navicat,在fconfigs, groups表中添加数据 
 
 #### config.json 中修改数据库
 

@@ -318,6 +318,11 @@ lotus每次重启， net listen地址都会变化， 要lotus-message 重新链�
 
 
 ###  (七) 启动poster
+
+####  1.证明文件的准备
+把跳班机的/var/tmp/file-proof目录同步到本机相同的目录下
+
+####  2.启动poster
 ```
 TRUST_PARAMS=1 RUST_LOG=info RUST_BACKTRACE=1 nohup ./lotus-storage-miner run --mode=remote-wdposter --server-api=http://10.10.1.20:3456 --dist-path=/mnt --nosync > poster.log 2>&1 &
 ```
@@ -464,7 +469,27 @@ Market (Locked):  0
 
 http://47.74.51.215/#/ 可以看到链的高度， 即tipset height的值
 
- 
 
-一定需要 message  手动上链吗
+```
+[fil@yangzhou010010019017 ~]$ ./lotus-storage-miner info
+Mode: poster
+Miner: t02599
+Sector Size: 512 MiB
+Byte Power:   0 B / 266 TiB (0.0000%)
+Actual Power: 0  / 225 Ti (0.0000%)
+	Committed: 0 B
+	Proving: 0 B
+Miner Balance: 0
+	PreCommit:   0
+	Locked:      0
+	Available:   0
+Worker Balance: 50
+Market (Escrow):  0
+Market (Locked):  0
+```
+
+表示还没有算力， 运算证明还没做完， 这个是非常耗时的过程， 
+
+所以拷贝了其他运算好的证明文件
+
 
