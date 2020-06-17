@@ -55,6 +55,9 @@ overlay                  2.0T   93G  2.0T    5% /var/lib/docker/overlay2/95cb42c
 10.10.4.23:/mnt/storage  160T  273G  152T    1% /mnt/nfs/10.10.4.23
 ```
 
+出现了10.10.4.23:/mnt/storage  160T  273G  152T    1% /mnt/nfs/10.10.4.23
+说明10.10.4.23存储服务器的/mnt/storage已经成功挂载到当前主机的/mnt/nfs目录下
+
 到挂在点下的目录，看有无内容
 ```
 [root@yangzhou010010019017 mnt]# cd nfs/10.10.4.23/
@@ -71,7 +74,8 @@ drwxrwxr-x   2 fil fil 20480 6月  13 14:00 sealed
 ```
 
 #### sealed 存放最后计算出的区块：
-矿工号为t02481， lotus全部过程搭建好后， 可以在sealed看到计算出的区块
+矿工号为t02481， lotus全部过程搭建好后， 可以在sealed看到所有矿工计算出的区块， 区块的编号由矿工号和任务号拼接层
+
 ```
 [fil@yangzhou010010019017 sealed]$ pwd
 /mnt/nfs/10.10.4.23/sealed

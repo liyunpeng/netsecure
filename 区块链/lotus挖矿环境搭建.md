@@ -12,7 +12,7 @@ drwxr-xr-x 8 fil fil       133 Jun 12 17:12 datastore.bak
 -rwxr-xr-x 1 fil fil 100112843 Jun 12 09:41 lotus-storage-miner
 ```
 
-###（一） lotus 链同步
+###（一）lotus 链同步
 lotus主要是同步链的高度，只有把链的高度同步好以后， 才可以做后续动作， 包括
 申请t0地址和t3地址， lotus-message连接， poster,  sealer, remote workder 这些动作。 
 
@@ -78,7 +78,19 @@ worker 2:
 	Elapsed: 2.075633127s
 ```
 
-state:complete表示链同步成功, height diff: 表示本地链和公链差了3个高度， 
+state:complete 还不表示同步成功, height diff: 表示本地链和公链差了3个高度， 
+
+要用lotus sync wait看：
+```
+[fil@yangzhou010010019017 ~]$ ./lotus sync wait
+Worker 0: Target: [bafy2bzaced7jcgcxvsl7h2o34ozoitfqkjnk4zo5w72ytjyrz2kx4cva6mumo]	State: complete	Height: 26527
+Done!
+```
+只有lotus sync wait显示Done!才算成功
+
+如果在阻塞， 说明还在进行同步。 
+
+lotus chain list 可以看到同步的高度。 
 
 同步好后， 可以看到.lotus/datstore为3G多
 ```
@@ -124,22 +136,22 @@ $ TRUST_PARAMS=1 RUST_LOG=info RUST_BACKTRACE=1  nohup ./lotus daemon  --server-
 ```
 说明lotus没有连接到lotus-server
 
-### （二）申请t3地址
+### （二）申请t0地址和t3地址
 t3地址必须放在链同步之后。 后面lotus初始化又依赖于t3地址。 
 
-lotus 高度同步好后， 才可以申请t3地址：
+lotus 高度同步好后， 才可以申请t3地址， 先用wallet new bls生成一个t3地址。
 ```
 [fil@yangzhou010010019017 ~]$ ./lotus wallet list
 [fil@yangzhou010010019017 ~]$ ./lotus wallet new bls
 t3utkcsylxz6m5wpbjb22uan6ngmj3oqcs2j3tts3ib72nklc7dkq5fjsq3adv3bvia2rrtlqdf2ki6lbwjh7q
 ```
 
-到网站上申请：
+用这个本地生成的t3到网站上申请t0和t3：
 ```
 https://t01000.miner.interopnet.kittyhawk.wtf/miner.html
 ```
 输入上面new bls 生成的t3地址, 选择出块的大小为512M， 点击 createminer 按钮。 
-1分钟左右的时间， 会显示申请到的矿工t0，和t3地址, 得到如下信息： 
+1分钟左右的时间， 会显示申请到的矿工t0，和t3地址： 
 ```
 [CREATING STORAGE MINER]
 Gas Funds:   bafy2bzaceb4u5mlywr7lkn4v6rrakgoa7vsz64o7prl752tkeilnt2ge53ffq - OK
@@ -157,7 +169,7 @@ lotus-storage-miner init --actor=t02599 --owner=t3utkcsylxz6m5wpbjb22uan6ngmj3oq
 t3utkcsylxz6m5wpbjb22uan6ngmj3oqcs2j3tts3ib72nklc7dkq5fjsq3adv3bvia2rrtlqdf2ki6lbwjh7q
 ```
 
-一个t3对应一个actor, 一个actor有t3地址，余额。
+一个t3对应一个actor, 一个actor有t3地址，余额, nonce值， 哈希值。
 ```
 [fil@yangzhou010010019017 ~]$ ./lotus state get-actor t3vscpy5iilvf3jdhgrucgt7i2jfw6enm4a2iuetj35hfyn6pqblnocar4vr467r64z7u7k5uxxafye6r36r6q
 Address:	t3vscpy5iilvf3jdhgrucgt7i2jfw6enm4a2iuetj35hfyn6pqblnocar4vr467r64z7u7k5uxxafye6r36r6q
@@ -203,13 +215,15 @@ TRUST_PARAMS=1 ./lotus-storage-miner init --owner=t02599 --nosync  --sector-size
 poster或sealer 都需要lotus storage miner 的初始化。 初始化一个服务，供poster, sealer 调用， 这里修改ListenAddress就是服务监听地址。 
 
 
-
 ### (四) 启动lotus-message
+
+####  1. 获取network名字， 运行lotus-message 
 获取lotus-message启动时需要的network名字
 ```
 [fil@yangzhou010010019017 ~]$ curl http://127.0.0.1:1234/rpc/v0 -X POST -H "Content-Type: application/json" -d '{"method": "Filecoin.StateNetworkName"}'
 {"jsonrpc":"2.0","result":"interop"}
 ```
+lotus-message 采用rpc调用， rpc消息的格式为"jsonrpc":"2.0". 
 
 启动lotus-message:
 ```
@@ -221,9 +235,40 @@ nohup ./lotus-message daemon  --network="interop" > lotus-message.log 2>&1 &
 nohup ./lotus-message daemon  --network="localnet-2f993f25-318f-4d5b-ad87-c79c4ac52806" > lotus-message.log 2>&1 &
 ```
 
+下一步在 lotus wallet export时 ， 数据库表signed_msgs表中， 如果没有这个t3的新的记录， 说明lotus-message没有连接到数据库。 
+
+lotus-message 必须在lotus链同步好， 才能正常工作。 
+
 lotus-message顺序没有要求， 4个进程都是互相独立， 一个进程重启，不需要另一个进程跟着重启。 
 
+lotus-message 会生成.lotusmessage目录，要手动修改这个目录下的配置文件
 
+####  2. 修改.lotus-message/config.toml
+```
+  [API]
+#  ListenAddress = "/ip4/0.0.0.0/tcp/5678/http"
+```
+改为
+```
+ [API]
+  ListenAddress = "/ip4/0.0.0.0/tcp/5678/http"
+```
+
+另将
+```
+[DbCfg]
+#  Conn = ""
+# Type = "mysql"
+#  DebugMode = true
+```
+改为
+```
+[DbCfg]
+  Conn = "root:Ipfs@123ky@tcp(10.10.19.15:3306)/lotus17?loc=Local&parseTime=true"
+  Type = "mysql"
+  DebugMode = true
+#
+```
 ### （五） lotus-message导入t3的密钥
 
 #### 1 lotus wallet export t3 的密钥
@@ -236,6 +281,22 @@ lotus-message顺序没有要求， 4个进程都是互相独立， 一个进程�
 wallet export 会向signed_msgs 表中添加一行记录， 
 
 #### 2.  lotus-message wallet 导入t3密钥
+
+lotus-message wallet 导入t3密钥 成功的返回时这样的：
+```
+[fil@yangzhou010010019017 ~]$ ./lotus-message wallet import -nonce=0  7b2254797065223a22626c73222c22507269766174654b6579223a224f44304e7372746a57724d6d562b59596d764a6c6134784b594e4a3650582f624d70556863364a473942593d227d
+imported [t3vscpy5iilvf3jdhgrucgt7i2jfw6enm4a2iuetj35hfyn6pqblnocar4vr467r64z7u7k5uxxafye6r36r6q] successfully!
+```
+成功情况下， 在wallet list可以看到t3
+
+```
+[fil@yangzhou010010019017 ~]$ ./lotus wallet list
+t3vscpy5iilvf3jdhgrucgt7i2jfw6enm4a2iuetj35hfyn6pqblnocar4vr467r64z7u7k5uxxafye6r36r6q
+```
+
+否则walllet list 显示为空
+
+下面 imported 显示 empty， 是错误的
 ```
 [fil@yangzhou010010019017 ~]$ ./lotus-message wallet import -nonce=0 7b2254797065223a22626c73222c22507269766174654b6579223a224f44304e7372746a57724d6d562b59596d764a6c6134784b594e4a3650582f624d70556863364a473942593d227d
 imported [<empty>] successfully!
@@ -254,7 +315,6 @@ lotus-messae 连接lotus
 $ ./lotus-message net connect /ip4/10.10.1.20/tcp/41613/p2p/12D3KooWNAhSZNdjAGfNvKHbaPu6ToKFydiy6gBKrVVHRYzwfY2e
 ```  
 lotus每次重启， net listen地址都会变化， 要lotus-message 重新链接
-
 
 
 ###  (七) 启动poster
@@ -320,16 +380,91 @@ force-remote-worker参数如下：
 RUST_LOG=debug BELLMAN_PROOF_THREADS=21 RUST_BACKTRACE=1 nohup ./force-remote-worker > force-remote-worker.log 2>&1 &
 ```
 
-即： sealer里的参数：
-FORCE_BUILDER_P1_WORKERS=10， FORCE_BUILDER_TASK_TOTAL_NUM就应该为他的二倍加1， 即21。  
+sealer里的参数设置规则：
+FORCE_BUILDER_P1_WORKERS=10， 
+FORCE_BUILDER_TASK_TOTAL_NUM就应该是FORCE_BUILDER_P1_WORKERS的二倍加1， 即21。  
   
+force-remote-worker的参数设置规则：
 force-remote-worker的BELLMAN_PROOF_THREADS要和sealer中的FORCE_BUILDER_TASK_TOTAL_NUM 相等，即21. 
 
+### (十） 在root用户下启动执行poster证明的force-remote-worker
+force-remote-worker通过配置supported_phase为TaskWDPost， 可以做证明的事情， 可以分担wdposter的压力，让证明跑的更快一些。 
+
+```
+[root@yangzhou010010019017 ~]# cat config.toml
+scheduler_url = "http://10.10.19.17:3456"
+local_dir = "/sealer"
+copy_limit_mb_per_sec = 500
+group_id = [18]
+sector_size = 2048
+#sector_size = 34359738368
+ip = "10.10.19.17"
+
+[[worker]]
+num = 1
+supported_phase = ["TaskWDPost"]
+wait_sec = 60
+```
+
+启动
+```
+RUST_LOG=debug BELLMAN_PROOF_THREADS=3 RUST_BACKTRACE=1 nohup ./force-remote-worker > force-remote-worker.log 2>&1 &
+```
 
 
 
-### 换了新的矿工号，要手动修改数据库表
+### (十一）成功时能看到的东西， 
+#### 1. task 表每个任务有 1， 2， 4， 8， 16， 32， 这六个阶段， 对应6个行。 
 
-minors表要手动修改， 
-然后手动重启lotus ， lotus会读取这个表。 
+#### 2. balance 的变化
+sectors表有任务在proving， actor需要付一定的费用， 所以balance会减少一点。 
+```
+[fil@yangzhou010010019017 ~]$ ./lotus wallet list
+t3vscpy5iilvf3jdhgrucgt7i2jfw6enm4a2iuetj35hfyn6pqblnocar4vr467r64z7u7k5uxxafye6r36r6q
+
+[fil@yangzhou010010019017 ~]$ ./lotus state  get-actor t3vscpy5iilvf3jdhgrucgt7i2jfw6enm4a2iuetj35hfyn6pqblnocar4vr467r64z7u7k5uxxafye6r36r6q
+Address:	t3vscpy5iilvf3jdhgrucgt7i2jfw6enm4a2iuetj35hfyn6pqblnocar4vr467r64z7u7k5uxxafye6r36r6q
+Balance:	49.999621154765978291
+Nonce:		20
+Code:		bafkqadlgnfwc6mjpmfrwg33vnz2a
+Head:		bafy2bzaceaihihvph3codvcdmznpa2nevkdwkgx2n5cq75s3qpz3afs2ctiki
+```
+todo： proving，谁做的， poster吗。 
+32G 的proving大概多久
+
+
+#### 3. nonce 值变化
+
+
+#### 4. 算力的产生
+```
+[fil@yangzhou010010019017 ~]$ ./lotus-storage-miner info
+Mode: poster
+Miner: t02697
+Sector Size: 512 MiB
+Byte Power:   3 GiB / 346 TiB (0.0008%)
+Actual Power: 3 Gi / 296 Ti (0.0009%)
+	Committed: 3 GiB
+	Proving: 3 GiB
+Expected block win rate: 1.9440/day (every 12h20m44s)
+
+Miner Balance: 0.000378845233793742
+	PreCommit:   0
+	Locked:      0.00036650456405359
+	Available:   0.000012340669740152
+Worker Balance: 49.999621154765978291
+Market (Escrow):  0
+Market (Locked):  0
+```
+
+#### 5. 
+要想上链， 必须先同步好本地链， 就像git上代码一样。 先把远程的完全同步到本地。 
+
+有时，lotus-message 重新连一下， 可以加快链同步的速度。 
+
+http://47.74.51.215/#/ 可以看到链的高度， 即tipset height的值
+
+ 
+
+一定需要 message  手动上链吗
 
