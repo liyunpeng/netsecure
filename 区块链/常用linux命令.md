@@ -4,7 +4,7 @@ CentOS Linux release 7.6.1810 (Core)
 
 
 
-[root@yangzhou010010001015 20200612]# scp -rpP 62534 * 10.10.19.17:/home/fi
+[root@yangzhou010010001015 20200612]# scp -rpP 62534 * 10.10.19.17:/home/fil
 
 
 [fil@yangzhou010010001015 ~]$ cat /proc/cpuinfo| grep "cpu cores"| uniq
