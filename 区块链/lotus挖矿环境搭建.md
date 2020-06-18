@@ -44,7 +44,7 @@ $ ps -ef | grep lotus
 $ kill -9 xxx
 ```
 
-#### 3. 重新启动lotus，开时链同步， 
+#### 3. 重新启动lotus，开始链同步， 
 ```
 $ nohup ./lotus daemon >lotus.log 2>&1 &
 $ ./lotus sync wait
@@ -80,19 +80,20 @@ worker 2:
 
 state:complete 还不表示同步成功, height diff: 表示本地链和公链差了3个高度， 
 
+lotus chain list 可以看到同步的高度。
+
 要用lotus sync wait看：
 ```
 [fil@yangzhou010010019017 ~]$ ./lotus sync wait
 Worker 0: Target: [bafy2bzaced7jcgcxvsl7h2o34ozoitfqkjnk4zo5w72ytjyrz2kx4cva6mumo]	State: complete	Height: 26527
 Done!
 ```
-只有lotus sync wait显示Done!才算成功
+只有lotus sync wait显示Done!才表示链同步成功
 
-如果在阻塞， 说明还在进行同步。 
+如果lotus sync wait还在阻塞， 说明还在进行同步。 
+ 
 
-lotus chain list 可以看到同步的高度。 
-
-同步好后， 可以看到.lotus/datstore为3G多
+同步好后， 目前可以看到.lotus/datstore为3G多
 ```
 [fil@yangzhou010010019017 ~]$ du -sch .lotus/*
 4.0K	.lotus/api
@@ -366,6 +367,13 @@ TRUST_PARAMS=1 ./lotus-storage-miner init --owner=t02599 --nosync  --sector-size
 ```
 FORCE_BUILDER_P1_WORKERS=1 FORCE_BUILDER_TASK_DELAY=25m TRUST_PARAMS=1 RUST_LOG=info RUST_BACKTRACE=1 FORCE_BUILDER_TASK_TOTAL_NUM=2 nohup ./lotus-storage-miner run --mode=remote-sealer --server-api=http://10.10.19.17:3456 --dist-path=/mnt --nosync --groups=1 > sealer.log 2>&1
 ```
+sealer主要通过操作tastk表发任务， 
+
+sealer里的参数设置规则：
+FORCE_BUILDER_P1_WORKERS=10，表示sealer一次性发10个任务， 即一批发10个任务
+ FORCE_BUILDER_TASK_DELAY=25m 表示sealer 没过24分钟发一批任务
+ RUST_LOG=info RUST_BACKTRACE=1  是日志打印参数
+FORCE_BUILDER_TASK_TOTAL_NUM=21 因为任务可能来不及执行， 当没执行的任务达到21个时， sealer停止发送任务。 一般是FORCE_BUILDER_P1_WORKERS的二倍多一点， 这里是二倍加1，即21。  
 
 ### （九） 启动force-remote-worker
 
@@ -384,10 +392,6 @@ force-remote-worker参数如下：
 ```
 RUST_LOG=debug BELLMAN_PROOF_THREADS=21 RUST_BACKTRACE=1 nohup ./force-remote-worker > force-remote-worker.log 2>&1 &
 ```
-
-sealer里的参数设置规则：
-FORCE_BUILDER_P1_WORKERS=10， 
-FORCE_BUILDER_TASK_TOTAL_NUM就应该是FORCE_BUILDER_P1_WORKERS的二倍加1， 即21。  
   
 force-remote-worker的参数设置规则：
 force-remote-worker的BELLMAN_PROOF_THREADS要和sealer中的FORCE_BUILDER_TASK_TOTAL_NUM 相等，即21. 
