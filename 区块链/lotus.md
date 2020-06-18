@@ -1,4 +1,4 @@
-[fil@yangzhou010010019017 ~]$ ./lotus-storage-miner info
+**[fil@yangzhou010010019017 ~]$ ./lotus-storage-miner info
 Mode: poster
 Miner: t02599
 Sector Size: 512 MiB
