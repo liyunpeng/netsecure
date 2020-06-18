@@ -1,4 +1,21 @@
 
+### 浏览器查看链上信息
+
+我们自己开发的浏览器：
+https://interopnet.filscan.io/#/
+
+右上角是 挖矿排名， 
+左边是 算力排名
+右下是 消息列表 
+点from 字段， 可以看到该t3发出的所有消息， 
+
+method 是消息类型， 
+
+PreCommitSector 是p2 发出的消息
+ProveCommitSector 是p4 发出的消息
+transfer 是转账消息
+
+
 ### lotus 命令选项参数
 ```
 [fil@yangzhou010010019017 ~]$ ./lotus -h
@@ -44,7 +61,7 @@ GLOBAL OPTIONS:
 
 
 ### 查看同步
-接下来需要等待节点同步数据，可以通过以下方式跟踪同步状态：
+跟踪同步状态：
 ```
 [fil@yangzhou010010019017 ~]$ ./lotus sync status
 sync status:
