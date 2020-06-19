@@ -5,100 +5,48 @@
  同一个任务的
  p1到p6 必须严格的顺序执行。 
 
-### 消息机制
-P1到P6与外界的联系只有数据库方式。 没有其他方式， 消息队列，微服务，api服务等都没有。  
 
-P2 结束会发消息到链上， 
-P4 结束后也会发消息到链上， P4消息正常处理后，所对应的sector会进入proving状态,  表示sector被链承认， 
+32G 只有一个机会
 
-p4正常工作完，表示 P4所在的sector已经上到链上， sectors表也会把相应的sector的状态改为proving. 
-
-
-只有sector进入proving状态，矿工的硬盘大小和cpu速度等信息都会提交到了链上， 这时矿工的算力才会被计算出来， 
-
-miner info 才能看到有算力输出， 
-
-P2 P4 发消息机制
-P2 做完之后， 会修改tasks表的一个字段， sealer每分钟扫描tasks表， 这个字段被sealer扫到，sealer 就会把消息发给 lotus， 如果lotus启动配置msg-api配置， lotus就会自己把消息发到链上， 如果有配置msg-api, lotus就会把消息 发给lotus-message, 由lotus-message把消息发到链上。 
-
-P2 发的消息， 在网页上看到的 precommit
-
-P4 发的消息， 在网页上看到的是， prove....
-
-消息发到链上， 指消息会广播链上的所有节点， 有时， 链产生了分叉， 需要lotus-message 手动发送消息， 只有消息发到链上， sector才能上链。 
+测试人员开测
 
 
 
-### 消息打包
-
-$ cat sealer.log 看很多消息
-```
-2020-06-16T13:55:24.844+0800	INFO	remote-sealer	PreCommitPhase1 for sector 7798794642 elapsed 30.014234298s
-2020-06-16T13:55:24.844+0800	INFO	sectors	trying to acquired prepared deal for pledged sector 7798794642
-2020-06-16T13:55:24.844+0800	WARN	sectors	unable to acquire prepared deal: %!w(*xerrors.errorString=&{no available deal {[7143598 16703064 5584986]}})
-2020-06-16T13:55:24.844+0800	INFO	sectors	Sector 7798794642 update state: PreCommit2 ...
-2020-06-16T13:55:24.847+0800	INFO	serverapi	SectorEnd:{"code":0,"msg":"","data":null}
-
-2020-06-16T13:55:24.847+0800	INFO	remote-sealer	PreCommitPhase2 for sector 7798794642 start ...
-2020-06-16T13:55:24.848+0800	WARN	remote-sealer	unable to poll task status for {PreCommitPhase2 {1008 7798794642}}: record not found
-2020-06-16T13:55:24.854+0800	INFO	serverapi	new-task res: {"code":0,"msg":"","data":null}
-```
-
-查看特定的消息
-```
-./lotus state search-msg bafy2bzacedpyu3yt3g7ppoqmbc24ripo7s23oygga5tse2x4z7ugryvtmdmgkB
-```
-
-
-### 上链与出块
-
-上链是为了得到算力， 上链与出块的数据没有关系， 只是为了
-
-矿工的最终目的是为了出块 ， 
-
-全网最强算力的矿工才有机会获取出块权， 
-
-###  消息打包
-
-矿工在出块前要对此块与前一个块之间的所有消息打包，  
-
-每个节点向链上发消息， 都要为消息处理付一定的费用
-
-此块与前一个块的消息的所有缴纳的费用总和都转入此次消息打包的矿工的账号 
-
-
-### 消息池
-每个矿工都有一个消息池， 存放本矿工的所有发到链上的有效消息， nonce值不连续的消息不回被消息池接收，所以要格外小心可能造成nonce只不连续的问题
-
-  
-在出块的时候， 会把所有矿工的消息池打包， 
-
-如果消息在消息打包的时候进来， 可能不会进入包。 
 
 
 
-### 消息的nonce值
-
-本机所看到的nonce是下一个消息的id, 
-
-每个消息都会带上nonce, 链要求， 到每个矿工到链上的消息必须严格有序， 如果nonce没有按序， 链就不会承认这个消息。 造成消息发不出去。 
-
-查看具体的算力：
 
 
-### sector表fail的排查
-查sealer.log, 依次查找fail的sector编号。 
+-----
+核数不能沾满， 要不恨难ssh很难连上
 
-查lotus.log, 过滤错误：
-```
-[fil@yangzhou010010019017 ~]$ cat lotus.log | grep -ia error | grep -v occurred
+p2 p3 会把核占满 ， 要留下2 个核  
 
-2020-06-18T17:48:46.260+0800	WARN	jsonrpc2	error in RPC call to 'Filecoin.MpoolPushMessage': mpool push: not enough funds: 100019999999534257 < 184607875762874096:
-```
+p1 主要 io卡住
 
- 显示资金不足
- 
- 链上每条消息的处理， 都需要付费， 一个块上链需要P2 p4两个消息处理 。 
+用root用户看。iostate, sda系统盘
+
+打开文件数目没限制， 900万个没问题， 
+
+---
+sealer 应该挂在 /mnt/md1, 
+从 df -h  应该看到 /sealer下挂载了 md1盘， 如果挂载了sda盘， 这是系统盘， 做p1时会严重影响速度。 
+
+
+iostate -ix 看下写的状态
+
+---
+
+
+
+---
+这8组在跑32G sector， 
+
+
+
+
+
+
  
  
  

@@ -1,6 +1,5 @@
 
 ### 浏览器查看链上信息
-
 我们自己开发的浏览器：
 https://interopnet.filscan.io/#/
 
@@ -55,9 +54,6 @@ GLOBAL OPTIONS:
    --help, -h     show help (default: false)
    --version, -v  print the version (default: false)
 ```
-
-
-
 
 
 ### 查看同步
