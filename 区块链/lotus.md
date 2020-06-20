@@ -15,6 +15,19 @@ ProveCommitSector 是p4 发出的消息
 transfer 是转账消息
 
 
+查看当前开发网络最新区块高度和其他网络指标： https://lotus-metrics.kittyhawk.wtf/chain 
+
+
+获取测试币：
+https://lotus-faucet.kittyhawk.wtf/funds.html
+
+
+查看最新点出块高度，以及出块时间
+https://stats.testnet.filecoin.io/d/z6FtI92Zz/chain?orgId=1&refresh=45s&from=now-30m&to=now&kiosk
+
+filecoin测试网络页面
+https://stats.testnet.filecoin.io/d/z6FtI92Zz/chain/?orgId=1&refresh=45s&from=now-30m&to=now&kiosk
+
 ### lotus 命令选项参数
 ```
 [fil@yangzhou010010019017 ~]$ ./lotus -h
@@ -56,46 +69,32 @@ GLOBAL OPTIONS:
 ```
 
 
-### 查看同步
-跟踪同步状态：
-```
-[fil@yangzhou010010019017 ~]$ ./lotus sync status
-sync status:
-worker 0:
-	Base:	[bafy2bzaceb5gezkmdliwxyxnvq6hupewumq5fy2rbmcudyb3b25p4xgf24bq2 bafy2bzaceb2ts3hcaoft4mckf27ktajjxaoik7ofbvqbmlgdbvvzp53khbklk]
-	Target:	[bafy2bzacecmzfnqvc6uvb4sv5v3f2eybozky65wcz5gyaiuqr52u2gf3urqam bafy2bzacecklhf2iede4ppdkftg4sqput5jthzi7sb2zitfkelsr4jpnznvgo bafy2bzacea3btrzzqjmyf3h2kg52kqrjxbmulx55uwe3kvea7refwa7alzyyg bafy2bzaceb57oeak4znllm6jxbuptoyt7tlcftzp2h7xtcyg24hvi7qslk64g] (16877)
-	Height diff:	192
-	Stage: complete
-	Height: 16877
-	Elapsed: 49.098481578s
-worker 1:
-	Base:	[bafy2bzacedgukfgfl277qvdnda6kan7igpevvrdftf3n45nqbv4fyxjtcymxu bafy2bzacedr6icqbqqz4uwsiisumkqmv2ywkjq572lrqfdbzsnnleplsvz63g bafy2bzaceaeuevx645hb2l3jvrsv2bte5hwanzc2w3zljsqpmp4zxjacitdc4]
-	Target:	[bafy2bzacea2o3qsyw7gsydcgcr5naoj2t3adlon77276twlcylqy3z2ihsvp4 bafy2bzacebnawsqw2guvhz4ui56y6e2qtmavp4vkqdtjw6maemrb5i34k4hyw bafy2bzaceaj222ckcrxt3bv34vigdyzaevosyi4r4wvbs55uv4rwcspxqy5ns bafy2bzaceamejd2to64szsmgislfgxscq4hunfglyvbqcij2qpnnx7obg75xm] (17117)
-	Height diff:	192
-	Stage: complete
-	Height: 17117
-	Elapsed: 51.82307429s
-worker 2:
-	Base:	[bafy2bzacecmzfnqvc6uvb4sv5v3f2eybozky65wcz5gyaiuqr52u2gf3urqam bafy2bzacecklhf2iede4ppdkftg4sqput5jthzi7sb2zitfkelsr4jpnznvgo bafy2bzacea3btrzzqjmyf3h2kg52kqrjxbmulx55uwe3kvea7refwa7alzyyg bafy2bzaceb57oeak4znllm6jxbuptoyt7tlcftzp2h7xtcyg24hvi7qslk64g]
-	Target:	[bafy2bzacedgukfgfl277qvdnda6kan7igpevvrdftf3n45nqbv4fyxjtcymxu bafy2bzacedr6icqbqqz4uwsiisumkqmv2ywkjq572lrqfdbzsnnleplsvz63g bafy2bzaceaeuevx645hb2l3jvrsv2bte5hwanzc2w3zljsqpmp4zxjacitdc4] (16925)
-	Height diff:	48
-	Stage: complete
-	Height: 16925
-	Elapsed: 11.793627683s
-```
-其中 height: 是当前同步的区块高度。
+### 链接到比较快的节点
 
-如果同步完成了这个值会编程 0， 
-也可以去 https://lotus-metrics.kittyhawk.wtf/chain 查看当前开发网络最新区块高度和其他网络指标。
+lotus net peers 可以看到多个链接节点， lotus会起3个worker，每个worker就是一个并行的线程， 每个worker都会去连peers里的一个节点， lotus sync status 看到的就是这三个work
+
+如果链同步慢， 可以手动去连一个快的节点：
+
+```
+lotus net connect 其他节点的地址
+```
+
+再用lotus net peers会看到新链接的节点地址
 
 
-#### 查看连接节点数量
-```
-./lotus net peers | wc -l
-```
-#### 实时看到同步区块高度
+###  查看链
 
-区块高度同步完成, 显示done退出
+#### 1.   查看有没有同步好
+```
+[fil@yangzhou010010019017 ~]$ ./lotus sync wait
+Worker 0: Target: [bafy2bzaced7jcgcxvsl7h2o34ozoitfqkjnk4zo5w72ytjyrz2kx4cva6mumo]	State: complete	Height: 26527
+Done!
+```
+只有lotus sync wait显示Done!才表示链同步成功
+
+如果lotus sync wait还在阻塞， 说明还在进行同步。 
+#### 2. 查看链高度
+
 ```
 lotus sync wait
 Target: [bafy2bzacedm7m4gfctogyii7fzhn4a3n66x5v5kvee33z26pve63qup7bhuts]	State: complete	Height: 2594
@@ -103,17 +102,56 @@ Done
 ```
 
 看最后一次同步的时间：
+
+#### 3. 查看本地链与全局链的高度差
 ```
-[fil@yangzhou010010019017 ~]$ ./lotus chain list
-15792: (Jun 13 16:08:00) [ bafy2bzacecjjabsxfkpvpxj5prfmsqjf363a62b2swfmt5765qggkdrwxx7co: t01845,bafy2bzacea34hx2pi4pnax7t77bejwvvdfa6utk56legofi6d2w5wbwiq2ges: 
+$ ./lotus sync status 
+[fil@yangzhou010010019017 ~]$ ./lotus sync status
+sync status:
+worker 0:
+	Base:	[bafy2bzaceavjkgq3547gtxrke5kcdtd7oz76wl5rjlqsrlez5vilseorqxmti bafy2bzaceaaehkye63fhnsx4ojf6pojstpdount7hsfrsrxb7cpajcob75muc bafy2bzacedsr23oouqb466nvkpwd5hpgljb2mbmcczpjc7tvlsj6f46nl3h22 bafy2bzacebkoosenjo43hnx4jokrm7xe4njyklhsh5o5ddcd723ghzmavptdg bafy2bzacearcvx7syok2rrvmtxb4oy5wzfc62wkfib4k5jtzb6umgq7ahnslm]
+	Target:	[bafy2bzacebygtdppvtgczvlsnb5zd5adgjxhab2gaog6orsfjhfrnwq5cx2as bafy2bzacebfg6gqchyyumxw2gexzxwn5tocf6xy5z3hjq3mr77gs46vmqhdtk bafy2bzacealxpx2y2fhrtxljlnnhhcljj2su4u3l4pwumbmrbamdyyhw5kw74 bafy2bzaceaxraaxrh3oi2lmzxwnmsq6b4rreg42worgsql2uphz7vjrbsngq4 bafy2bzaceaqi7nn5p2i6ufu5njwhcdjfrqkuh2v2oiifphfn4fg5of5wvlwfo] (25889)
+	Height diff:	3304
+	Stage: complete
+	Height: 25889
+	Elapsed: 14m47.505612586s
+worker 1:
+	Base:	[bafy2bzacebygtdppvtgczvlsnb5zd5adgjxhab2gaog6orsfjhfrnwq5cx2as bafy2bzacebfg6gqchyyumxw2gexzxwn5tocf6xy5z3hjq3mr77gs46vmqhdtk bafy2bzacealxpx2y2fhrtxljlnnhhcljj2su4u3l4pwumbmrbamdyyhw5kw74 bafy2bzaceaxraaxrh3oi2lmzxwnmsq6b4rreg42worgsql2uphz7vjrbsngq4 bafy2bzaceaqi7nn5p2i6ufu5njwhcdjfrqkuh2v2oiifphfn4fg5of5wvlwfo]
+	Target:	[bafy2bzaceauq5h4k5pssudua2qjdzq6tzai7x5537l6y5o2vf32wzbzi3as4e bafy2bzacecuriyn32xum5ft7243vthbxo6yyadjlrbkhwq2ohcsryneigzaxc bafy2bzaceccdbekmzvxnr2tpho56m3cwv6gd3elpeg42nutgvmcmem32v6r4o bafy2bzaceb2jcyvvhvouugjfje5ec6n6zk5gxr2figzgqvkswjl5giisgaaq2 bafy2bzacecd3pcgzbonngeclwfh5iid53gg5fyhrjj7vvldjgyy2malhdqrbw] (25915)
+	Height diff:	26
+	Stage: complete
+	Height: 25915
+	Elapsed: 9.489860608s
+worker 2:
+	Base:	[bafy2bzacebygtdppvtgczvlsnb5zd5adgjxhab2gaog6orsfjhfrnwq5cx2as bafy2bzacebfg6gqchyyumxw2gexzxwn5tocf6xy5z3hjq3mr77gs46vmqhdtk bafy2bzacealxpx2y2fhrtxljlnnhhcljj2su4u3l4pwumbmrbamdyyhw5kw74 bafy2bzaceaxraaxrh3oi2lmzxwnmsq6b4rreg42worgsql2uphz7vjrbsngq4 bafy2bzaceaqi7nn5p2i6ufu5njwhcdjfrqkuh2v2oiifphfn4fg5of5wvlwfo]
+	Target:	[bafy2bzacebvr6vbhfsst6ewwcuwjiskfcl77gj4bebxqb4iryvmodloufkf4c bafy2bzacea37nzzyot2ng7g7jt4nmjx7qbwhwhr7epfdlhaejfstkxa5kj3sy] (25892)
+	Height diff:	3
+	Stage: complete
+	Height: 25892
+	Elapsed: 2.075633127s
+```
+height diff: 表示本地链和公链差了3个高度， 
+state:complete 还不能表示同步成功, 要用lotus sync wait看：
+lotus chain list 可以看到同步的高度。
+
+###  ./lotus/datastore为全局链的所有数据
+同步好后， 目前可以看到.lotus/datstore为3G多
+```
+[fil@yangzhou010010019017 ~]$ du -sch .lotus/*
+4.0K	.lotus/api
+4.0K	.lotus/config.toml
+3.3G	.lotus/datastore
+8.0K	.lotus/keystore
+0	.lotus/repo.lock
+4.0K	.lotus/token
+3.3G	total
 ```
 
-存放链的数据的大小
+#### 查看连接节点数量
 ```
-[fil@yangzhou010010019017 ~]$ du -sch .lotus/datastore/
-2.6G	.lotus/datastore/
-2.6G	total
+./lotus net peers | wc -l
 ```
+
 
 #### 查看证明文件大小
 ```
@@ -142,8 +180,7 @@ $ lotus-storage-miner state sectors <miner>
 IPFS_GATEWAY="https://proof-parameters.s3.cn-south-1.jdcloud-oss.com/ipfs/"
 
 
-#### 获取测试币
-https://lotus-faucet.kittyhawk.wtf/funds.html
+
 
 #### 查看钱包余额
 lotus wallet balance t3wkzqsqsyo7fcyp7mll6tvhqp7wkynu7d2znksz4cq4qxhxnyl5q6wlwp2krp6rnk4l2lepsacsmnisvkcdna
@@ -152,18 +189,16 @@ lotus wallet balance t3wkzqsqsyo7fcyp7mll6tvhqp7wkynu7d2znksz4cq4qxhxnyl5q6wlwp2
 lotus send
 
 
-#### 查看最新点出块高度，以及出块时间
-https://stats.testnet.filecoin.io/d/z6FtI92Zz/chain?orgId=1&refresh=45s&from=now-30m&to=now&kiosk
-
-2.filecoin测试网络页面
-https://stats.testnet.filecoin.io/d/z6FtI92Zz/chain/?orgId=1&refresh=45s&from=now-30m&to=now&kiosk
 
 
 ### 扇区查看
 #### 本节点扇区列表
+
+```
 $ lotus-storage-miner sectors list
 1: PreCommitFailed	sSet: NO	pSet: NO	tktH: 17998	seedH: 0	deals: [509748]
-2: SealCommitFailed	sSet: NO	pSet: NO	tktH: 18572	seedH: 18637	deals: [524978]	
+2: SealCommitFailed	sSet: NO	pSet: NO	tktH: 18572	seedH: 18637	deals: [524978]
+```
 
 #### 扇区状态查看
 ```
@@ -191,7 +226,7 @@ $ lotus-storage-miner chain list --count 1000 | grep t01475 | wc -l
 
 
 #### lotus的开发
-跳班机root用户目录下的lotus是interfil， 是官方的
+跳班机root用户目录下的lotus是interfil，是官方的
 
 我们的lotus 在 lotus官方的基础上开发的， 需要合进我们开发的代码， 私链上可以用， 不需要官方申请
 

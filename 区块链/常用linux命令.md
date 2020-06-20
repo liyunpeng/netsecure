@@ -28,6 +28,11 @@ cpu cores	: 12
 MemTotal:       131912620 kB
 ```
 
+### 文件查看
+```
+du -sch *
+```
+
 ### 进程查看
 只查看本用户启动的进程
 [fil@yangzhou010010019017 ~]$ ps -x
@@ -45,6 +50,9 @@ CREATE TABLE newuser LIKE user;
 导入数据
 INSERT INTO newauser SELECT * FROM user;
 ```
+
+
+
 
 
 

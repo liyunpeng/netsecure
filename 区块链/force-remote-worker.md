@@ -8,48 +8,7 @@
 
 32G 只有一个机会
 
-测试人员开测
-
-
-
-
-
-
-
-
------
-核数不能沾满， 要不恨难ssh很难连上
-
-p2 p3 会把核占满 ， 要留下2 个核  
-
-p1 主要 io卡住
-
-用root用户看。iostate, sda系统盘
-
-打开文件数目没限制， 900万个没问题， 
-
----
-sealer 应该挂在 /mnt/md1, 
-从 df -h  应该看到 /sealer下挂载了 md1盘， 如果挂载了sda盘， 这是系统盘， 做p1时会严重影响速度。 
-
-
-iostate -ix 看下写的状态
-
----
-
-
-
----
-这8组在跑32G sector， 
-
-
-
-
-
-
- 
- 
- 
+测试人员开测 
 #### P1
 p1 做sector开始的部分，包括存储空间，时空证明，非常耗时间的。 
 P1 起Nfs , P1到P6共享此nfs。
@@ -73,6 +32,8 @@ P1是所有P中最耗时的， P1会产生非常大的中间文件， p1产生�
 /sealer/nfs/10.10.4.23/cache
 目录下。 
 
+
+可以用8组在跑32G sector， 
 
 #### P2与P3合并
 P2 会计算出 最终放在 存储服务器的块。 
@@ -121,18 +82,58 @@ num = 1
 supported_phase = ["CopyTask","CleanTask"]
 wait_sec = 60
 ```
+配置文件的详细解释：
+```
+[fil@yangzhou010010019017 ~]$ cat config.toml
+scheduler_url = "http://10.10.19.17:3456"
+local_dir = "/sealer"
 
-####  限速
 copy_limit_mb_per_sec = 500
 500是限速度， 因为P1到P6 都在使用网络， 对每个P限制最大速度
 
-#### force-remote-worker查询任务的频率
-wait_sec = 60
-force-remote-worker 每60秒 到sealer 分发的task表读任务，  读到任务就把is-taken字段 指1， 表示这个任务已经被 orce-remote-worker领取
 
-#### P1 到 P6 的编排
+group_id= [1]
+sector_size = 536870912
+ip = "10.10.19.17"
+
+[[worker]]
+num = 1
+表示只有1个这样的worker， 一个worker是一个线程
+
 supported_phase = ["PreCommitPhase1","PreCommitPhase2","CommitPhase1","CommitPhase2"]
-表示一个work做这4个事情， 
+表示一个work做这4个事情，
+
+wait_sec = 60
+force-remote-worker 每60秒 到sealer 分发的task表读任务， 读到任务就把is-taken字段置1， 表示这个任务已经被 orce-remote-worker领取
+
+
+[[worker]]
+num = 1
+supported_phase = ["CopyTask","CleanTask"]
+wait_sec = 60
+```
+
+
+
 
 ### 启动force-remote-worker
+```
 RUST_LOG=debug BELLMAN_PROOF_THREADS=3 RUST_BACKTRACE=1 nohup ./force-remote-worker > force-remote-worker.log 2>&1 &
+```
+
+
+### 问题排查
+
+#### 设置核数， 避免被force-remote-worker占满
+核数不能占满， 要不ssh很难连上
+p2 p3 会把核占满 ， 要留下2 个核  
+打开文件数目没限制， 900万个驶过没问题， 
+
+####  /sealer 挂错了磁盘， 导致P1卡住
+p1阶段， 系统搞的非常慢，p1容易在io卡住
+用root用户看iostate -ix 看下写的状态
+最后发现， /sealer挂上了sda系统盘
+sealer 应该挂上md1磁盘。
+从 df -h  应该看到 /sealer下挂载了 md1盘， 如果挂载了sda盘， 这是系统盘， 做p1时会严重影响速度。 
+
+

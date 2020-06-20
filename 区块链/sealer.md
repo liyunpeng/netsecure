@@ -1,19 +1,7 @@
 
-
-
 ### 启动sealer前的准备
-初始化主要把矿工相应的信息提交到区块链
-拿到矿工号， 就为poster， sealer做初始化: 
-初始化主要把矿工相应的信息提交到区块链，如果上链成功的话(这个过程将花费 30-60s)，此命令应成功返回。
-```
-TRUST_PARAMS=1 ./lotus-storage-miner init --owner=t01004 --nosync  --sector-size 34359738368
-```
-
---owner=t01004 矿工号
---sector-size 34359738368 出块的大小
-512M为536870912，32G为34359738368，64G为68719476736。
-
-
+ miner 初始化， 在 《搭建公有链》 有叙述
+ 
 ### 启动sealer
 sealer 一般在另一台主机启动， 这里为学习方便， 用本机的root用户启动 sealer
 要注意端口号的重复
@@ -59,8 +47,8 @@ FORCE_BUILDER_TASK_TOTAL_NUM  一般是 FORCE_BUILDER_P1_WORKERS  的2倍加1
 #### 1. 发任务
 把任务写到数据库，实现发任务
 
-#### 2. sealer 坚挺数据库， 将p2，p4完成的消息发给lotus
-P2， P4通过中间数据库发送消息
+#### 2. sealer每隔一段时间读取数据库， 将p2，p4完成的消息发给lotus
+P2，P4通过中间数据库发送消息
 P1到P6与外界的联系只有中间数据库方式。 没有其他方式， 消息队列，微服务，api服务等都没有。  
 
 P2 结束会将tasks表质1， sealer每60秒读一次表， 最终将消息发到链上， 
@@ -68,9 +56,7 @@ P4 结束后也会同样机制发消息到链上， P4消息正常处理后，�
 
 p4正常工作完，表示 P4所在的sector已经上到链上， sectors表也会把相应的sector的状态改为proving. 
 
-只有sector进入proving状态，矿工的硬盘大小和cpu速度等信息都会提交到了链上， 这时矿工的算力才会被计算出来， 
-
-miner info 才能看到有算力输出， 
+只有sector进入proving状态，矿工的硬盘大小和cpu速度等信息都会提交到了链上， 这时矿工的算力才会被计算出来， miner info 才能看到有算力输出， 
 
 P2 P4 发消息机制
 P2 做完之后， 会修改tasks表的一个字段， sealer每分钟扫描tasks表， 这个字段被sealer扫到，sealer 就会把消息发给 lotus， 如果lotus启动配置msg-api配置， lotus就会自己把消息发到链上，如果有配置msg-api, lotus就会把消息发给lotus-message, 由lotus-message把消息发到链上。 
@@ -79,6 +65,11 @@ P2 发的消息， 在网页上看到的方法列的名字是 PreCommitSector
 P4 发的消息， 在网页上看到的方法列的名字是 ProveCommitSector
 
 消息发到链上， 指消息会广播链上的所有节点， 有时， 链产生了分叉， 需要lotus-message 手动发送消息， 只有消息发到链上， sector才能上链。
+
+### sealer正常的判读
+tasks表正常
+
+sealer.log没有error
 
 ### 问题排查
 ####  1. 如果media-info表没填， sealer.log会包 Call xx sector错误。
@@ -89,7 +80,7 @@ media-infos 表 缺少了一行， 确保media-infos的sector,  从config.toml�
 重启sealer
 
 
-### sealer没有起来的排查
+####  2. sealer没有起来的排查
 
 sealer 没起来， sealer.log抱：
 failed to load miner actor state: address not found 

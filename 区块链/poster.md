@@ -1,12 +1,13 @@
 ### poster主要做的事情
 
 poster 做windowpost 和出块两件事情， 
-#### 一， 做window post证明， 
-P4消息发到链上后， 
-从浏览器看到provencommit的success，
-同时sectors表能看到proving, 表示块已经上链了。 
 
-块上链了， poster就可以做window post证明， 不是立即做， 要等一会， 
+#### 一， 对sector做window post证明， 
+P4消息发到链上后， 
+从浏览器看到provencommit的success，  表示这个消息所对应的sector的信息已经上链了, 简称sector上链
+同时sectors表能看到proving, 
+
+sector上链了， poster就可以对这个sector做window post证明， 不是立即做， 要等一会.  
 
 从poster.log看到：
 ```
@@ -15,9 +16,11 @@ P4消息发到链上后，
 2020-06-19T10:36:08.098+0800	INFO	storageminer	running windowPost	{"chain-random": "5ayz5dvY4RxqH1gBB1LkirBOoXwWmcGgfd2Nf4C6Zic=", "deadline": {"CurrentEpoch":43710,"PeriodStart":40830,"Index":30,"Open":43710,"Close":43806,"Challenge":43690,"FaultCutoff":43690}, "height": "43710", "skipped": 0}
 202
 ```
-poster 完成证明， 比如用户32G数据保存在我这里，  我要每过一段时间，证明数据在我这里， 没有丢失， 这个叫时空证明， 
+poster对sector做完证明后， 会把证明完成的消息发到链上， 这个消息的method叫SubmitWindowedPoSt
 
 
+poster做的这个证明叫postwindow证明， 也叫时空证明。  
+时空证明可以简单的这样理解：比如用户32G数据保存在我这里，我要每过一段时间，证明数据在我这里， 没有丢失， 这个叫时空证明， 
 
 从 proving deadlines 可以看到 window post的证明情况
 ```
@@ -34,8 +37,6 @@ deadline  sectors  partitions  proven
 
 poster完成一次证明， 会向链上发一条SubmitWindowedPoSt 消息， 
 可以在浏览器消息里method列看到这个消息。 
-
-
 #### 二， 出块
 出块，是本节点获得出块权， 将链上消息打包。 
 
@@ -43,22 +44,30 @@ poster完成一次证明， 会向链上发一条SubmitWindowedPoSt 消息，
 
 ./lotus chain list 每一行就是一个高度：
 包括高度值， 高度上每个快的的hash值，和出该块的矿工号
-  
 ```
 [fil@yangzhou010010019017 ~]$ ./lotus chain list
 43750: (Jun 19 10:37:13) [ bafy2bzacednb2uww5i57guren4muxmmujir7i3ixrxzgf6njtr3f7libadivm: t01003, ]
 ```
 
-
-矿工在出块前要对此块与前一个块之间的所有消息打包，  
+矿工在出块前要对此块与前一个块之间的所有消息进行打包，  
 
 每个节点向链上发消息， 都要为消息处理付一定的费用
 
-此块与前一个块的消息的所有缴纳的费用总和都转入此次消息打包的矿工的账号 
+此块与前一个块的消息的所有缴纳的费用全部都转入此次消息打包的矿工账号 
 
 
-### 从算力看poster是否正常
+### poster生成的文件
 
+#### 1. 文件
+证明文件   /mnt/nfs/10.10.4.23/caches
+
+##### 2. 数据库表
+
+
+### log 信息
+
+
+### 判断poster是否正常
 #### 1. 查看算力
 ```
 [fil@yangzhou010010019017 ~]$ ./lotus-storage-miner info
@@ -79,25 +88,30 @@ Worker Balance: 945.389642209971088202
 Market (Escrow):  0
 Market (Locked):  0
 ```
-
-详细解释：
+上面的信息详细解释：
 ```
 [fil@yangzhou010010019017 ~]$ ./lotus-storage-miner info
 Mode: poster
+表示是一个poster
+
 Miner: t01003
+
 Sector Size: 2 KiB
+sector大小为2Kb， 目前真实网络的sector是32G
+
 Byte Power:   588 KiB / 600 KiB (98.0000%)。
-原值算力, 600KiB 是全网sector的总大小，算力是sector大小的倍数， 算力也可以是百分比， 即占全网的算力的百分数
+原值算力, 600KiB 是全网的总算力， 即全网所有sector的总大小。 
+算力是sector大小的倍数， 算力也可以是百分比， 即占全网的算力的百分数
  
 Actual Power: 588 Ki / 690 Ki (85.2173%)。
-有效算力， 会被乘10，但没有写入， 维持原有
+有效算力，有写入，会被奖励， 会被乘10.  这里没有写入，和原值算力相等
 
 	Committed: 2.69 MiB  
-   已经提交的快对应的sector总大小有2.6M
+   已经上链的sector总大小有2.6M， 上链是指sector的消息，sector的位置，大小等所有     信息都在这个消息里
 
 	Proving: 588 KiB (2.12 MiB Faulty, 78.66%)
-   虽然块已经上链，但这些块对应的sector没有被poster做时空证明，即poster没有证明这些sector还存在
-   完成证明的sector只有588K， 没有被证明的sector有2.12M， 即78%没有被证明， 没有证明， 算里会被惩罚， 所以算力到了588K， 就没有增长。
+   虽然有很多sector已经上链，但其中很多sector没有被poster做时空证明，即poster没有证明这些sector还存在。
+   这里完成证明的sector只有588K， 没有被证明的sector有2.12M， 即78%没有被证明， sector上链了， 但没有证明， 算力会被惩罚，所以算力到了588K， 就没有增长。
 	
 Expected block win rate: 43200.0000/day (every 2s)
 
@@ -109,7 +123,6 @@ Worker Balance: 945.389642209971088202
 Market (Escrow):  0
 Market (Locked):  0
 ```
-
 所以commited 很多， 而proving很少时， 就说明 poster不正常了。 
     
 
@@ -140,19 +153,21 @@ poster每隔40分钟， 做一次任务， 36个sector需要证明， 但是prov
 [fil@yangzhou010010019017 ~]$ cat poster.log | grep -ai error
 2020-06-19T10:23:20.163+0800	ERROR	storageminer	when running wdpost for partition 466, got err could not read from path="/mnt/218/cache/s-t01003-2218/p_aux"
     No such file or directory (os error 2)
+```
+poster会把证明文件存放到一个路径下 ，这个路径拼接而成. 
 
-    
-[fil@yangzhou010010019017 ~]$ cd /mnt/222/cache/s-t01003-2222/
--bash: cd: /mnt/222/cache/s-t01003-2222/: No such file or directory
-poset 
+poster会调用lotus-server获取， lotus-server读数据库获取， 返回给poster
+
+lotus-server读取的表为storage-nodes表：
+```
+1	10.10.4.23	1	10.10.4.23	nfs
+```
+最后拼接出的路径为:
+```
+/mnt/nfs/10.10.4.23/caches
 ```
 
-    
-检查 storage-nodes表：
-1	10.10.4.23	1	10.10.4.23	nfs
-确定正常
-
-检查 poster 制定参数的地方
+据此判断， poster启动时没有带上server-api,  制定参数的地方
 ```
 [fil@yangzhou010010019017 ~]$ ps -ef | grep lotus
 fil       7050     1  1 Jun18 ?        00:18:18 ./lotus-storage-miner run --mode=poster --dist-path=/mnt --nosync
