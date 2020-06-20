@@ -71,6 +71,11 @@ GLOBAL OPTIONS:
 
 ### 链接到比较快的节点
 
+如果小于3个， 说明没连上， 
+
+一旦连上， net peers 会一下子看到很多节点， 因为是p2p的， 连到了比较快的群里的一个节点， 马上就能连到群里的其他节点。 
+
+
 lotus net peers 可以看到多个链接节点， lotus会起3个worker，每个worker就是一个并行的线程， 每个worker都会去连peers里的一个节点， lotus sync status 看到的就是这三个work
 
 如果链同步慢， 可以手动去连一个快的节点：

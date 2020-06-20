@@ -1,5 +1,35 @@
  
 
+###  帮助
+```
+[fil@yangzhou010010019017 ~]$ ./lotus-message -h
+NAME:
+   lotus-message - Filecoin message server
+
+USAGE:
+   lotus-message [global options] command [command options] [arguments...]
+
+VERSION:
+   0.1.0
+
+COMMANDS:
+     daemon   Start a lotus daemon process
+     help, h  Shows a list of commands or help for one command
+   basic:
+     wallet   Manage wallet
+     message  Manage message
+   developer:
+     auth  Manage RPC permissions
+   network:
+     net  Manage P2P Network
+
+GLOBAL OPTIONS:
+   --help, -h     show help (default: false)
+   --version, -v  print the version (default: false)
+```
+
+
+
 ### lotus-message 需要创建的表
 创建需要的表：
 ```
@@ -25,7 +55,7 @@ CREATE TABLE `signed_msgs` (
 ```
 
 ### lotus-message  改变数据库地址过程
-因为会有大量消息， 专门一个数据库， 共给lotus-message 使用，
+因为会有大量消息， 用专门的一个数据库， 共给lotus-message 使用，
 
 建立两个lotus-message要用的表wallets，signed_msgs
 
@@ -37,7 +67,6 @@ CREATE TABLE `signed_msgs` (
 
 lotus-message net peers 检查链接的链
 
-如果小于3个， 说明没链上， 
 
 到其他节点， 用 net peers， 考出来一个链接地址， 
 
@@ -50,7 +79,17 @@ lotus-message wallet list ,
 看一下nonce值是否加1， 加上1表示lotus-message正常
 
 ### 消息的种类和含义
-
+全部方法
+变更节点编号
+变更矿工地址
+Constructor
+地址管理
+DeclareFaults
+数据预提交
+数据提交证明
+提交时空证明
+转账
+WithdrawBalance
 
 
 

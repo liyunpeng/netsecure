@@ -16,8 +16,7 @@ sector上链了， poster就可以对这个sector做window post证明， 不是�
 2020-06-19T10:36:08.098+0800	INFO	storageminer	running windowPost	{"chain-random": "5ayz5dvY4RxqH1gBB1LkirBOoXwWmcGgfd2Nf4C6Zic=", "deadline": {"CurrentEpoch":43710,"PeriodStart":40830,"Index":30,"Open":43710,"Close":43806,"Challenge":43690,"FaultCutoff":43690}, "height": "43710", "skipped": 0}
 202
 ```
-poster对sector做完证明后， 会把证明完成的消息发到链上， 这个消息的method叫SubmitWindowedPoSt
-
+poster对sector做完证明后， 会把证明完成的消息发到链上， 这个消息的method叫SubmitWindowedPoSt, 网页用中文显示，可以看到提交时空证明。 P4提交的证明叫做数据提交证明。 
 
 poster做的这个证明叫postwindow证明， 也叫时空证明。  
 时空证明可以简单的这样理解：比如用户32G数据保存在我这里，我要每过一段时间，证明数据在我这里， 没有丢失， 这个叫时空证明， 
@@ -33,7 +32,7 @@ deadline  sectors  partitions  proven
 4         36       18          0
 5         36       18          0
 ```
-现在是每隔40分钟证明一次，  一次证明一个partition, 一个partion包括两个sector. proven是证明的partiton的个数 
+现在是每隔40分钟证明一次，一次证明一个partition, 一个partion包括两个sector. proven是证明的partiton的个数 
 
 poster完成一次证明， 会向链上发一条SubmitWindowedPoSt 消息， 
 可以在浏览器消息里method列看到这个消息。 
