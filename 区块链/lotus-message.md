@@ -63,35 +63,31 @@ CREATE TABLE `signed_msgs` (
 
 重启lotus-message 
 
-然后 lotus wallet export , lotus-message wallet import 密钥， 
+然后 `lotus wallet export` , `lotus-message wallet import 密钥`， 
 
 lotus-message net peers 检查链接的链
-
 
 到其他节点， 用 net peers， 考出来一个链接地址， 
 
 本机节点再连这个地址； 地址两部分组成， 一个net peers看到的， 一个
 
+#### ./lotusmessage
+
+
 ### 通过转账， 看lotus-message是否正常
 因为32G 运算时间很长，正常情况， 看lotus-message能否正常工作， 要等到P2做完发消息， 才会走到lotus-message,  而P2又要等P1做完， 时间很长，  
-为了尽早的看到lotus-message 能否正常收发消息， 可以用其他节点给这个lotus-message所在节点的矿工转一笔钱，然后本节点用 
+为了尽早的看到lotus-message 能否正常收发消息，可以用其他节点给这个lotus-message所在节点的矿工转一笔钱，然后本节点用 
 lotus-message wallet list , 
 看一下nonce值是否加1， 加上1表示lotus-message正常
 
 ### 消息的种类和含义
-全部方法
-变更节点编号
-变更矿工地址
-Constructor
-地址管理
-DeclareFaults
-数据预提交
-数据提交证明
-提交时空证明
-转账
-WithdrawBalance
-
-
+|  中文  | 英文  |  发起时间点
+|  ----  | ----  | ---- |
+变更节点编号  | ChangePeerID |  
+地址管理  | ControlAddresses |   
+数据预提交  | PreCommitSector |  P2结束
+数据提交证明 | ProveCommitSector |  P4结束
+提交时空证明 | SubmitWindowedPoSt  |  poster
 
 
 ### 上链与出块

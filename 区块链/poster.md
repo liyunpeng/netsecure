@@ -1,3 +1,4 @@
+
 ### poster主要做的事情
 
 poster 做windowpost 和出块两件事情， 
@@ -7,7 +8,7 @@ P4消息发到链上后，
 从浏览器看到provencommit的success，  表示这个消息所对应的sector的信息已经上链了, 简称sector上链
 同时sectors表能看到proving, 
 
-sector上链了， poster就可以对这个sector做window post证明， 不是立即做， 要等一会.  
+sector上链之后， poster就可以对这个sector做windowpost证明， 不是立即做， 要等一会. 而且以后要每隔固定时间， 都要做windowpost证明 
 
 从poster.log看到：
 ```
