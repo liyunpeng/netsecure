@@ -29,7 +29,6 @@ GLOBAL OPTIONS:
 ```
 
 
-
 ### lotus-message 需要创建的表
 创建需要的表：
 ```
@@ -71,7 +70,8 @@ lotus-message net peers 检查链接的链
 
 本机节点再连这个地址； 地址两部分组成， 一个net peers看到的， 一个
 
-#### ./lotusmessage
+#### ./lotusmessage 文件查看
+
 
 
 ### 通过转账， 看lotus-message是否正常

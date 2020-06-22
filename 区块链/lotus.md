@@ -9,18 +9,16 @@ https://interopnet.filscan.io/#/
 点from 字段， 可以看到该t3发出的所有消息， 
 
 method 是消息类型， 
-
 PreCommitSector 是p2 发出的消息
 ProveCommitSector 是p4 发出的消息
 transfer 是转账消息
 
 
-查看当前开发网络最新区块高度和其他网络指标： https://lotus-metrics.kittyhawk.wtf/chain 
-
+查看当前开发网络最新区块高度和其他网络指标： 
+https://lotus-metrics.kittyhawk.wtf/chain 
 
 获取测试币：
 https://lotus-faucet.kittyhawk.wtf/funds.html
-
 
 查看最新点出块高度，以及出块时间
 https://stats.testnet.filecoin.io/d/z6FtI92Zz/chain?orgId=1&refresh=45s&from=now-30m&to=now&kiosk
@@ -74,7 +72,6 @@ GLOBAL OPTIONS:
 如果小于3个， 说明没连上， 
 
 一旦连上， net peers 会一下子看到很多节点， 因为是p2p的， 连到了比较快的群里的一个节点， 马上就能连到群里的其他节点。 
-
 
 lotus net peers 可以看到多个链接节点， lotus会起3个worker，每个worker就是一个并行的线程， 每个worker都会去连peers里的一个节点， lotus sync status 看到的就是这三个work
 
