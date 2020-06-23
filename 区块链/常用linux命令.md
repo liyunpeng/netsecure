@@ -1,3 +1,5 @@
+
+
 ### 版本查看
 ```
 [root@yangzhou010010019017 ~]# cat /etc/redhat-release
