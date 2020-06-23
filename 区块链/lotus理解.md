@@ -1,3 +1,12 @@
+
+### centos编译Lotos
+1 操作系统差异 
+   一开始使用的是亚马逊的虚拟机来编译，系统是amzn2.x86_64，不是centos。导致编译环境的依赖项装不上
+2 openCL 依赖
+   这个问题 通过执行 yum install epel-release （波波提供的方法）来解决
+3 golang版本
+   为了方便就用yum install go 来安装go, 这样安装的版本现在是1.13.13。可以完成编译，生成的lotus等二进制文件也可用。但是在做私链时，lotus 起不来，报错说不能创建lp2p的host。
+   后来把go卸载了 装上1.14.3版后重新编译后，运行正常
 Lotus
 Lotus is an implementation of the Filecoin Distributed Storage Network. A Lotus node syncs blockchains that follow the Filecoin protocol, validating the blocks and state transitions. The specification for the Filecoin protocol can be found here.
 
@@ -9,8 +18,9 @@ At a high level, a Lotus node comprises the following components:
 
 FIXME: No mention of block production here, cross-reference with schomatis's miner doc
 
-The Syncer, which manages the process of syncing the blockchain
-同步器：  管理区块链的同步过程
+
+### 状态
+
 The State Manager, which can compute the state at any given point in the chain
 状态管理器：  根据链的给定状态，计算出下一个状态。 
 
@@ -18,82 +28,91 @@ The State Manager, which can compute the state at any given point in the chain
 The Virtual Machine (VM), which executes messages
 The Repository, where all data is stored
 
+### 虚拟机
 虚拟机： 所有的数据保存在一个仓库里， 执行传送到这个仓库的消息
+chain/vm/vm.go.   虚拟机执行消息
 
+### P2P
 P2P stuff (FIXME missing libp2p listed under other PL dependencies)? allows hello, blocksync, retrieval, storage
-API / CLI (FIXME missing, in scratchpad)
-Other Filecoin dependencies (specs actors, proofs, storage, etc., FIXME missing)
-Is the Builder worth its own component?
-Other PL dependencies (IPFS, libp2p, IPLD? FIXME, missing)
-External libraries used by Lotus and other deps (FIXME, missing)
-Preliminaries
-We discuss some key Filecoin concepts here, aiming to explain them by contrasting them with analogous concepts in other well-known blockchains like Ethereum. We only provide brief descriptions here; elaboration can be found in the spec.
+libp2p 协议实现： 
+node/hello/hello:  节点之间的互联
 
-Tipsets
 
-Unlike in Ethereum, a block can have multiple parents in Filecoin. We thus refer to the parent set of a block, instead of a single parent. A tipset is any set of blocks that share the same parent set.
+### api cli
+API / CLI 
+api/client/client.go 注册api jsonrpc服务
 
-There is no concept of "block difficulty" in Filecoin. Instead, the weight of a tipset is simply the number of blocks in the chain that ends in that tipset. Note that a longer chain can have less weight than a shorter chain with more blocks per tipset.
 
-We also allow for "null" tipsets, which include zero blocks. This allows miners to "skip" a round, and build on top of an imaginary empty tipset if they want to.
 
-We call the heaviest tipset in a chain the "head" of the chain.
+### Tipsets
 
-Actors and Messages
+一个长的链可能比一个短的链的权重小， 因为短的链， 可能每个tipset容纳了更多的块. 
 
-An Actor is analogous to a smart contract in Ethereum. Filecoin does not allow users to define their own actors, but comes with several builtin actors, which can be thought of as pre-compiled contracts.
+允许空的tipsets,  
+链上最重的tipset叫做链的头
 
-A Message is analogous to transactions in Ethereum.
+### Actors and Messages
+actor类似于以太坊的智能合约
+
+filecoin不允许用户自己定义actor,  但是可以选择内建的actor, 这些actor可以理解为事先编译好的和约。 
+
+一次消息类似于以太坊的一次交易transactions
+
+
+### 同步器
+The Syncer, which manages the process of syncing the blockchain
+同步器：  管理区块链的同步过程
+chain/sync.go. syncer类负责链同步
+
 
 Sync
-Sync refers to the process by which a Lotus node synchronizes to the heaviest chain being advertised by its peers. At a high-level, Lotus syncs in a manner similar to most other blockchains; a Lotus node listens to the various chains its peers claim to be at, picks the heaviest one, requests the blocks in the chosen chain, and validates each block in that chain, running all state transitions along the way.
 
-The majority of the sync functionality happens in the Syncer, internally managed by a SyncManager.
+lotus节点会监控他所peer到的不同的链，  选择其中权重最重的一个链，  请求选定链上的块， 验证链上的每一个块，  同时运行状态转换。 
+
 同步的大多数工作 在syncer完成， 内部由syncmanager管理
 
 
 
 We now discuss the various stages of the sync process.
-
-Sync setup
+#### 同步的不同阶段
+#### 1。 Sync setup
 
 When a Lotus node connects to a new peer, we exchange the head of our chain with the new peer through the hello protocol. If the peer's head is heavier than ours, we try to sync to it. Note that we do NOT update our chain head at this stage.
+一个Lotus链接到一个新的peer时， 通过Hello协议，将本地链的头和新的peer的头交换信息， 如如果新的Peer的头比本地链的头重， 就会同步这个peer. 在这个阶段， 不会更新本地链的头。 
 
-
+#### 2. 获取并持久化链的头部
 Fetching and Persisting Block Headers
 
 Note: The API refers to these stages as StageHeaders and StagePersistHeaders.
+与这个阶段相关的api为StageHeaders和StagePersistHeaders。 
 
 We proceed in the sync process by requesting block headers from the peer, moving back from their head, until we reach a tipset that we have in common (such a common tipset must exist, thought it may simply be the genesis block). The functionality can be found in Syncer::collectHeaders().
-
+同步的过程为： 请求获取peer的head， 在peer上，从这个head不断往后移， 一直找到与本地链相同的tipset相同的位置， 这个tipset必须存在， 即使是创世块genesis. 
 
 
 If the common tipset is our head, we treat the sync as a "fast-forward", else we must drop part of our chain to connect to the peer's head (referred to as "forking").
 
-
-
-
+如果这个相同的tipset是本地链的head,  同步就可以直接向前推进， 即fast-forward,  如果不是， 就必须删除本地链中和相同tipset相同这一段的所有的快， 以避免分叉。 
 
 FIXME: This next para might be best replaced with a link to the validation doc Some of the possible causes of failure in this stage include:
 
-
-
 The chain is linked to a block that we have previously marked as bad, and stored in a BadBlockCache.
-
-
 
 The beacon entries in a block are inconsistent (FIXME: more details about what is validated here wouldn't be bad).
 Switching to this new chain would involve a chain reorganization beyond the allowed threshold (SPECK-CHECK).
+
+##### 3. 获取并验证块的阶段
 Fetching and Validating Blocks
-
-
-
-
 Note: The API refers to this stage as StageMessages.
+与这个阶段相关的api为StageMessages
 
 Having acquired the headers and found a common tipset, we then move forward, requesting the full blocks, including the messages.
+找到了相同的tipset, 下一步就是请求获取全部的块
 
 For each block, we first confirm the syntactic validity of the block (SPECK-CHECK), which includes the syntactic validity of messages included in the block. We then apply the messages, running all the state transitions, and compare the state root we calculate with the provided state root.
+对于每一个快， 都要对块做合法性检查， 然后就发布消息， 这些消息会使状态撞扁。 
+
+
 
 FIXME: This next para might be best replaced with a link to the validation doc Some of the possible causes of failure in this stage include:
 
@@ -102,23 +121,37 @@ the computed state root after applying the block doesn't match the block's state
 FIXME: Check what's covered by syntactic validity, and add anything important that isn't (like proof validity, future checks, etc.)
 The core functionality can be found in Syncer::ValidateTipset(), with Syncer::checkBlockMessages() performing syntactic validation of messages.
 
-Setting the head
+这个阶段失败的可能原因： 
+没通过块的合法性检查， 
+发布消息后，计算出的状态根没有和块的状态根匹配上
+
+Syncer::checkBlockMessages() 对消息块检查， 核心函数是Syncer::ValidateTipset()
+
+#### 4. Setting the head
 
 Note: The API refers to this stage as StageSyncComplete.
+与这个阶段相关的api是StageSyncComplete
 
 If all validations pass we will now set that head as our heaviest tipset in ChainStore. We already have the full state, since we calculated it during the sync process.
 
+如果验证通过了， 设置head为最重的tipset.  
+
 FIXME (aayush) I don't fuilly understand the next 2 paragraphs, but it seems important. Confirm and polish. Relevant issue in IPFS: https://github.com/ipfs/ipfs-docs/issues/264
 
-It is important to note at this point that similar to the IPFS architecture of addressing by content and not by location/address (FIXME: check and link to IPFS docs) the "actual" chain stored in the node repo is relative to which CID we look for. We always have stored a series of Filecoin blocks pointing to other blocks, each a potential chain in itself by following its parent's reference, and its parent's parent, and so on up to the genesis block. (FIXME: We need a diagram here, one of the Filecoin blog entries might have something similar to what we are describing here.) It only depends on where (location) do we start to look for. The only address/location reference we hold of the chain, a relative reference, is the heaviest pointer. This is reflected by the fact that we don't store it in the Blockstore by a fixed, absolute, CID that reflects its contents, as this will change each time we sync to a new head (FIXME: link to the immutability IPFS doc that I need to write).
+It is important to note at this point that similar to the IPFS architecture of addressing by content and not by location/address (FIXME: check and link to IPFS docs) the "actual" chain stored in the node repo is relative to which CID we look for. 
+通过内容寻址， 而不是通过地址或位置寻址。 
+
+We always have stored a series of Filecoin blocks pointing to other blocks, each a potential chain in itself by following its parent's reference, and its parent's parent, and so on up to the genesis block. (FIXME: We need a diagram here, one of the Filecoin blog entries might have something similar to what we are describing here.) It only depends on where (location) do we start to look for. The only address/location reference we hold of the chain, a relative reference, is the heaviest pointer. This is reflected by the fact that we don't store it in the Blockstore by a fixed, absolute, CID that reflects its contents, as this will change each time we sync to a new head (FIXME: link to the immutability IPFS doc that I need to write).
+
+在blockstore不会存储 固定的，绝对的cid. 因为每次同步到新的head时，都会改变
 
 FIXME: Create a further reading appendix, move this next para to it, along with other extraneous content This is one of the few items we store in Datastore by key, location, allowing its contents to change on every sync. This is reflected in the (*ChainStore) writeHead() function (called by takeHeaviestTipSet() above) where we reference the pointer by the explicit chainHeadKey address (the string "head", not a hash embedded in a CID), and similarly in (*ChainStore).Load() when we start the node and create the ChainStore. Compare this to a Filecoin block or message which are immutable, stored in the Blockstore by CID, once created they never change.
 
-Keeping up with the chain
+#### 5. Keeping up with the chain
 
 A Lotus node also listens for new blocks broadcast by its peers over the gossipsub channel (see FIXME for more). If we have validated such a block's parent tipset, and adding it to our tipset at its height would lead to a heavier head, then we validate and add this block. The validation described is identical to that invoked during the sync process (indeed, it's the same codepath).
 
-State
+### State
 In Filecoin, the chain state at any given point is a collection of data stored under a root CID encapsulated in the StateTree, and accessed through the StateManager. The state at the chain's head is thus easily tracked and updated in a state root CID. (FIXME: Talk about CIDs somewhere, we might want to explain some of the modify/flush/update-root mechanism here.))
 
 Calculating a Tipset State

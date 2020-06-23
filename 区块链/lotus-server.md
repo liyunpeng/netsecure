@@ -25,12 +25,22 @@ overlay         2.0T   93G  2.0T    5% /var/lib/docker/overlay2/95cb42c1924211e4
 #####  挂载nfs文件系统
 ```
 [root@yangzhou010010019017 ~]# mount -t nfs -o hard,nolock,rw,user,rsize=1048576,wsize=1048576,vers=3 10.10.4.23:/mnt/storage  /mnt/nfs/10.10.4.23
+
+
+10.10.4.23:/mnt/storage 表示 在10.10.4.23地址的主机上的 /mnt/storage挂载的文件系统
+
+
+新部署：
+[root@yangzhou010010019017 ~]# mount -t nfs -o hard,nolock,rw,user,rsize=1048576,wsize=1048576,vers=3 10.10.1.11:/mnt/storage  /mnt/
+
 ```
 
 若要开机挂载， 就在rc.local中加：
 ```
 root@yangzhou010010019017 ~]# cat /etc/rc.local
 ```
+
+
 
 ##### 查看新的挂载点
 ```
@@ -101,16 +111,6 @@ J
 5.7.30
 ```
 
-#### 复制数据库
-跳板机登陆到10.10.19.15
-```
-[root@yangzhou010010001015 ~]# ssh -p 62534 10.10.19.15
-Last login: Wed Jun 17 08:39:23 2020
-[root@yangzhou010010019015 ~]# ifconfig
-bond0: flags=5187<UP,BROADCAST,RUNNING,MASTER,MULTICAST>  mtu 1500
-        inet 10.10.19.15  netmask 255.255.0.0  broadcast 10.10.255.255
-```
-
 创建数据库lotus17a
 ```
 [root@yangzhou010010019015 ~]# mysql -uroot -pIpfs@123ky
@@ -118,14 +118,18 @@ mysql> create database `lotus17a` ；
 mysql> exit 
 ```
 
-数据库lotus的所有表复制到lotus17a：
-```
-[root@yangzhou010010019015 ~]#  mysqldump lotus -u root -pIpfs@123ky --add-drop-table | mysql lotus17a -u root -pIpfs@123ky
-mysqldump: [Warning] Using a password on the command line interface can be insecure.
-mysql: [Warning] Using a password on the command line interface can be insecure.
-[root@yangzhou010010019015 ~]# exit
-```
 
+### 数据库各表的关系
+
+medio-infos  定义了多少个存储柜
+1	1	nfs1	536870912	8001563222016	1	238465	1	0	0
+每个存储柜对一个存储节点， storage-id表示他所对应的存储节点id. 
+
+storage-nodes  表示有多少个存储节点.  存储节点具体用哪个存储柜，可以到media-infos表里查找。 存储节点是louts存数据的地方
+1	10.10.1.11	1	10.10.1.11	10.10.1.11
+
+groups  一个group里会包括p1 到P6 这些计算节点， 但存储节点只有一个。一个group就对应一个存储节点， 而且存储节点存放了groups的最重目标数据， 所以groups的编号和存储节点编号相同：
+1	10.10.1.11	10.10.1.11
 
 #### 数据库表中添加记录行：
 打开navicat,在fconfigs, groups表中添加数据 
@@ -174,11 +178,8 @@ fil      22667     1 22 Jun13 ?        09:20:20 ./force-remote-worker
 ```
 $ nohup ./lotus-server >lotus-server.log 2>&1 &
 ```
-
-
-### lotus-server.log    
-
-#### 数据库的监控
+#### 创建表
+lotus-server会检查json config制定的库里面， 有没有表， 没有会创建。 lotus-server.log 会看到创建表的记录： 
 ```
 [fil@yangzhou010010019017 ~]$ tail -100f lotus-server.log
 [2020-06-13 14:27:41]  [3.85ms]  CREATE TABLE `tasks` (`id` bigint(20) unsigned AUTO_INCREMENT,`sector_id` bigint(20) unsigned,`task_type` int(11),`miner` bigint(20) unsigned,`finished` tinyint(1) COMMENT '0表示未完成 1表示完成',`is_taken` int(10) unsigned COMMENT '0表示未被领取，1表示被领取',`ip` varchar(20),`params` longblob,`result` longblob,`err_msg` varchar(255),`result_status` int(11) COMMENT '0表示正常，1表示不正常可重启，2表示不正常不可重启',`worker_id` varchar(255),`create_time` datetime,`update_time` datetime , PRIMARY KEY (`id`))
@@ -236,8 +237,7 @@ $ nohup ./lotus-server >lotus-server.log 2>&1 &
  - using code:	gin.SetMode(gin.ReleaseMode)
 ```
 
-#### 路由服务请求
-
+#### 提供服务的路由
 ```
 [GIN-debug] GET    /ping                     --> gitlab.forceup.in/ForceMining/lotus-server/lotus_server.Pong (3 handlers)
 [GIN-debug] GET    /build-version            --> gitlab.forceup.in/ForceMining/lotus-server/lotus_server.Run.func1 (3 handlers)

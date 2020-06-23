@@ -4,6 +4,8 @@
 
 wget https://dev.mysql.com/get/mysql57-community-release-el7-9.noarch.rpm
 
+10.10.12.40
+
 
 
 2、然后进行repo的安装：
