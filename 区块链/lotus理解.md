@@ -154,21 +154,29 @@ A Lotus node also listens for new blocks broadcast by its peers over the gossips
 ### State
 In Filecoin, the chain state at any given point is a collection of data stored under a root CID encapsulated in the StateTree, and accessed through the StateManager. The state at the chain's head is thus easily tracked and updated in a state root CID. (FIXME: Talk about CIDs somewhere, we might want to explain some of the modify/flush/update-root mechanism here.))
 
-Calculating a Tipset State
+#### 1. Calculating a Tipset State
 
 Recall that a tipset is a set of blocks that have identical parents (that is, that are built on top of the same tipset). The genesis tipset comprises the genesis block(s), and has some state corresponding to it.
 
 The methods TipSetState() and computeTipSetState() in StateManager are responsible for computing the state that results from applying a tipset. This involves applying all the messages included in the tipset, and performing implicit operations like awarding block rewards.
+StateManager 里的TipSetState和computeTipSetState 用来计算 在施加消息后， tipset的状态变化， 这会消费掉tipset的所有消息， 并且分配奖励的隐士操作。 
 
-Any valid block built on top of a tipset ts should have its Parent State Root equal to the result of calculating the tipset state of ts. Note that this means that all blocks in a tipset must have the same Parent State Root (which is to be expected, since they have the same parent tipset)
 
-Preparing to apply a tipset
+
+Any valid block built on top of a tipset ts should have its Parent State Root equal to the result of calculating the tipset state of ts. 
+在tipset上的状态根， 应该和计算出的状态根相等。 
+
+Note that this means that all blocks in a tipset must have the same Parent State Root (which is to be expected, since they have the same parent tipset)
+
+
+
+#### 2. Preparing to apply a tipset
 
 When StateManager::computeTipsetState() is called with a tipset, ts, it retrieves the parent state root of the blocks in ts. It also creates a list of BlockMessages, which wraps the BLS and SecP messages in a block along with the miner that produced the block.
 
 Control then flows to StateManager::ApplyBlocks(), which builds a VM to apply the messages given to it. The VM is initialized with the parent state root of the blocks in ts. We apply the blocks in ts in order (see FIXME for ordering of blocks in a tipset).
 
-Applying a block
+#### 3.  Applying a block
 
 For each block, we prepare to apply the ordered messages (first BLS, then SecP). Before applying a message, we check if we have already applied a message with that CID within the scope of this method. If so, we simply skip that message; this is how duplicate messages included in the same tipset are skipped (with only the miner of the "first" block to include the message getting the reward). For the actual process of message application, see FIXME (need an internal link here), for now we simply assume that the outcome of the VM applying a message is either an error, or a MessageReceipt and some other information.
 
@@ -176,14 +184,14 @@ We treat an error from the VM as a showstopper; there is no recovery, and no mea
 
 We then proceed to apply the next block in ts, using the same VM. This means that the state changes that result from applying a message are visible when applying all subsequent messages, even if they are included in a different block.
 
-Finishing up
+##### 4. Finishing up
 
 Having applied all the blocks, we send one more implicit message, to the Cron Actor, which handles operations that must be performed at the end of every epoch (see FIXME for more). The resulting state after calling the Cron Actor is the computed state of the tipset.
 
-Virtual Machine
+### Virtual Machine
 The Virtual Machine (VM) is responsible for executing messages. The Lotus Virtual Machine invokes the appropriate methods in the builtin actors, and provides a Runtime interface to the builtin actors that exposes their state, allows them to take certain actions, and meters their gas usage. The VM also performs balance transfers, creates new account actors as needed, and tracks the gas reward, penalty, return value, and exit code.
 
-Applying a Message
+#### 1. Applying a Message
 
 The primary entrypoint of the VM is the ApplyMessage() method. This method should not return an error unless something goes unrecoverably wrong.
 
@@ -193,7 +201,7 @@ The VM then increments the sender's nonce, takes a snapshot of the state, and in
 
 The send() method creates a Runtime for the subsequent message execution. It then transfers the message's value to the recipient, creating a new account actor if needed.
 
-Method Invocation
+#### 2. Method Invocation
 
 We use reflection to translate a Filecoin message for the VM to an actual Go function, relying on the VM's invoker structure. Each actor has its own set of codes defined in specs-actors/actors/builtin/methods.go. The invoker structure maps the builtin actors' CIDs to a list of invokeFunc (one per exported method), which each take the Runtime (for state manipulation) and the serialized input parameters.
 
@@ -201,37 +209,40 @@ FIXME (aayush) Polish this next para.
 
 The basic layout (without reflection details) of (*invoker).transform() is as follows. From each actor registered in NewInvoker() we take its Exports() methods converting them to invokeFuncs. The actual method is wrapped in another function that takes care of decoding the serialized parameters and the runtime, this function is passed to shimCall() that will encapsulate the actors code being run inside a defer function to recover() from panics (we fail in the actors code with panics to unwrap the stack). The return values will then be (CBOR) marshaled and returned to the VM.
 
-Returning from the VM
+#### 3. Returning from the VM
 
 Once method invocation is complete (including any subcalls), we return to ApplyMessage(), which receives the serialized response and the ActorError. The sender will be charged the appropriate amount of gas for the returned response, which gets put into the MessageReceipt.
 
 The method then refunds any unused gas to the sender, sets up the gas reward for the miner, and wraps all of this into an ApplyRet, which is returned.
 
-Building a Lotus node
+### Building a Lotus node
 When we launch a Lotus node with the command ./lotus daemon (see here for more), the node is created through dependency injection. This relies on reflection, which makes some of the references hard to follow. The node sets up all of the subsystems it needs to run, such as the repository, the network connections, thechain sync service, etc. This setup is orchestrated through calls to the node.Override function. The structure of each call indicates the type of component it will set up (many defined in node/modules/dtypes/), and the function that will provide it. The dependency is implicit in the argument of the provider function.
 
 As an example, consider the modules.ChainStore() function that provides the ChainStore structure. It takes as one of its parameters the ChainBlockstore type, which becomes one of its dependencies. For the node to be built successfully the ChainBlockstore will need to be provided before ChainStore, a requirement that is made explicit in another Override() call that sets the provider of that type as the ChainBlockstore() function.
 
-The Repository
+### 1. The Repository
 
 The repo is the directory where all of a node's information is stored. The node is entirely defined by its repo, which makes it easy to port to another location. This one-to-one relationship means we can speak of the node as the repo it is associated with, instead of the daemon process that runs from that repo.
 
 Only one daemon can run be running with an associated repo at a time. A process signals that it is running a node associated with a particular repo, by creating and acquiring a repo.lock.
 
+```
 lsof ~/.lotus/repo.lock
 # COMMAND   PID
 # lotus   52356
+```
+
 Trying to launch a second daemon hooked to the same repo leads to a repo is already locked (lotus daemon already running) error.
 
 The node.Repo() function (node/builder.go) contains most of the dependencies (specified as Override() calls) needed to properly set up the node's repo. We list the most salient ones here.
 
-Datastore
+#### 1.1 Datastore
 
 Datastore and ChainBlockstore: Data related to the node state is saved in the repo's Datastore, an IPFS interface defined here. Lotus creates this interface from a Badger DB in FsRepo. Every piece of data is fundamentally a key-value pair in the datastore directory of the repo. There are several abstractions laid on top of it that appear through the code depending on how we access it, but it is important to remember that we're always accessing it from the same place.
 
 FIXME: Maybe mention the Batching interface as the developer will stumble upon it before reaching the Datastore one.
 
-Blocks
+#### 1.2 Blocks
 
 FIXME: IPFS blocks vs Filecoin blocks ideally happens before this / here
 

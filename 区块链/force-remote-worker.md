@@ -116,11 +116,51 @@ wait_sec = 60
 
 
 
+
+
 ### 启动force-remote-worker
 ```
 RUST_LOG=debug BELLMAN_PROOF_THREADS=3 RUST_BACKTRACE=1 nohup ./force-remote-worker > force-remote-worker.log 2>&1 &
 ```
 
+
+
+2020-06-23 17:45:39 DEBUG [hyper::client::pool] pooling idle connection for ("http", 10.10.11.39:3456)
+2020-06-23 17:45:39 DEBUG [reqwest::async_impl::client] response '200 OK' for http://10.10.11.39:3456/acquire-task
+2020-06-23 17:45:39 INFO [force_remote_worker::worker] {"code":0,"msg":"record not found","data":null}
+
+
+#### tasks表字段含义
+| is_finished | 含义| 
+|----|----|
+|0| 任务没完成|
+|1| 任务完成|
+
+
+| result_status | 含义| 
+|----|----|
+|0| 结果正常|
+|1| 还没结束|
+|2| 结果错误|
+
+只有is_finished为1， result_status为0， 才表示该P正常完成。 
+
+result_status为2 时， 可以手动设置为1， 这样这个P可以重做。 
+
+#### 排查sector表大量failed
+precommitfailed 消息，  就会直接走到32 任务，做清理， 中间不会经历4，8，16阶段。  
+
+
+
+应为大量的sector卡在32， 做32的worker太少， 
+修改force-remote-worker的配置文件config.toml,  p6 worker 的数量。 
+
+worker 
+512M 拷贝 30秒
+
+
+##### 任务做不过去， 没有在第一时见知道。 
+存储是错误的， 本来就是错误的， 是做不过去的， 但到了p3 或p5 才知道， 
 
 ### 问题排查
 
@@ -137,3 +177,57 @@ sealer 应该挂上md1磁盘。
 从 df -h  应该看到 /sealer下挂载了 md1盘， 如果挂载了sda盘， 这是系统盘， 做p1时会严重影响速度。 
 
 
+#### P1 做不下去的原因：
+```
+force-remote-worker log:
+2020-06-23 17:45:39 ERROR [force_remote_worker] failed to create out dir with: "/sealer/nfs/10.10.13.22/sealed"
+```
+这个/sealer/nfs/10.10.13.22/sealed是取数据库表storage-nodes拼接出来的字符串。 
+
+
+虽然/sealer挂载在10.10.10.21:/sealer， 但是也允许/sealer下创建其他ip的目录如
+/sealer/nfs/10.10.13.22
+
+```
+[fil@yangzhou010010011039 ~]$ df -h
+Filesystem                Size  Used Avail Use% Mounted on
+/dev/sda4                 1.1T  112G 1001G  11% /
+devtmpfs                   63G     0   63G   0% /dev
+tmpfs                      63G     0   63G   0% /dev/shm
+tmpfs                      63G   19M   63G   1% /run
+tmpfs                      63G     0   63G   0% /sys/fs/cgroup
+/dev/sda2                 3.9G  112M  3.5G   4% /boot
+/dev/sda3                 128M  4.0K  128M   1% /boot/efi
+10.10.10.21:/sealer        58T  113G   55T   1% /sealer
+tmpfs                      13G     0   13G   0% /run/user/0
+10.10.13.22:/mnt/storage   22T     0   21T   0% /mnt
+```
+worker会创建/sealer/nfs/10.10.13.22 但/sealer/nfs/ 是root用户， 755权限， fil用户无法创建这个目录。 
+
+查看/sealer 下到底有没有这个目录：
+```
+[root@yangzhou010010011039 10.10.11.21]# ll /sealer/nfs/10.10.11.21/
+总用量 8
+drwxr-xr-x. 58 root root 4096 6月  23 17:55 cache
+drwxrwxrwx.  2 root root 4096 6月  23 17:55 sealed
+```
+
+解决办法；  改变owner， 或改777权限
+```
+[root@yangzhou010010011039 sealer]# ll
+总用量 24
+drwxrwxrwx. 2 root root 16384 6月  21 23:59 lost+found
+drwxr-xr-x. 3 root root  4096 6月  23 12:07 nfs
+drwxr-xr-x. 2 root root  4096 6月  23 15:59 p3cache
+[root@yangzhou010010011039 sealer]# chown -R fil:fil *
+[root@yangzhou010010011039 sealer]# ll
+总用量 24
+drwxrwxrwx. 2 fil fil 16384 6月  21 23:59 lost+found
+drwxr-xr-x. 3 fil fil  4096 6月  23 12:07 nfs
+drwxr-xr-x. 2 fil fil  4096 6月  23 15:59 p3cache
+```
+
+
+#### p2
+
+p2 做完后， 要发消息给 链上， 等链上处理完消息后， 才能处理P3

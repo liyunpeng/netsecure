@@ -1,3 +1,36 @@
+[fil@yangzhou010010011039 ~]$ cat 1.sh
+#! /bin/bash
+
+function fun1(){
+name=$1
+service_pid=`ps -ef | grep $name | grep -v grep | awk '{print $2}'`
+echo "进程ID为：$service_pid"
+
+echo "kill service..."
+for id in $service_pid
+do
+   #sudo -u lyy    kill -9 $id
+   echo "结束进程: " + $service_pid
+   # kill -9 $id
+done
+}
+
+
+
+
+server_ip="10.10.11.39"
+ps -ef | grep lotus
+
+# ps -ef | grep  "./lotus daemon" | grep -v grep
+# service_pid=`ps -ef | grep "./lotus daemon" | grep -v grep | awk '{print $2}'`
+
+
+fun1 "poster"
+
+fun1 "sealer"
+
+
+
 ## lotus-server启动前的准备 
 
 ### nfs挂载点的准备
@@ -28,17 +61,27 @@ overlay         2.0T   93G  2.0T    5% /var/lib/docker/overlay2/95cb42c1924211e4
 
 
 10.10.4.23:/mnt/storage 表示 在10.10.4.23地址的主机上的 /mnt/storage挂载的文件系统
-
-
-新部署：
-[root@yangzhou010010019017 ~]# mount -t nfs -o hard,nolock,rw,user,rsize=1048576,wsize=1048576,vers=3 10.10.1.11:/mnt/storage  /mnt/
-
 ```
 
 若要开机挂载， 就在rc.local中加：
 ```
 root@yangzhou010010019017 ~]# cat /etc/rc.local
 ```
+
+新部署：
+```
+root@yangzhou010010011039 mnt]# mount -t nfs -o hard,nolock,rw,user,rsize=1048576,wsize=1048576,vers=3 10.10.13.22:/mnt/storage  /mnt/
+```
+这里挂载了10.10.13.22主机的文件系统， 那么storage-nodes和groups表中的ip也要改变， 即：
+storage-nodes表改为：
+1	10.10.13.22	1	10.10.13.22	10.10.1.11
+
+groups表改为：
+1	10.10.13.22	10.10.13.22
+
+这个表的信息要被sealer 和poster 读取，确定存放数据的地方。 
+
+
 
 
 
@@ -76,6 +119,7 @@ overlay                  2.0T   93G  2.0T    5% /var/lib/docker/overlay2/95cb42c
 drwxrwxr-x 537 fil fil 20480 6月  13 14:00 cache
 drwxrwxr-x   2 fil fil 20480 6月  13 14:00 sealed
 ```
+
 
 #####  递归改变nfs目录下所有文件的属主
 ```
@@ -121,17 +165,24 @@ mysql> exit
 
 ### 数据库各表的关系
 
-medio-infos  定义了多少个存储柜
+#### medio-infos  
+定义了多少个存储柜
 1	1	nfs1	536870912	8001563222016	1	238465	1	0	0
 每个存储柜对一个存储节点， storage-id表示他所对应的存储节点id. 
 
-storage-nodes  表示有多少个存储节点.  存储节点具体用哪个存储柜，可以到media-infos表里查找。 存储节点是louts存数据的地方
+#### storage-nodes  
+表示有多少个存储节点.  存储节点具体用哪个存储柜，可以到media-infos表里查找。 存储节点是louts存数据的地方
 1	10.10.1.11	1	10.10.1.11	10.10.1.11
 
-groups  一个group里会包括p1 到P6 这些计算节点， 但存储节点只有一个。一个group就对应一个存储节点， 而且存储节点存放了groups的最重目标数据， 所以groups的编号和存储节点编号相同：
+#### groups表
+  一个group里会包括p1 到P6 这些计算节点， 但存储节点只有一个。一个group就对应一个存储节点， 而且存储节点存放了groups的最重目标数据， 所以groups的编号和存储节点编号相同：
 1	10.10.1.11	10.10.1.11
 
-#### 数据库表中添加记录行：
+#### storage-nodes-group表
+存放存储节点和group的关联
+1	1	1
+
+### 数据库表中添加记录行：
 打开navicat,在fconfigs, groups表中添加数据 
 
 #### config.json 中修改数据库
