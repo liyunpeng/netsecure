@@ -1,5 +1,9 @@
 
 
+
+
+
+
 ### 版本查看
 ```
 [root@yangzhou010010019017 ~]# cat /etc/redhat-release
@@ -43,40 +47,6 @@ du -sch *
 查看所有进程
 [fil@yangzhou010010019017 ~]$ ps -ef
 
-
-### MySQL完整复制表到另一个新表
-```
-创建新表
-CREATE TABLE newuser LIKE user; 
-
-导入数据
-INSERT INTO newauser SELECT * FROM user;
-```
-
-#### 复制数据库
-跳板机登陆到10.10.19.15
-```
-[root@yangzhou010010001015 ~]# ssh -p 62534 10.10.19.15
-Last login: Wed Jun 17 08:39:23 2020
-[root@yangzhou010010019015 ~]# ifconfig
-bond0: flags=5187<UP,BROADCAST,RUNNING,MASTER,MULTICAST>  mtu 1500
-        inet 10.10.19.15  netmask 255.255.0.0  broadcast 10.10.255.255
-```
-
-创建数据库lotus17a
-```
-[root@yangzhou010010019015 ~]# mysql -uroot -pIpfs@123ky
-mysql> create database `lotus17a` ；
-mysql> exit 
-```
-
-数据库lotus的所有表复制到lotus17a：
-```
-[root@yangzhou010010019015 ~]#  mysqldump lotus -u root -pIpfs@123ky --add-drop-table | mysql lotus17a -u root -pIpfs@123ky
-mysqldump: [Warning] Using a password on the command line interface can be insecure.
-mysql: [Warning] Using a password on the command line interface can be insecure.
-[root@yangzhou010010019015 ~]# exit
-```
 
 
 

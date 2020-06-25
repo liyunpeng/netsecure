@@ -1,35 +1,3 @@
-[fil@yangzhou010010011039 ~]$ cat 1.sh
-#! /bin/bash
-
-function fun1(){
-name=$1
-service_pid=`ps -ef | grep $name | grep -v grep | awk '{print $2}'`
-echo "进程ID为：$service_pid"
-
-echo "kill service..."
-for id in $service_pid
-do
-   #sudo -u lyy    kill -9 $id
-   echo "结束进程: " + $service_pid
-   # kill -9 $id
-done
-}
-
-
-
-
-server_ip="10.10.11.39"
-ps -ef | grep lotus
-
-# ps -ef | grep  "./lotus daemon" | grep -v grep
-# service_pid=`ps -ef | grep "./lotus daemon" | grep -v grep | awk '{print $2}'`
-
-
-fun1 "poster"
-
-fun1 "sealer"
-
-
 
 ## lotus-server启动前的准备 
 

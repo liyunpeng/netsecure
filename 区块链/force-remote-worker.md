@@ -5,6 +5,11 @@
  同一个任务的
  p1到p6 必须严格的顺序执行。 
 
+select * fromt task where sector_id=
+
+select task_type, count(*). from tasks group by 
+
+
 
 32G 只有一个机会
 
@@ -63,6 +68,23 @@ p6 clean: 本地临时 500G，结果为32G的块， 32G传出去， 就可以删
 
 ### config.toml 说明
 force-remote-worker读取config.toml文件。
+33到40 8台 ， 4台做p2p3， 4台做p4. 
+10.21 做pc 和 p1
+
+force log
+pre_commit1
+pre_commit2
+commit1
+
+vi for.log
+过滤error log
+The application panicked (crashed).
+  called `Result::unwrap()` on an `Err` value: No such file or directory (os error 2)
+
+  Stack backtrace:
+  
+  
+  向上找到第几个error
 ```
 [fil@yangzhou010010019017 ~]$ cat config.toml
 scheduler_url = "http://10.10.19.17:3456"

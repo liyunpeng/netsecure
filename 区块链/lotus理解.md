@@ -112,6 +112,7 @@ Having acquired the headers and found a common tipset, we then move forward, req
 For each block, we first confirm the syntactic validity of the block (SPECK-CHECK), which includes the syntactic validity of messages included in the block. We then apply the messages, running all the state transitions, and compare the state root we calculate with the provided state root.
 对于每一个快， 都要对块做合法性检查， 然后就发布消息， 这些消息会使状态撞扁。 
 
+你给我出了个难题
 
 
 FIXME: This next para might be best replaced with a link to the validation doc Some of the possible causes of failure in this stage include:
