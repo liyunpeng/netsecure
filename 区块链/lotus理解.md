@@ -148,12 +148,27 @@ We always have stored a series of Filecoin blocks pointing to other blocks, each
 
 FIXME: Create a further reading appendix, move this next para to it, along with other extraneous content This is one of the few items we store in Datastore by key, location, allowing its contents to change on every sync. This is reflected in the (*ChainStore) writeHead() function (called by takeHeaviestTipSet() above) where we reference the pointer by the explicit chainHeadKey address (the string "head", not a hash embedded in a CID), and similarly in (*ChainStore).Load() when we start the node and create the ChainStore. Compare this to a Filecoin block or message which are immutable, stored in the Blockstore by CID, once created they never change.
 
+允许他的内容， 在每次同步之后后会改变， 
+这个在(*ChainStore) writeHead() 里可以看到， 
+
+
+
+
 #### 5. Keeping up with the chain
 
 A Lotus node also listens for new blocks broadcast by its peers over the gossipsub channel (see FIXME for more). If we have validated such a block's parent tipset, and adding it to our tipset at its height would lead to a heavier head, then we validate and add this block. The validation described is identical to that invoked during the sync process (indeed, it's the same codepath).
 
+如果我们验证了块的父tipset， 把这个块增加到tipset, 会形成一个更重的块， 这样我们验证并添加一个快， 
+
+
+
 ### State
 In Filecoin, the chain state at any given point is a collection of data stored under a root CID encapsulated in the StateTree, and accessed through the StateManager. The state at the chain's head is thus easily tracked and updated in a state root CID. (FIXME: Talk about CIDs somewhere, we might want to explain some of the modify/flush/update-root mechanism here.))
+
+
+根的cid, 会封装在状态树里， 通过statemanagerl来访问 
+连的头部的状态可以很容易被更总， 并且在状态根cid得到更新。 
+
 
 #### 1. Calculating a Tipset State
 
@@ -176,6 +191,9 @@ Note that this means that all blocks in a tipset must have the same Parent State
 When StateManager::computeTipsetState() is called with a tipset, ts, it retrieves the parent state root of the blocks in ts. It also creates a list of BlockMessages, which wraps the BLS and SecP messages in a block along with the miner that produced the block.
 
 Control then flows to StateManager::ApplyBlocks(), which builds a VM to apply the messages given to it. The VM is initialized with the parent state root of the blocks in ts. We apply the blocks in ts in order (see FIXME for ordering of blocks in a tipset).
+
+
+
 
 #### 3.  Applying a block
 
@@ -219,7 +237,21 @@ The method then refunds any unused gas to the sender, sets up the gas reward for
 ### Building a Lotus node
 When we launch a Lotus node with the command ./lotus daemon (see here for more), the node is created through dependency injection. This relies on reflection, which makes some of the references hard to follow. The node sets up all of the subsystems it needs to run, such as the repository, the network connections, thechain sync service, etc. This setup is orchestrated through calls to the node.Override function. The structure of each call indicates the type of component it will set up (many defined in node/modules/dtypes/), and the function that will provide it. The dependency is implicit in the argument of the provider function.
 
+当启动一个lotus节点时，lotus daemon, 这个节点通过依赖注入来创建。 
+
+lotus节点的创建会运行他所需要的所有子系统， 包括：
+仓库， 
+网络连接， 
+链同步服务， 
+
+
+
+
 As an example, consider the modules.ChainStore() function that provides the ChainStore structure. It takes as one of its parameters the ChainBlockstore type, which becomes one of its dependencies. For the node to be built successfully the ChainBlockstore will need to be provided before ChainStore, a requirement that is made explicit in another Override() call that sets the provider of that type as the ChainBlockstore() function.
+modules.ChainStore()  
+
+modules.ChainStore()  提供了ChainStore结构， 
+
 
 ### 1. The Repository
 
@@ -247,7 +279,12 @@ FIXME: Maybe mention the Batching interface as the developer will stumble upon i
 
 FIXME: IPFS blocks vs Filecoin blocks ideally happens before this / here
 
+
+
+
 The Blockstore interface structures the key-value pair into the CID format for the key and the Block interface for the value. The Block value is just a raw string of bytes addressed by its hash, which is included in the CID key.
+
+
 
 ChainBlockstore creates a Blockstore in the repo under the /blocks namespace. Every key stored there will have the blocks prefix so that it does not collide with other stores that use the same repo.
 

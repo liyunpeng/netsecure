@@ -1,9 +1,4 @@
 
-
-
-
-
-
 ### 版本查看
 ```
 [root@yangzhou010010019017 ~]# cat /etc/redhat-release
@@ -11,15 +6,7 @@ CentOS Linux release 7.6.1810 (Core)
 
 md5sum 文件名
 ``` 
-### 不同主机之间文件拷贝
-```
-[root@yangzhou010010001015 20200612]# scp -rpP 62534 * 10.10.19.17:/home/fil
-```
 
-mac 开发本的文件 拷贝到 跳板机
-```
-$ scp -rpP 62534 -i ~/.ssh/id_rsa lotus root@222.189.237.2:/home/ligang/
-```
 
 ### 配置查看
 ```

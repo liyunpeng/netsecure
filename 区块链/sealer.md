@@ -9,27 +9,6 @@ sealer 一般在另一台主机启动， 这里为学习方便， 用本机的ro
 ```
 FORCE_BUILDER_P1_WORKERS=1 FORCE_BUILDER_TASK_DELAY=25m TRUST_PARAMS=1 RUST_LOG=info RUST_BACKTRACE=1 FORCE_BUILDER_TASK_TOTAL_NUM=2 nohup ./lotus-storage-miner run --mode=remote-sealer --server-api=http://10.10.19.17:3456 --dist-path=/mnt --nosync --groups=1 > sealer.log 2>&1 &
 ```
-
-
-
-```
-2020-06-23T17:52:21.475+0800    ^[[34mINFO^[[0m serverapi       serverapi/serverapi.go:62       init meta server with url http://10.10.11.39:3456
-2020-06-23T17:52:21.475+0800    ^[[34mINFO^[[0m serverapi       serverapi/serverapi.go:67       server url:http://10.10.11.39:3456
-2020-06-23T17:52:21.475+0800    ^[[33mWARN^[[0m remote-sealer   remote/sealer.go:479    task {PreCommitPhase1 {1008 1}} has exist ...
-2020-06-23T17:52:21.476+0800    ^[[34mINFO^[[0m serverapi       serverapi/serverapi.go:99       getActorInfo:{"code":1,"msg":"record not found","data":null}
-
-2020-06-23T17:52:21.476+0800    ^[[34mINFO^[[0m serverapi       serverapi/serverapi.go:70       get actor info failed:record not found
-2020-06-23T17:52:21.477+0800    ^[[34mINFO^[[0m serverapi       serverapi/serverapi.go:457      got fconfig :{"code":0,"msg":"","data":{"propagationDelay":6000,"earlySubmit":500,"maxWriteSpeed":45,"autoGarbage":true}}
-
-2020-06-23T17:52:21.477+0800    ^[[34mINFO^[[0m fconfig config/force_param.go:193       The Propagation Delay is set to 6000 seconds.
-2020-06-23T17:52:21.477+0800    ^[[34mINFO^[[0m fconfig config/force_param.go:224       The block submit time is set 500 milliseconds early.
-2020-06-23T17:52:21.477+0800    ^[[34mINFO^[[0m fconfig config/force_param.go:243       The maximum storage writing speed is set to 45 MBps.
-2020-06-23T17:52:21.477+0800    ^[[34mINFO^[[0m fconfig config/force_param.go:254       The autogarbage is set to true.
-2020-06-23T17:54:21.479+0800    ^[[34mINFO^[[0m serverapi       serverapi/serverapi.go:457      got fconfig :{"code":0,"msg":"","data":{"propagationDelay":6000,"earlySubmit":500,"maxWriteSpeed":45,"autoGarbage":true}}
-
-
-```
-
 #### 启动searler的参数
 FORCE_BUILDER_P1_WORKERS 不必和config.toml中的有PreCommitPhase1的worker数目相同
 ```
@@ -40,7 +19,6 @@ wait_sec = 60
 ```
 
 config.toml设置为1， FORCE_BUILDER_P1_WORKERS可以设置为10
-
 FORCE_BUILDER_TASK_TOTAL_NUM  一般是 FORCE_BUILDER_P1_WORKERS  的2倍加1 
 
 

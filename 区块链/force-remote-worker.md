@@ -186,20 +186,19 @@ worker
 
 ### 问题排查
 
-#### 设置核数， 避免被force-remote-worker占满
+#### 1. 设置核数， 避免被force-remote-worker占满
 核数不能占满， 要不ssh很难连上
 p2 p3 会把核占满 ， 要留下2 个核  
 打开文件数目没限制， 900万个驶过没问题， 
 
-####  /sealer 挂错了磁盘， 导致P1卡住
+#### 2.  /sealer 挂错了磁盘， 导致P1卡住
 p1阶段， 系统搞的非常慢，p1容易在io卡住
 用root用户看iostate -ix 看下写的状态
 最后发现， /sealer挂上了sda系统盘
 sealer 应该挂上md1磁盘。
 从 df -h  应该看到 /sealer下挂载了 md1盘， 如果挂载了sda盘， 这是系统盘， 做p1时会严重影响速度。 
 
-
-#### P1 做不下去的原因：
+#### 3. P1 做不下去的原因：
 ```
 force-remote-worker log:
 2020-06-23 17:45:39 ERROR [force_remote_worker] failed to create out dir with: "/sealer/nfs/10.10.13.22/sealed"
@@ -249,7 +248,61 @@ drwxr-xr-x. 3 fil fil  4096 6月  23 12:07 nfs
 drwxr-xr-x. 2 fil fil  4096 6月  23 15:59 p3cache
 ```
 
-
-#### p2
-
+#### p2 waitseed
 p2 做完后， 要发消息给 链上， 等链上处理完消息后， 才能处理P3
+
+
+#### p6(32) 有很多失败的
+
+
+查看所有任务为32， 结果状态为2的： 
+```
+SELECT sector_id, task_type, finished, result_status, create_time, update_time  from tasks WHERE task_type=32 and result_status=2
+```
+
+有大量的32的任务失败， 查看force-remote-worker.log， 搜索error, 看到：
+```
+2020-06-24 16:07:11 INFO [force_remote_worker::worker] got a task: AcqTaskRes { task_type: CleanTask, sector_id: SectorId(36), params: [123, 34, 99, 97, 99, 104, 101, 68, 105, 114, 34, 58, 34, 110, 102, 115, 47, 49, 48, 46, 49, 48, 46, 49, 51, 46, 50, 50, 47, 99, 97, 99, 104, 101, 47, 115, 45, 116, 48, 49, 48, 48, 52, 45, 51, 54, 34, 44, 34, 115, 101, 97, 108, 101, 100, 80, 97, 116, 104, 34, 58, 34, 110, 102, 115, 47, 49, 48, 46, 49, 48, 46, 49, 51, 46, 50, 50, 47, 115, 101, 97, 108, 101, 100, 47, 115, 45, 116, 48, 49, 48, 48, 52, 45, 51, 54, 34, 44, 34, 114, 101, 109, 111, 116, 101, 83, 101, 97, 108, 101, 100, 68, 105, 114, 34, 58, 34, 34, 44, 34, 114, 101, 109, 111, 116, 101, 67, 97, 99, 104, 101, 68, 105, 114, 34, 58, 34, 34, 125], miner: 1004, cid: "" }
+2020-06-24 16:07:11 DEBUG [force_remote_worker::worker] input: {"cacheDir":"nfs/10.10.13.22/cache/s-t01004-36","sealedPath":"nfs/10.10.13.22/sealed/s-t01004-36","remoteSealedDir":"","remoteCacheDir":""}
+2020-06-24 16:07:11 INFO [force_remote_worker::worker] current_phase: CleanTask,  input_param: {"cacheDir":"nfs/10.10.13.22/cache/s-t01004-36","sealedPath":"nfs/10.10.13.22/sealed/s-t01004-36","remoteSealedDir":"","remoteCacheDir":""}
+2020-06-24 16:07:11 INFO [force_remote_worker::worker] try to remove cache_dir: "/sealer/nfs/10.10.13.22/cache/s-t01004-36"
+2020-06-24 16:07:12 INFO [force_remote_worker::worker] "/sealer/nfs/10.10.13.22/cache/s-t01004-36" removed
+2020-06-24 16:07:12 INFO [force_remote_worker::worker] try to remove sealed file: "/sealer/nfs/10.10.13.22/sealed/s-t01004-36"
+
+Run with RUST_BACKTRACE=full to include source snippets.
+Backtrace (most recent call last):
+  File "<unknown>:0", in __clone
+  File "<unknown>:0", in start_thread
+  File "rust:src/libstd/sys/unix/thread.rs:80", in std::sys::unix::thread::Thread::new::thread_start
+```
+
+里面关键log：
+```
+try to remove sealed file: "/sealer/nfs/10.10.13.22/sealed/s-t01004-36"
+```
+在删除sealed文件时， 没有找到要删除的sealed文件。 
+
+原因是， 可能是两个链挂到了同一个存储被多个链同时挂载， 但另一个链也挂载了这个存储。 
+
+
+5个worker， 同时扫数据库， 专扫自己服务负责的task， 比如配置为p6的worker，只检查task-type为32的task记录， 然后把这群记录里的第一个task记录的is_taken设置为1，在设置的时候， 要尽享加锁， 避免并发的worker， 也来设置， 因为谁设置了， 谁就要做接下来的清除动作， 如果两个worker都做了相同的事情， 其中一个做删除动作的， 就会报错， 就会吧result_status 设置为2， 表示32任务最后的执行结果是错误的。 程序在这已经加锁处理， 没有问题。 
+
+问题的原因是， P1阶段就删除了/sealer下的文件， 导致p6 32任务失败。 
+
+nfs出问题， 你那个cd都进不去了。 
+
+长时间没有找到问题的原因是， 进入了思维盲点， 因为程序如果有问题， 不会在这个时候，所有都去怀疑文件系统去了， 一个怀疑nfs文件系统问题， 一个怀疑存储挂载问题， 反复的排查这个方向， 却没有怀疑代码逻辑的问题。 没有怀疑并发下两个worker做同样的事情， 虽然最后找到的根本原因是， P1过早的删除了文件。 这个问题两天前， 已经出现了， 声称解决了， 但解决的并不彻底， 之所以没有及时发现，  删除的动作比较隐蔽， 而且log 没有醒目的error, 只打出了普通的removed log, 这个会隐藏在大量的类似log中，出现问题时， 没有发现这个不起眼，却是问题根本原因的log.   
+
+
+
+
+
+### p3失败
+因为groupid 没有配置好， 所以p1 p2 写到不同的sealed目录下了， 导致p3去拿的sealed不是正确的sealed, 导致p3 失败。
+
+###  P4 是数据提交证明 ， 具体P4做了什么， 一般在p4不会出什么问题
+
+
+算力全部清掉
+
+创世节点链接到外网。 
