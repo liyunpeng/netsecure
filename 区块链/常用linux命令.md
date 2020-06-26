@@ -1,3 +1,13 @@
+#### 同步修改文件。 
+
+
+a# cat /etc/ansible/hosts
+
+加入一个机会组：
+
+
+
+ansible ligang -m copy -a "src=/home/cmd/config.toml dest=/home/fil/ owner=fil group=fil"
 
 ### 版本查看
 ```
