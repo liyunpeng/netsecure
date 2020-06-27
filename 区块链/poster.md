@@ -187,5 +187,31 @@ poster server-api参数没有指定，
 
 
 
+### miner info 现实大量的证明失败
 
----
+poster.log里搜索WinningPoSt
+```
+2020-06-24T20:16:30.005+0800    ^[[34mINFO^[[0m storageminer    storage/miner.go:201    Computing WinningPoSt ;[{SealProof:2 SectorNumber:166 SealedCID:bafk4ehzayheivjmctu6iztzieuwankmnfa3tdymzzpcwhapvbvckh5fqcaiq}]; [239 110 152 230 198 206 75 251 23 202 61 8 249 200 122 50 114 38 154 247 102 211 94 127 251 229 191 43 179 249 157 103]
+2020-06-24T20:16:30.005+0800    ^[[34mINFO^[[0m localprover     local/prover.go:57      run GenerateWinningPoSt ...
+2020-06-24T20:16:30.009+0800    ^[[31mERROR^[[0m        miner   miner/miner.go:165      mining block failed: failed to compute winning post proof:
+    github.com/filecoin-project/lotus/miner.(*Miner).mineOne
+        /builds/ForceMining/lotus-force/miner/miner.go:340
+  - could not read from path="/mnt/nfs/10.10.13.22/cache/s-t01004-166/p_aux"
+
+    Caused by:
+        No such file or directory (os error 2)
+    github.com/filecoin-project/filecoin-ffi.GenerateWinningPoSt
+        /builds/ForceMining/lotus-force/extern/filecoin-ffi/proofs.go:545
+    github.com/filecoin-project/lotus/force/fstorage/fsealmgr/fprover/local.(*ForceProver).GenerateWinningPoSt
+        /builds/ForceMining/lotus-force/force/fstorage/fsealmgr/fprover/local/prover.go:65
+    github.com/filecoin-project/lotus/storage.(*StorageWpp).ComputeProof
+        /builds/ForceMining/lotus-force/storage/miner.go:204
+    github.com/filecoin-project/lotus/miner.(*Miner).mineOne
+        /builds/ForceMining/lotus-force/miner/miner.go:338
+    github.com/filecoin-project/lotus/miner.(*Miner).mine
+        /builds/ForceMining/lotus-force/miner/miner.go:163
+    runtime.goexit
+        /usr/local/go/src/runtime/asm_amd64.s:1373
+2020-06-24T20:16:31.011+0800    ^[[33mWARN^[[0m miner   miner/miner.go:157      BestMiningCandidate from the previous round: [bafy2bzaced4gh6irlxu7motqrqsocrr4tn33l5rldplhxzqf6pitxku655sj2] (nulls:0)
+```
+发现证明参数cache文件不在了， 这些文件被worker错误的删除了
