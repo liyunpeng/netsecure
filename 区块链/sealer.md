@@ -64,7 +64,7 @@ P4 发的消息， 在网页上看到的方法列的名字是 ProveCommitSector
 
 消息发到链上， 指消息会广播链上的所有节点， 有时， 链产生了分叉， 需要lotus-message 手动发送消息， 只有消息发到链上， sector才能上链。
 
-### sealer正常的判读
+### sealer正常的判断
 tasks表正常
 
 sealer.log没有error
