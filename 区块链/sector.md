@@ -8,14 +8,15 @@ PreCommit1 | 正在做P1  |
 PreCommit2 | 正在做P2  |
 PreCommitting | 
 PreCommitWait | 
-CommitWait | |
-Committing | P3做完， 等待p4 |
+Committing | P3做完，  等待p4做 ，但P4还在忙别的事情 |
+CommitWait | p4消息已经发出， 但没有得到链上回复
 WaitSeed | p2或p4消息已经发出， 还没等到链上回复 
 ComputeProofFailed | poster证明错误
 Proving |  p4消息已经发出,链上已回复，上链完成
 FinalizeSector | 
 ComputeProofFailed | 
 
+ 
 #### sector表 状态示列
 sql查询得到
 ```
@@ -34,15 +35,23 @@ Proving	4387
 WaitSeed	64
 ```
 
+#### 链没有同步，对sector状态的影响
 
-waitseed状态
+链没有同步，收不到消息反馈，sector就会长时间处于precommitwait。 
+
+链同步了， 有消息反馈了， 
+
+sector会经过 precommitwait -> waitseed -> committing 三个过渡状态。 
+
+
+#### waitseed状态
 
 sector 有waitseed状态的， 可以到task看下这个sector任务停在， 
 P3 做完后， 交给P4 阶段， 但这时p4还在忙别的， 这是sector表中看到的壮态就是waitseed状态.
 
 commiting状态
 
-P4 P5做完之后， 就会打包一个消息发到链上， 链还没有处理完这个消息， 就会停在commting状态， 链处理完这个p4p5消息， 给本地发个消息， sector就会进入proving状态， 表示上链成功， 随后p6会做清除动作。
+P4 做完之后， 就会打包一个消息发到链上， 链还没有处理完这个消息， 就会停在commting状态， 链处理完这个p4消息， 给本地发个消息， sector就会进入proving状态， 表示上链成功， 随后p6会做清除动作。
 
 PreCommitWait
 
@@ -51,9 +60,7 @@ PreCommitWait
 xx的用户黏性
 
 
-
-sealer日志的记录了sector的状态：
-
+####  sealer日志的记录了sector的状态：
 ```
 [root@yangzhou010010012001 log]# cat sealer.log | grep -a 16692481 | grep -v status
 2020-06-23T12:02:39.807+0800	INFO	serverapi	serverapi/serverapi.go:231	NewSectorInfo:{"code":0,"msg":"","data":{"sectorID":16692481,"storageNodeID":71,"loc":"nfs/10.10.13.1"}}
@@ -85,7 +92,7 @@ sealer日志的记录了sector的状态：
 2020-06-23T12:20:58.219+0800	INFO	remote-sealer	remote/sealer.go:617	CommitPhase1 for sector 16692481 start ...
 ```
 
-
+查看链的高度，时间有没有跟上
 ```
 [fil@yangzhou010010011031 ~]$ ./lotus chain list
 132: (Jun 27 16:23:02) [ bafy2bzaceatmyooqkrwmturus4gcdtm7rfjtlymlxre4k5rnd3dtukspocbtk: t01000, ]
@@ -98,7 +105,7 @@ sealer日志的记录了sector的状态：
 
 ```
 
-----
+查看缓冲池里的消息
 ```
 {
   "Message": {
@@ -137,7 +144,7 @@ sealer日志的记录了sector的状态：
 ```
 
 
-
+查看pending的消息
 ```
 [fil@yangzhou010010011031 ~]$ ./lotus mpool pending | grep t01005
     "To": "t01005",
@@ -155,25 +162,19 @@ sealer日志的记录了sector的状态：
     
 
 
-#### 长时间处于PreCommitWait的排查
+#### 很多sector长时间处于PreCommitWait， 造成sealer不发任务的排查
 
-
-消息是否争取
 
     
 select state, count(*) from sectors GROUP BY state    
 PreCommitWait	  56
     
-p2 完成后， 会把消息广播到所有节点， 当某个节点 处理了这个消息， 这个消息会通知本节点的sealer， 这样sealer才会发送task, 没有收到链上的消息， 并且没有完成的Sector已经达到了56个， sealer就不会发任务。 sealer
+p2 完成后， 会把消息广播到所有节点， 当某个节点 处理了这个消息， 这个消息会通知本节点的sealer， 这样sealer才会发送task, 没有收到链上的消息反馈， 并且没有完成的Sector已经达到了56个， sealer就不会发任务。 
+现在处于等待的sector已经达到56个， 所以task就不会再发消息， 等到链上发回反馈消息后， sector等待的个数小于了56个， sealer就会发新任务了。 
 
+所以要检查消息是否正确的收发
 
-sealer就不会再发消息，
-
-
- 现在没做完的任务，  已经达到56个， 所以task就不会再发消息， 
-    
-等到链上发回反馈消息后， sealer收到这个消息， 才会发消息。 
-    
+  
 ```        
 [fil@yangzhou010010011031 ~]$ ./lotus-storage-miner info
 Mode: poster

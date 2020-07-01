@@ -1,3 +1,67 @@
+
+```
+362: (Jun 30 16:51:10) [ bafy2bzacedfu77xs7gqoitfngk3pt6o3ezizytlzasvxkivftx3jcjotocpuw: t01000, ]
+367: (Jun 30 16:53:15) [ bafy2bzacebx2bmmyo2yi6npr7j32c5hwa46f6nb46sfbezyyctwozzlcif3iq: t01000, ]
+370: (Jun 30 16:54:30) [ bafy2bzacedab3xhuaedersw2wnvu4tyyqagpdzva6z4a6smzuhbzzl3eti7pw: t01000, ]
+377: (Jun 30 16:57:25) [ bafy2bzacedhfs6tyrfbxmmci55cgdzbbgwyryfqz4evn7xrvvq5vfqvkxbvbk: t01000, ]
+406: (Jun 30 17:09:30) [ bafy2bzaceao3fmoaodu6ggbojm4ll7rpdkohol6d3mzteej6trl42ejh4fei2: t01000, ]
+411: (Jun 30 17:11:35) [ bafy2bzacecjbnhpjdo3j35rnciapkrndxifvnwyaxix5pgs2v7rfdgj66xure: t01000, ]
+
+创世节点 8M 算力太低， 很长时间才能出块， 
+```
+单位：
+8M=536870912
+32G=
+
+
+mount -t nfs -o hard,nolock,rw,user,rsize=1048576,wsize=1048576,vers=3 10.10.13.22:/mnt/storage  /mnt/
+
+
+#### 私链普通节点
+```
+nohup ./lotus daemon --genesis=./dev.gen --bootstrap=false --api 11234 > lotus.log 2>&1 & 
+
+nohup ./lotus-server >lotus-server.log 2>&1 &
+
+nohup ./lotus-storage-miner run --mode=poster --server-api=http://10.10.11.31:3456 --dist-path=/mnt --nosync > poster.log 2>&1 &
+
+nohup ./lotus-server >lotus-server.log 2>&1 &
+
+./lotus-storage-miner init --nosync --sector-size=536870912 --owner=t3qr64ae6azjwqewl5ivsyy7dvw73evaerkkiipavd3uqwyz7ybmpp2nxmbfr6r5jgrifmwjq2hnvsclgdpwma
+
+./lotus-storage-miner init --nosync --sector-size=536870912 --owner=t01006
+
+./lotus wallet new bls
+
+./lotus wallet balance ; 
+
+./lotus send t3地址(lotus的t3地址) 1000
+
+nohup ./lotus-storage-miner run --mode=poster --server-api=http://10.10.11.31:3456 --dist-path=/mnt --nosync >> poster.log 2>&1 &
+
+nohup ./lotus daemon --server-api=http://10.10.11.31:3456 --bootstrap=false --api 11234 > lotus.log 2>&1 &
+
+FORCE_BUILDER_P1_WORKERS=28 FORCE_BUILDER_TASK_DELAY=1s FORCE_BUILDER_AUTO_PLEDGE_INTERVAL=1 TRUST_PARAMS=1 RUST_LOG=info RUST_BACKTRACE=1 FORCE_BUILDER_PLEDGE_TASK_TOTAL_NUM=56 nohup ./lotus-storage-miner run --mode=remote-sealer --server-api=http://10.10.11.31:3456 --dist-path=/mnt --nosync --groups=1 > ./sealer.log 2>&1 &
+
+
+带t0的初始化 
+./lotus-storage-miner init  --nosync --owner=t01002
+```
+
+
+### 32G sealer   worker
+HACK_P1=1   FIL_PROOFS_MAXIMIZE_CACHING=1  FIL_PROOFS_NUMS_OF_PARTITION_HACK=4  FIL_PROOFS_USE_FULL_GROTH_PARAMS=true  BELLMAN_PROOF_THREADS=8  RUST_LOG=debug  RUST_BACKTRACE=full   nohup ./force-remote-worker >> logs/force-remote-worker.log 2>&1 &
+FORCE_BUILDER_P1_WORKERS=1  FORCE_BUILDER_TASK_DELAY=1h  FORCE_BUILDER_AUTO_PLEDGE_INTERVAL=10  TRUST_PARAMS=1 RUST_LOG=info RUST_BACKTRACE=1  FORCE_BUILDER_PLEDGE_TASK_TOTAL_NUM=1 nohup ./lotus-storage-miner run     --mode=remote-sealer --server-api=http://10.10.10.239:3456 --dist-path=/mnt  --nosync   --groups=1 > logs/sealer.log 2>&1 &
+ 
+
+$ 
+
+
+
+$ tail -100f lotus-server.log
+
+
+
 #### 同步修改文件。 
 
 ```
@@ -5,7 +69,9 @@
 ```
 加入一个机会组：10多台机器。 
 
+```
 ansible ligang -m copy -a "src=/home/cmd/config.toml dest=/home/fil/ owner=fil group=fil"
+```
 
 ### 版本查看
 ```
@@ -36,11 +102,11 @@ du -sch *
 
 ### 进程查看
 只查看本用户启动的进程
-[fil@yangzhou010010019017 ~]$ ps -x
+ps -x
 
 
 查看所有进程
-[fil@yangzhou010010019017 ~]$ ps -ef
+ps -ef
 
 
 
