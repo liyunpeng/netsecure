@@ -9,8 +9,6 @@ select * fromt task where sector_id=
 
 select task_type, count(*). from tasks group by 
 
-
-
 32G 只有一个机会
 
 测试人员开测 

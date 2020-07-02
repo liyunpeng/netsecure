@@ -1,4 +1,4 @@
-### sector状态含义
+#### sector状态含义
 sector 的 几个状态：
 
 | 状态 | 含义| 512M 持续时间
@@ -7,16 +7,15 @@ new |
 PreCommit1 | 正在做P1  | 
 PreCommit2 | 正在做P2  |
 PreCommitting | 
-PreCommitWait | 
-Committing | P3做完，  等待p4做 ，但P4还在忙别的事情 |
+PreCommitWait | p2 消息已经发出， 但没收到链上对该消息的回复
+Committing | P3做完，等待p4做 ，但P4还在忙别的事情 |
 CommitWait | p4消息已经发出， 但没有得到链上回复
 WaitSeed | p2或p4消息已经发出， 还没等到链上回复 
 ComputeProofFailed | poster证明错误
 Proving |  p4消息已经发出,链上已回复，上链完成
-FinalizeSector | 
-ComputeProofFailed | 
+FinalizeSector |  
 
- 
+
 #### sector表 状态示列
 sql查询得到
 ```
