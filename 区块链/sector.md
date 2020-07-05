@@ -1,3 +1,82 @@
+#### 排查链长时间高度不变
+./lotus chain list  
+高度时间滞后了两天， 
+
+重启创世节点的矿工， 即重启下面进程：
+nohup ./lotus-storage-miner run --nosync >miner.log 2>&1 &
+ 
+tail -f miner.log , 可以看到创世节点矿工在不断的出块。 但是时间很慢， 如果高度差了两天， 建议还是重新做创世节点
+
+```
+[il@yangzhou010010010240 ~]$ tail -f miner.log 
+2020-07-03T16:02:03.762+0800    INFO    miner   miner/miner.go:268      attempting to mine a blocktipset[bafy2bzacecnujidmmk3lv22oqjkwyzwwpbyawb3vto7wujfumhs2trvq22ouu]
+2020-07-03T16:02:03.934+0800    INFO    miner   miner/miner.go:302      Time delta between now and our mining base: 148398s (nulls: 0)
+2020-07-03T16:02:03.955+0800    INFO    storageminer    storage/miner.go:201    Computing WinningPoSt ;[{SealProof:1 SectorNumber:3 SealedCID:bafk4ehzaxtyk53mmtseunwydsvqkfu5ktz2bmagndz3jelvmdahaqv7xguca}]; [131 172 123 169 205 2 221 250 48 250 130 0 151 104 55 17 221 223 92 114 11 5 193 141 104 115 28 193 37 66 20 145]
+2020-07-03T16:02:13.087+0800    INFO    storageminer    storage/miner.go:208    GenerateWinningPoSt took 9.132165707s
+2020-07-03T16:02:13.099+0800    INFO    miner   miner/miner.go:362      mined new block {"cid": "bafy2bzacebxthiv6jzt3fwqrlujitz63zefmdorhtjlypahm4gwccilhrcteq", "height": "867", "took": 9.337780656}
+2020-07-03T16:02:13.100+0800    WARN    miner   miner/miner.go:180      mined block in the past {"block-time": "2020-07-01T22:49:10.000+0800", "time": "2020-07-03T16:02:13.100+0800", "duration": 148383.100041268}
+2020-07-03T16:02:13.144+0800    WARN    miner   miner/miner.go:162      base height is 867 null rounds is 0
+2020-07-03T16:02:13.144+0800    INFO    miner   miner/miner.go:268      attempting to mine a blocktipset[bafy2bzacebxthiv6jzt3fwqrlujitz63zefmdorhtjlypahm4gwccilhrcteq]
+2020-07-03T16:02:13.798+0800    INFO    miner   miner/miner.go:302      Time delta between now and our mining base: 148383s (nulls: 0)
+2020-07-03T16:02:13.820+0800    INFO    storageminer    storage/miner.go:201    Computing WinningPoSt ;[{SealProof:1 SectorNumber:4 SealedCID:bafk4ehzazi6fbbs6xzeh4ck5ntg2dbrq7sxahq3bo27glrdqqd2zjlnb6buq}]; [132 199 187 163 211 41 202 42 158 103 140 31 131 40 123 120 68 79 219 161 75 141 170 168 100 4 235 247 128 183 182 133]
+```
+这样的出块速度， 要很长时间才能让链高度跟上时间。 
+
+lotus 有error， 高度跟不上时间是个容易发生的事。 
+
+#### 排查长时间处于commiting
+
+首先查看消息是否正常
+1. 先看消息有没有积压
+```
+$ ./lotus mpool pending 
+```
+为空， 说明没有积压
+
+2. 看发送的消息nonce值是否正常
+
+先看当前的nonce， 即下一个所要发送消息的nonse值
+```
+$ ./lotus wallet list
+t3u3gvryswjtzzxbzb4g7tipjtiektbskjte2sgpvn4zwgsffbyo6fin7udyf7cq4kveirwxwzx2jwvdlbmfha
+$ ./lotus state get-actor t3u3gvryswjtzzxbzb4g7tipjtiektbskjte2sgpvn4zwgsffbyo6fin7udyf7cq4kveirwxwzx2jwvdlbmfha
+Address:        t3u3gvryswjtzzxbzb4g7tipjtiektbskjte2sgpvn4zwgsffbyo6fin7udyf7cq4kveirwxwzx2jwvdlbmfha
+Balance:        499.999999999999499608
+Nonce:          57
+Code:           bafkqadlgnfwc6mjpmfrwg33vnz2a
+Head:           bafy2bzaceadx4ik2pavnurrqn3tqink7cmb5fseb7bdx42qsqggg6mc2mzang
+```
+转帐，促发一个消息生成
+```
+$ ./lotus send t01002 0.001
+bafy2bzacecnwi63o26nglosuldg3hoqwyl4oon36e2m6xe7qwq67ikd3od6pq
+```
+
+消息不会立即上到链上，而是先广播出去， 广播即是放到消息池里面， 所以在这个消息池看下新生成的消息的nonse值对不对
+```
+$ ./lotus mpool pending 
+{
+  "Message": {
+    "Version": 0,
+    "To": "t01002",
+    "From": "t3u3gvryswjtzzxbzb4g7tipjtiektbskjte2sgpvn4zwgsffbyo6fin7udyf7cq4kveirwxwzx2jwvdlbmfha",
+    "Nonce": 57,
+    "Value": "1000000000000000",
+    "GasPrice": "0",
+    "GasLimit": 10000,
+    "Method": 0,
+    "Params": ""
+  },
+  "Signature": {
+    "Type": 2,
+    "Data": "pA/0FcNrr4MASmlw5eOCU7UFjt+0cKxBMxYAnsvCPyZpObUfpQoKI++K9Iu1DnhfCn463e7vI5wJ6XU1Zr3ya1rdwdZOthSAyVHtHmcaEPmvQyKrWwxDYy74F1qQ2kSR"
+  }
+}
+```
+nonce值是对的， 说明消息没有问题。 
+
+最后定位到， 16 任务执行了， 但8任务没有执行， 根本原因是P4没有起来， P4是专门做任务8的
+
 #### sector状态含义
 sector 的 几个状态：
 
@@ -8,13 +87,17 @@ PreCommit1 | 正在做P1  |
 PreCommit2 | 正在做P2  |
 PreCommitting | 
 PreCommitWait | p2 消息已经发出， 但没收到链上对该消息的回复
-Committing | P3做完，等待p4做 ，但P4还在忙别的事情 |
-CommitWait | p4消息已经发出， 但没有得到链上回复
-WaitSeed | p2或p4消息已经发出， 还没等到链上回复 
+Committing | P3 P4还在忙别的事情 |
+CommitWait | 本地验证ok, p4消息已经发出， 但还没有得到链上回复
+WaitSeed | p2消息已经发出，而且也得到了链上的回复，等待P3来领任务
 ComputeProofFailed | poster证明错误
 Proving |  p4消息已经发出,链上已回复，上链完成
 FinalizeSector |  
 
+committing 包括了p3, p4. 还有p4做完后， sealer还在验证的事情。 
+
+P4
+commitwait 说明 P4已经做完， 
 
 #### sector表 状态示列
 sql查询得到
@@ -42,9 +125,15 @@ WaitSeed	64
 
 sector会经过 precommitwait -> waitseed -> committing 三个过渡状态。 
 
+10.10.10.206   创世节点
+10.10.10.207   跑lotus lotus-server postet
+10.10.10.208   跑sealer
+10.10.10.209-10.10.10.211   跑P23
+
+10.10.10.212-10.10.10.215   跑P4
+10.10.10.17 跑P1 Pc
 
 #### waitseed状态
-
 sector 有waitseed状态的， 可以到task看下这个sector任务停在， 
 P3 做完后， 交给P4 阶段， 但这时p4还在忙别的， 这是sector表中看到的壮态就是waitseed状态.
 
