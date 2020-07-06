@@ -4,10 +4,6 @@
 
 wget https://dev.mysql.com/get/mysql57-community-release-el7-9.noarch.rpm
 
-10.10.12.40
-
-
-
 2、然后进行repo的安装：
 rpm -ivh mysql57-community-release-el7-9.noarch.rpm
 
@@ -23,9 +19,11 @@ yum install mysql-server
 systemctl start mysqld #启动MySQL
 
 3、获取安装时的临时密码（在第一次登录时就是用这个密码）：
+```
 grep 'temporary password' /var/log/mysqld.log
-[root@yangzhou010010011039 mysql]# grep 'temporary password' /var/log/mysqld.log
+# grep 'temporary password' /var/log/mysqld.log
 2020-06-22T08:43:49.083578Z 1 [Note] A temporary password is generated for root@localhost: 8UO0S*6.zAqY
+```
 
 4、倘若没有获取临时密码，则
 4.1、删除原来安装过的mysql残留的数据

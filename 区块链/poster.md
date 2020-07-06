@@ -40,6 +40,7 @@ deadline  sectors  partitions  proven
 
 poster完成一次证明， 会向链上发一条SubmitWindowedPoSt 消息， 
 可以在浏览器消息里method列看到这个消息。 
+
 #### 二， 出块
 出块，是本节点获得出块权， 将链上消息打包。 
 

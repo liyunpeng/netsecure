@@ -90,6 +90,10 @@ lotus-message wallet list ,
 提交时空证明 | SubmitWindowedPoSt  |  poster
 
 
+###  最快报告
+跑个最快报告，lotus-message .  矫正nouce指
+lotus-message   表中， 已经在链上的， 可以删除，  
+
 ### 上链与出块
 
 上链是为了得到算力， 上链与出块的数据没有关系， 只是为了

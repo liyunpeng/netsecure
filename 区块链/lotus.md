@@ -227,6 +227,14 @@ $ lotus-storage-miner chain list --count 1000 | grep t01475 | wc -l
 ```
 
 
+
+#### lotus 从server拿的信息
+
+程序中做trysink， 命令中叫 lotus
+seeker 
+vim  lotus.log 
+从lotus server 拿 矿工号 。  
+
 #### lotus的开发
 跳班机root用户目录下的lotus是interfil，是官方的
 
