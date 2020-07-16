@@ -1,3 +1,21 @@
+#### 链高度跟不上时间的原因
+出块完全又poster负责， 所以链的高度完全又poster决定。   poster一方面不断完成对上链的sector做证明的事情， 一方面要去竞争出块。 
+有时poster 有点问题了， 没能在规定的25秒内完成出块， 高度就跟不上时间了。 y
+有时poster挂掉了，  造成的后果是：
+1. 已上链的sector， 没能证明， 算力会被惩罚
+2. 出不了块，如果只有这一个矿工， 这个矿工算力又很高， 但poster挂了，就不能出块。  创世节点算力很低， 也出不了块 ， 造成这个链的高度停滞。 
+
+
+####  只要高度一致， 就可以收到链上反馈的消息
+sync wait 不需要到done,   只要高度一致， 就收到了链上消息的反馈， 不会挡住sector的状态往前走。   如果因为没有消息反馈， sector会被挡在commitwait,   不是committing，
+
+在私网测试， 会遇到这种sync wait没到done, sector状态不会因为消息而挡住状态往前走。 
+尤其只有一个矿工情况下， 会遇到sync wait 不能到done的情况， sector也能proving。  就看这个矿工的高度， 和创世节点的高度是否一致即可。 
+
+在公网测试一般不会遇到链高度跟不上时间的。 因为矿工们会争抢着出块。 保证在25秒内出块。 
+
+
+
 #### 排查链长时间高度不变
 ./lotus chain list  
 高度时间滞后了两天， 
@@ -90,7 +108,7 @@ PreCommitWait | p2 消息已经发出， 但没收到链上对该消息的回复
 Committing | P3 P4还在忙别的事情 |
 CommitWait | 本地验证ok, p4消息已经发出， 但还没有得到链上回复
 WaitSeed | p2消息已经发出，而且也得到了链上的回复，等待P3来领任务
-ComputeProofFailed | poster证明错误
+ComputeProofFailed |  sealer验证错误
 Proving |  p4消息已经发出,链上已回复，上链完成
 FinalizeSector |  
 

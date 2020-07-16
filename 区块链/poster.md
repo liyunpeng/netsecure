@@ -1,4 +1,14 @@
-#### 
+####  poster.log报错infoKey not exist
+
+```
+2020-07-13T11:00:42.875+0800  ERROR  fminer  fminer/baseinfo.go:124  infoKey not exist ...
+2020-07-13T11:00:42.875+0800  ERROR  fminer  fminer/baseinfo.go:144  infoKey not exist ...   这个error
+```
+原因：
+base 和 baseinfo 之前对应， 有个key
+baseinfo   会做computeproof, 
+base 在 25 秒到的时候， 会删除key
+但baseinfo 还在做， 回头去找这个key,  这个key已经被base 删了， 所以报error了
 
 
 ### poster主要做的事情
@@ -38,8 +48,7 @@ deadline  sectors  partitions  proven
 ```
 现在是每隔40分钟证明一次，一次证明一个partition, 一个partion包括两个sector. proven是证明的partiton的个数 
 
-poster完成一次证明， 会向链上发一条SubmitWindowedPoSt 消息， 
-可以在浏览器消息里method列看到这个消息。 
+poster完成一次证明， 会向链上发一条SubmitWindowedPoSt 消息， 可以在浏览器消息里method列看到这个消息。 
 
 #### 二， 出块
 出块，是本节点获得出块权， 将链上消息打包。 

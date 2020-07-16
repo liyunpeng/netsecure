@@ -1,3 +1,4 @@
+[TOC]
 ### 创世节点
 
 ### sealer
@@ -124,7 +125,7 @@ Ticket信息以及Ticket的PoSt的证明信息
 允许空的tipsets,  
 链上最重的tipset叫做链的头
 
-#### tiket 的生成
+#### tipset 的生成
 Filecoin的共识算法叫Expected Consensus，简称EC共识机制。  
 Expected Consensus实现的相关代码在consensus目录。  
 除了区块链数据外，Expected Consensus每一轮会生成一个Ticket，每个节点通过一定的计算，确定是否是该轮的Leader。  
@@ -249,9 +250,7 @@ We always have stored a series of Filecoin blocks pointing to other blocks, each
 FIXME: Create a further reading appendix, move this next para to it, along with other extraneous content This is one of the few items we store in Datastore by key, location, allowing its contents to change on every sync. This is reflected in the (*ChainStore) writeHead() function (called by takeHeaviestTipSet() above) where we reference the pointer by the explicit chainHeadKey address (the string "head", not a hash embedded in a CID), and similarly in (*ChainStore).Load() when we start the node and create the ChainStore. Compare this to a Filecoin block or message which are immutable, stored in the Blockstore by CID, once created they never change.
 
 允许他的内容， 在每次同步之后后会改变， 
-这个在(*ChainStore) writeHead() 里可以看到， 
-
-
+这个在(*ChainStore) writeHead() 里可以看到.
 
 
 #### 5. Keeping up with the chain

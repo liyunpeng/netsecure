@@ -1,3 +1,26 @@
+
+### 32G 空间大小
+
+P1 昨晚会有389G
+[fil@allinone ~]$ du -sch /mnt/cpfs/0.0.0.1/nfs/0.0.0.1/cache/s-t01002-10306
+389G	/mnt/cpfs/0.0.0.1/nfs/0.0.0.1/cache/s-t01002-10306
+389G	total
+
+
+
+commiting  的 会放在sealed
+[fil@allinone ~]$ du -sch /mnt/cpfs/0.0.0.1/nfs/0.0.0.1/sealed/s-t01002-10306
+33G	/mnt/cpfs/0.0.0.1/nfs/0.0.0.1/sealed/s-t01002-10306
+33G	total
+
+所以一个sector 占用caceh+seale = 420G空间
+
+
+
+### worker 的层
+P2 有11层
+
+
 ### force-remote-worker完成一个任务的6个阶段
 做任务有6个阶段：
 六个阶段

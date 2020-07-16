@@ -17,9 +17,13 @@ num = 1
 supported_phase = ["PreCommitPhase1","PreCommitPhase2","CommitPhase1","CommitPhase2"]
 wait_sec = 60
 ```
+num = 1 表示只起一个线程。 
 
 config.toml设置为1， FORCE_BUILDER_P1_WORKERS可以设置为10
 FORCE_BUILDER_TASK_TOTAL_NUM  一般是 FORCE_BUILDER_P1_WORKERS  的2倍加1 
+wait_sec = 60 表示work每60秒去查一次数据库， 看有没有任务要领。 
+并行woker 的 数量 由sealer 的启动参数控制。 
+
 
 
 ### 本地链发出的消息的查看
