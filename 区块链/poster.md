@@ -1,22 +1,7 @@
-####  poster.log报错infoKey not exist
-
-```
-2020-07-13T11:00:42.875+0800  ERROR  fminer  fminer/baseinfo.go:124  infoKey not exist ...
-2020-07-13T11:00:42.875+0800  ERROR  fminer  fminer/baseinfo.go:144  infoKey not exist ...   这个error
-```
-原因：
-base 和 baseinfo 之前对应， 有个key
-baseinfo   会做computeproof, 
-base 在 25 秒到的时候， 会删除key
-但baseinfo 还在做， 回头去找这个key,  这个key已经被base 删了， 所以报error了
-
-
-### poster主要做的事情
-
+[TOC]
+## poster主要做的事情
 poster 做windowpost 和出块两件事情， 
-
-
-#### 一， 对sector做window post证明， 
+### 一， 对sector做window post证明， 
 P4消息发到链上后， 
 从浏览器看到provencommit的success，  表示这个消息所对应的sector的信息已经上链了, 简称sector上链
 同时sectors表能看到proving, 
@@ -50,7 +35,7 @@ deadline  sectors  partitions  proven
 
 poster完成一次证明， 会向链上发一条SubmitWindowedPoSt 消息， 可以在浏览器消息里method列看到这个消息。 
 
-#### 二， 出块
+### 二， 出块
 出块，是本节点获得出块权， 将链上消息打包。 
 
 一个高度对应一个tipset,  一个tipst可以由多个块组成， 目前规定一个tipset最多有5个块，  从浏览器可以看到每个高度的tipset由几个块组成
@@ -69,16 +54,30 @@ poster完成一次证明， 会向链上发一条SubmitWindowedPoSt 消息， �
 此块与前一个块的消息的所有缴纳的费用全部都转入此次消息打包的矿工账号 
 
 
-### poster生成的文件
+#### poster读取的文件
+poster 需要读取的证明文件； /mnt/nfs/10.10.4.23/caches
+## poster问题排查
+### 正常的 miner info
+应该没有faulty, 即没有算力惩罚
+```
+[fil@yangzhou010010011031 ~]$ ./lotus-storage-miner info
+Mode: poster
+Miner: t01005
+Sector Size: 512 MiB
+Byte Power:   850 GiB / 1.157 TiB (71.7275%)
+Actual Power: 850 Gi / 1.13 Ti (73.6957%)
+	Committed: 850 GiB
+	Proving: 850 GiB
+Expected block win rate: 3456.0000/day (every 25s)
 
-#### 1. 文件
-证明文件   /mnt/nfs/10.10.4.23/caches
-
-##### 2. 数据库表
-
-
-### log 信息
-
+Miner Balance: 3620.283906987152187052
+	PreCommit:   0
+	Locked:      3615.242626826665635249
+	Available:   5.041280160486551803
+Worker Balance: 950.78347599741957621
+Market (Escrow):  0
+Market (Locked):  0
+```
 
 ### 判断poster是否正常
 #### 1. 查看算力
@@ -255,26 +254,15 @@ deadline  sectors  partitions  proven
 ```
 
 
+####  poster.log报错infoKey not exist
 
-
-### 正常的 miner info
-miner balance
 ```
-[fil@yangzhou010010011031 ~]$ ./lotus-storage-miner info
-Mode: poster
-Miner: t01005
-Sector Size: 512 MiB
-Byte Power:   850 GiB / 1.157 TiB (71.7275%)
-Actual Power: 850 Gi / 1.13 Ti (73.6957%)
-	Committed: 850 GiB
-	Proving: 850 GiB
-Expected block win rate: 3456.0000/day (every 25s)
-
-Miner Balance: 3620.283906987152187052
-	PreCommit:   0
-	Locked:      3615.242626826665635249
-	Available:   5.041280160486551803
-Worker Balance: 950.78347599741957621
-Market (Escrow):  0
-Market (Locked):  0
+2020-07-13T11:00:42.875+0800  ERROR  fminer  fminer/baseinfo.go:124  infoKey not exist ...
+2020-07-13T11:00:42.875+0800  ERROR  fminer  fminer/baseinfo.go:144  infoKey not exist ...   这个error
 ```
+原因：
+base 和 baseinfo 之前对应， 有个key
+baseinfo   会做computeproof, 
+base 在 25 秒到的时候， 会删除key
+但baseinfo 还在做， 回头去找这个key,  这个key已经被base 删了， 所以报error了
+
