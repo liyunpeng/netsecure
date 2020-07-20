@@ -1,5 +1,5 @@
  
-
+[TOC]
 ###  帮助
 ```
 [fil@yangzhou010010019017 ~]$ ./lotus-message -h

@@ -18,7 +18,13 @@ commiting  的 会放在sealed
 
 
 ### worker 的层
-P2 有11层
+
+P1 cache有11层文件， 和一个tree-d文件，如下：
+![-w971](media/15950436245993.jpg)
+
+
+用bechy测试， p1,p2总共的大小：
+![-w628](media/15950437240797.jpg)
 
 
 ### force-remote-worker完成一个任务的6个阶段

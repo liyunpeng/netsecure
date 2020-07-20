@@ -1,4 +1,4 @@
-
+[TOC]
 ### 启动sealer前的准备
  miner 初始化， 在 《搭建公有链》 有叙述
  
@@ -97,6 +97,8 @@ root用户在lotus 初始化前需要做的准备：
 然后删除 root用户下的 .lotusstorage目录， 
 然后在root用户做 lotus 初始化，
  
- 
- 
+#### 启动sealer 报错
+```
+force/node/modules/storageminer.go:210): failed to build storagemarket.StorageProvider: could not build arguments for function "reflect".makeFuncStub (/usr/local/go/src/reflect/asm_amd64.s:12): failed to build *storedask.StoredAsk: function "reflect".makeFuncStub (/usr/local/go/src/reflect/asm_amd64.s:12) returned a non-nil error: failed setting a default price: failed to sign: signing using key 't3vskgjqlwl3v4ckpnnplodgyblhseqlsphut3orxwt7ymcdmo5ydf24oda7jvrtsdg6mjpiunr5jbjcxf7eza': key info not found 
+``` 
 

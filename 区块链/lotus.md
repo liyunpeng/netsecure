@@ -226,8 +226,6 @@ $ lotus-storage-miner chain list --count 1000 | grep t01475 | wc -l
 992
 ```
 
-
-
 #### lotus 从server拿的信息
 
 程序中做trysink， 命令中叫 lotus
@@ -242,3 +240,4 @@ vim  lotus.log
 
 内部开发的是用：
 https://stats.testnet.filecoin.io/d/3j4oi32ore0rfjos/chain-internal
+
