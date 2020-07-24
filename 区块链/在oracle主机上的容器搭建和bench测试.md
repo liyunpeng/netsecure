@@ -1,6 +1,7 @@
 [TOC]
 
 因为需要用docker容器做cpu核数划分，所以先准备好容器的镜像，然后启动容器
+
 ### 创建本地镜像
 #### 编写dockerfile
 ```
@@ -24,6 +25,8 @@ Sending build context to Docker daemon 218.2 MB
 ```
 [root@instance-20200716-0836 ~]#docker build . -t test
 ```
+![-w672](media/15954972438965.jpg)
+
 这个docker build 可以生成一个名叫test镜像, 用docker images 可以看到这个镜像
 ```
 [root@instance-20200716-0836 ~]# docker images
@@ -34,8 +37,17 @@ docker.io/centos    centos7             b5b4d78bc90c        2 months ago        
 
 后面要运行的容器都基于这个test镜像，在docker compose文件里，指定好这个镜像文件
 
-### 容器编排
 
+### 文件系统准备
+查看所有的块设备：
+![-w414](media/15955049432672.jpg)
+
+在块设备上创建ext4文件系统
+![-w396](media/15954880714355.jpg)
+
+
+oracle 生成可以不通过网络文件系统， 即不用nfs 
+### 容器编排
 #### cpu核数划分
 ![-w623](media/15953205126803.jpg)
 
@@ -110,7 +122,6 @@ find /  -name ".tmp*" -exec du -sch {} \;
 
 ![-w966](media/15950427674357.jpg)
 
-
 由于容器启动时没有指定挂载目录，临时文件就被放在这个目录下：
 ```
 [root@instance-20200716-0836 ~]# du -sch /var/lib/docker/overlay2/d5b8ae5a03c820f47ce690a75e28415405358837319bb3627e6ef5d1eb10d280/diff/tmp/.tmpaGt389
@@ -122,6 +133,16 @@ find /  -name ".tmp*" -exec du -sch {} \;
 系统空间都在/ 这个目录下，只有39G， 已经用了35G， 其中32G就是被容器的临时文件占用的，需要删除容器容器的临时文件。 
 ![-w1232](media/15950432085134.jpg)
 
+### 关闭超线程
+p1 p2 p4 都要关闭超线程， 因为超出来的线程会来回切
+```
+[root@instance1 ~]# cat a.sh
+#!/bin/bash
+for cpunum in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | tr ',' '\n' | sort -un)
+do
+    echo 0 > /sys/devices/system/cpu/cpu$cpunum/online
+done
+```
 
 ### 容器内操作
 #### 进入容器
@@ -145,7 +166,6 @@ root      24296  0.0  0.0 112824   972 pts/7    S+   09:20   0:00 grep --color=a
 ```
 
 #### 容器内启动bench
-
 ```
 TMPDIR=./  RUST_BACKTRACE=1 RUST_LOG=trace ./benchy_hugepage_0706 force --size=32GiB --p2 --cache-dir test1  > benchy-p2-7742-task-2.log 2>&1 &
 ```
@@ -232,29 +252,91 @@ benchy-p2-cpu30-3.log:1975:thread_id: ThreadId(1) 2020-07-18 13:57:59 INFO [benc
 
 
 ### bench p4 测试 
-**证明参数文件是lotus, poster, sealer和p4所需要的**, p1, p2，p3不需要。 启动命令里没指定证明参数文件位置， 默认的路径是/var/tmp/filecoin-proof-parameters。 可以把证明参数文件专门放到一个特定的文件系统上， 然后挂载这个文件系统。
-p4 需要两个证明参数文件, 都是7280结尾的。 
+#### 1. 下载证明参数文件
+代码的build/proof-parameter/parameters.json列出了所有的证明参数文件，32G的证明参数如下：
+![-w1085](media/15954707799097.jpg)
+共有六个，如果做sector上链和出块，需要把这6个证明参数文件都下载下来。  
+**证明参数文件是lotus, poster, sealer和p4所需要的**, p1, p2，p3不需要。 启动命令里没指定证明参数文件位置， 默认的路径是/var/tmp/filecoin-proof-parameters。 可以把证明参数文件专门放到一个特定的文件系统上，然后挂载这个文件系统。
+
+p4 log里显示出p4所需要的证明参数文件：
 ![-w1875](media/15953214388691.jpg)
 
-
-#### 1. 下载证明参数文件
-确定好当前版本使用的hash, 在parameters.json里， 找到这一项： 
+p4 需要两个证明参数文件, 在代码的params.json的描述为：
 ```
-"v27-stacked-proof-of-replication-merkletree-poseidon_hasher-8-8-0-sha256_hasher-82a357d2f2ca81dc61bb45f4a762807aedee1b0a53fd6c4e77b46a01bfef7820.params": {
+  "v27-stacked-proof-of-replication-merkletree-poseidon_hasher-8-8-0-sha256_hasher-82a357d2f2ca81dc61bb45f4a762807aedee1b0a53fd6c4e77b46a01bfef7820.params": {
     "cid": "Qmf8ngfArxrv9tFWDqBcNegdBMymvuakwyHKd1pbW3pbsb",
     "digest": "a16d6f4c6424fb280236739f84b24f97",
     "sector_size": 34359738368
   },
+  "v27-stacked-proof-of-replication-merkletree-poseidon_hasher-8-8-0-sha256_hasher-82a357d2f2ca81dc61bb45f4a762807aedee1b0a53fd6c4e77b46a01bfef7820.vk": {
+    "cid": "QmfQgVFerArJ6Jupwyc9tKjLD9n1J9ajLHBdpY465tRM7M",
+    "digest": "7a139d82b8a02e35279d657e197f5c1f",
+    "sector_size": 34359738368
+  },
 ```
-这里有下载证明参数文件的依据， 一个是hash, 一个是cid，即下载命令需要的hash和cid；
+这里有下载证明参数文件的依据，一个是hash, 一个是cid，即下载命令需要的cid, 下载后的文件名是cid, 要手动重命名为hash. 
 ```
 curl -o /var/tmp/v27-stacked-proof-of-replication-merkletree-poseidon_hasher-8-8-0-sha256_hasher-82a357d2f2ca81dc61bb45f4a762807aedee1b0a53fd6c4e77b46a01bfef7820.params https://ipfs.io/ipfs/Qmf8ngfArxrv9tFWDqBcNegdBMymvuakwyHKd1pbW3pbsb
 ```
-或者用wget:
+或者用wget： 
 ```
 wget https://ipfs.io/ipfs/Qmf8ngfArxrv9tFWDqBcNegdBMymvuakwyHKd1pbW3pbsb
+
+wget https://ipfs.io/ipfs/QmfQgVFerArJ6Jupwyc9tKjLD9n1J9ajLHBdpY465tRM7M
 ```
-wget 比curl 稳定一些， 这个p4使用的证明参数文件45G， curl下载时出现传输断开的情况，重下又不能续传，  wget没出现。 
+wget 比curl 稳定一些，这个p4使用的证明参数文件45G，curl下载时出现传输断开的情况，重下又不能续传，wget没出现。 
+
+wget 不会覆盖之前下载的文件。  wget 有剩余时间估算：
+![-w951](media/15954869616905.jpg)
+
+oracle下载 p4 45G证明参数文件 ， 用时55分钟
+![-w1906](media/15954888354323.jpg)
+
+最好后台运行，前台运行如果ssh 断开， 下载进程也随之终止， 而且不支持续传。下了几个小时等于白下。 所以对于大文件，千万不要前台下载。 不退出的后台下载可以用screen 
+##### screen 的使用
+ssh 登陆如果broken了， ssh起的进程也推出了， 对于下载， 可以用screen起一个终端 这个终端不会随ssh 退出而退出， 相当于在远程主机开了一个单独的命令窗口。
+先安装screen. 
+
+###### 新建一个窗口
+```
+[root@instance2 ~]# screen
+[detached from 13314.pts-3.instance2]
+```
+detached 表示离开窗口， 但窗口还在。 
+###### 查看开了多少窗口
+![-w433](media/15954735538280.jpg)
+
+如果没有打开的窗口， 显示为：
+```
+[root@instance2 ~]# screen -ls
+No Sockets found in /var/run/screen/S-root.
+```
+
+###### 进入已经打开的窗口：
+![-w799](media/15954736581015.jpg)
+只能打开已经detached的窗口。 
+
+###### 退出当前窗口：
+用快捷键：ctl +a 按住ctl不放，再按d，可以回到原命令行，窗口显示detached from：
+```
+[root@instance2 ~]# screen
+[detached from 13760.pts-3.instance2]
+```
+只会离开这个窗口， 不会结束。
+
+![-w499](media/15954762500984.jpg)
+
+与ctl + a 放开 然后 ctl +d 效果一样。 
+
+下载后改名：
+```
+[root@instance2 filecoin-proof-parameters]# mv QmfQgVFerArJ6Jupwyc9tKjLD9n1J9ajLHBdpY465tRM7M v27-stacked-proof-of-replication-merkletree-poseidon_hasher-8-8-0-sha256_hasher-82a357d2f2ca81dc61bb45f4a762807aedee1b0a53fd6c4e77b46a01bfef7820.vk
+
+[root@instance2 storage]# mv Qmf8ngfArxrv9tFWDqBcNegdBMymvuakwyHKd1pbW3pbsb  v27-stacked-proof-of-replication-merkletree-poseidon_hasher-8-8-0-sha256_hasher-82a357d2f2ca81dc61bb45f4a762807aedee1b0a53fd6c4e77b46a01bfef7820.params
+```
+创建filecoin-proof-parameters目录， 并移动到这个目录下：
+
+
 #### 2. 软链接证明参数文件
 因为系统空间太小；
 ![-w1109](media/15952487004755.jpg)
@@ -301,7 +383,7 @@ FIL_PROOFS_USE_FULL_GROTH_PARAMS=true BELLMAN_PROOF_THREADS=5  TMPDIR=./  RUST_B
 ```
 
 #### 5. p4 时间统计
-p4 的开始log: 读证明参数文件的时间不要算到这里
+p4 的开始log: 读证明参数文件的时间不能算到p4的耗时里。
 ```
 thread_id: ThreadId(1) 2020-07-21 12:23:48 INFO [filecoin_proofs::api::seal] got groth params (34359738368) while sealing
 
@@ -345,3 +427,112 @@ benchy p4没有用到大页内存，启动命令里没有FORCE_HUGE_PAGE环境�
 
 解压：
 tar xzvf benchlog20200722.tar.gz -C ./目录名
+
+### p1 测试
+一个P1消耗64G内存， P1需要大叶内存， p2 p4一般不用大叶内存。 所以p1启动前，先开启大叶内存 
+#### 开启大叶内存
+按文档 巨页内存的开启，执行， 需要重启生效。
+
+#### p1 p2  p34 一起启动
+
+```
+FIL_PROOFS_USE_FULL_GROTH_PARAMS=true BELLMAN_PROOF_THREADS=5 HACK_P1=1 FIL_PROOFS_MAXIMIZE_CACHING=1 FIL_PROOFS_BENCHY_HUGEPAGE_ENABLE=1 TMPDIR=./  RUST_BACKTRACE=1 RUST_LOG=trace ./benchy_hugepage_0706 force --size=32GiB --p1 --p2 --p34  > benchy-p34-32cpu-4bench-1.log 2>&1 &
+```
+
+终端打个字符有时特别卡， 有时正常 , 能不能一直保持正常
+
+### docker compose问题
+```
+[root@instance1 share]# docker-compose -f p4-21cpu.yml up -d
+ERROR: Couldn't connect to Docker daemon at http+docker://localunixsocket - is it running?
+
+If it's at a non-standard location, specify the URL with the DOCKER_HOST environment variable.
+```
+解决办法：
+```
+[root@instance1 share]# groupadd docker
+[root@instance1 share]# groupadd docker^C
+[root@instance1 share]# gpasswd -a ${USER} docker
+正在将用户“root”加入到“docker”组中
+
+[root@instance1 share]#  service docker restart
+Redirecting to /bin/systemctl restart docker.service
+[root@instance1 share]# docker-compose -f p4-21cpu.yml up -d
+Pulling bench1 (test:latest)...
+Trying to pull repository docker.io/library/test ...
+ERROR: repository docker.io/test not found: does not exist or no pull access
+
+```
+### scp问题
+#### scp 权限问题
+![-w696](media/15954989623687.jpg)
+
+上面出现authenticity， 说明目标机上没有本机的ssh-key, 把本机的id_pub内容拷贝到目标机的~/.ssh/authorised 里面，这里目标机是10.0.0.3
+
+#### scp 不能递归拷贝的问题
+原因是没有加rp参数， 加上即可：
+```
+scp -rp 10.0.0.3:/mnt/share/* ./
+```
+可以完整递归拷贝目录
+
+
+cpu 不足， p1 退出, p1 log:
+![-w1548](media/15955155942748.jpg)
+
+看文件：
+
+![-w1431](media/15955154878502.jpg)
+
+
+
+### p1 计算证明参数文件
+![-w1764](media/15955157937213.jpg)
+
+#### 关闭大页内存
+```
+[root@instance1 share]# echo 0 > /proc/sys/vm/nr_hugepages
+```
+![-w552](media/15955545326408.jpg)
+大页内存还占据67G， 需要删除/mnt/huge/* 
+```
+[root@instance1 share]# rm /mnt/huge/* -rf
+```
+再看：
+![-w557](media/15955549386407.jpg)
+
+
+            
+
+
+### 防火墙原因导致connection refused了
+端口没服务时， 会显示
+![-w456](media/15955633564491.jpg)
+
+
+### p1 p2 p4 的开始和结束
+p1开始:
+thread_id: ThreadId(1) 2020-07-23 14:52:09 INFO [filecoin_proofs::api::seal_pledge] seal_pre_commit_phase1_all_zero: start
+结束：
+thread_id: ThreadId(1) 2020-07-23 17:44:04 INFO [benchy::force] p2 enabled
+
+
+----
+p2开始:
+seal_pre_commit_phase2_all_zero: start
+thread_id: ThreadId(1) 2020-07-23 18:59:44 INFO [benchy::force] p34 enabled
+
+p2结束：
+thread_id: ThreadId(1) 2020-07-23 18:59:44 INFO [filecoin_proofs::api::seal] seal_commit_phase1:start
+
+
+---
+p4 开始:
+thread_id: ThreadId(1) 2020-07-23 19:00:19 INFO [filecoin_proofs::api::seal] seal_commit_phase2:start
+
+### 不同协议，拷贝速度不同：
+scp 协议：
+![-w1902](media/15955804228269.jpg)
+而zmodem协议：
+![-w707](media/15955805646739.jpg)
+
