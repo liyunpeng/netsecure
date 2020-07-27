@@ -604,4 +604,72 @@ Stack backtrace:
 在10.0.0.6本机上测试， 可以访问本机的这个端口：
 
 
+#### 宿主机的/root/p2 映射到 容器的/root/ 导致 没有初始化， 行的提示头为bash-4.2
+![-w984](media/15958306984188.jpg)
+进入容器， 行的提示头为bash-4.2
+![-w559](media/15958305829490.jpg)
 
+
+#### scp 目录设置不对
+![-w561](media/15958316883485.jpg)
+
+改成这样就对了：
+![-w601](media/15958317577657.jpg)
+
+### 软链接
+#### 删除软链接文件， 不会删除原文件
+![-w990](media/15958326625663.jpg)
+
+
+####  ln -s /mnt/fsqlv/filecoin-proof-parameters/  /var/tmp/filecoin-proof-parameters 与 ln -s /mnt/fsqlv/filecoin-proof-parameters  /var/tmp/filecoin-proof-parameters 的区别
+这是有无 / 的区别，
+有 / ， 表示链接的是同目录， 
+没有 / , 表示链接的是子目录
+ln -s /mnt/fsqlv/filecoin-proof-parameters/  /var/tmp/filecoin-proof-parameters 的结果：
+![-w1849](media/15958330583633.jpg)
+ln -s /mnt/fsqlv/filecoin-proof-parameters /var/tmp/filecoin-proof-parameters 的结果：
+![-w978](media/15958330953765.jpg)
+
+
+### 初始化矿工时， 没有证明参数文件， 会下载证明参数文件
+
+
+
+#### 存储盘的分布
+1 p1 1 p2
+
+
+"p1num": 1,   num =1
+ "p2num": 1.
+
+sdc
+
+
+
+----------------
+	
+	
+#### raid	
+再加两个盘 做read,   [
+
+]
+       
+#### 查看块下的分区    
+[root@instance2 share]# lsblk
+NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda      8:0    0  200G  0 disk
+├─sda1   8:1    0  512M  0 part /boot/efi
+├─sda2   8:2    0    8G  0 part [SWAP]
+└─sda3   8:3    0 38.1G  0 part /
+sdb      8:16   0    2T  0 disk /mnt/storage
+sdc      8:32   0    3T  0 disk /mnt/share        
+
+
+#### 链接的文件也在df 里显示为挂载
+![-w955](media/15958382775505.jpg)
+
+
+#### 容器重启后， history 的命令还在
+
+
+FORCE_BUILDER_P1_WORKERS=2 FORCE_BUILDER_TASK_DELAY=1s FORCE_BUILDER_AUTO_PLEDGE_INTERVAL=1 TRUST_PARAMS=1 RUST_LOG=info RUST_BACKTRACE=1 FORCE_BUILDER_PLEDGE_TASK_TOTAL_NUM=5 nohup ./floader ./lotus-storage-miner run --mode=remote-sealer --server-api=http://10.0.0.6:3456 --dist-path=/mnt/fsqlv --nosync --groups=1 > ./sealer.log 2>&1 &
