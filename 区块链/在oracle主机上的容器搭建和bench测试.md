@@ -37,16 +37,51 @@ docker.io/centos    centos7             b5b4d78bc90c        2 months ago        
 
 后面要运行的容器都基于这个test镜像，在docker compose文件里，指定好这个镜像文件
 
-
-### 文件系统准备
+### 系统环境准备
+#### 文件系统
 查看所有的块设备：
 ![-w414](media/15955049432672.jpg)
 
 在块设备上创建ext4文件系统
 ![-w396](media/15954880714355.jpg)
+oracle 生成可以不通过网络文件系统， 即不用nfs.
+
+#### 关闭超线程
+p1 p2 p4 都要关闭超线程， 因为超出来的线程会来回切
+```
+[root@instance1 ~]# cat a.sh
+#!/bin/bash
+for cpunum in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | tr ',' '\n' | sort -un)
+do
+    echo 0 > /sys/devices/system/cpu/cpu$cpunum/online
+done
+```
+#### 大页内存的开启与关闭
+巨页内存是专给p1用的，有p1时就开启， 没p1时就不开启
+```
+[root@instance1 share]# echo 0 > /proc/sys/vm/nr_hugepages
+```
+![-w552](media/15955545326408.jpg)
+大页内存还占据67G， 需要删除/mnt/huge/* 
+```
+[root@instance1 share]# rm /mnt/huge/* -rf
+```
+再看：
+![-w557](media/15955549386407.jpg)
 
 
-oracle 生成可以不通过网络文件系统， 即不用nfs 
+            
+
+
+#### 防火墙原因导致connection refused了
+防火墙导致connection refused
+![-w456](media/15955633564491.jpg)
+
+关闭防火墙：
+```
+ systemctl stop firewalld.service
+```
+
 ### 容器编排
 #### cpu核数划分
 ![-w623](media/15953205126803.jpg)
@@ -133,16 +168,7 @@ find /  -name ".tmp*" -exec du -sch {} \;
 系统空间都在/ 这个目录下，只有39G， 已经用了35G， 其中32G就是被容器的临时文件占用的，需要删除容器容器的临时文件。 
 ![-w1232](media/15950432085134.jpg)
 
-### 关闭超线程
-p1 p2 p4 都要关闭超线程， 因为超出来的线程会来回切
-```
-[root@instance1 ~]# cat a.sh
-#!/bin/bash
-for cpunum in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | tr ',' '\n' | sort -un)
-do
-    echo 0 > /sys/devices/system/cpu/cpu$cpunum/online
-done
-```
+
 
 ### 容器内操作
 #### 进入容器
@@ -489,26 +515,6 @@ cpu 不足， p1 退出, p1 log:
 ### p1 计算证明参数文件
 ![-w1764](media/15955157937213.jpg)
 
-#### 关闭大页内存
-```
-[root@instance1 share]# echo 0 > /proc/sys/vm/nr_hugepages
-```
-![-w552](media/15955545326408.jpg)
-大页内存还占据67G， 需要删除/mnt/huge/* 
-```
-[root@instance1 share]# rm /mnt/huge/* -rf
-```
-再看：
-![-w557](media/15955549386407.jpg)
-
-
-            
-
-
-### 防火墙原因导致connection refused了
-端口没服务时， 会显示
-![-w456](media/15955633564491.jpg)
-
 
 ### p1 p2 p4 的开始和结束
 p1开始:
@@ -535,4 +541,67 @@ scp 协议：
 ![-w1902](media/15955804228269.jpg)
 而zmodem协议：
 ![-w707](media/15955805646739.jpg)
+
+
+### 证明参数文件
+证明参数文件总的大小和参数列表
+![-w1650](media/15956735861275.jpg)
+
+
+
+### lotus sync status 
+
+![-w881](media/15956847084331.jpg)
+
+
+![-w881](media/15957478864955.jpg)
+
+
+#### 启动force worker报错：
+force worker 在开始的时候， 会连接lotus-server端口服务， 如果连不上， 会报如下错误：
+```
+nohup: ignoring input
+^[[38;5;7mDEBUG^[[0m [flic_loader::loader] ^[[38;5;7msettings loaded: Settings { client_id: "dev", client_key: "dev_key", static_pub_key: PubKey { key: RSAPublicKey { n: BigUint { data: [9403744563632550731, 15636893577510509207, 7908396700207876033, 2349911377010148189, 3404479566132747154, 8919033981423213381, 9934012725932870088, 4287027268713126258, 9909142030565529169, 16613651502849711092, 13565734036186278805, 3388392181168824697, 51449515337061430, 7247608559431585465, 6899615128604535572, 12118298871080516872] }, e: BigUint { data: [65537] } }, raw: [48, 129, 137, 2, 129, 129, 0, 168, 44, 216, 158, 36, 197, 125, 8, 95, 192, 91, 103, 91, 98, 107, 20, 100, 148, 173, 149, 216, 0, 14, 185, 0, 182, 201, 15, 197, 136, 20, 54, 47, 5, 252, 188, 126, 71, 97, 121, 188, 67, 43, 59, 72, 79, 43, 149, 230, 143, 140, 4, 217, 125, 219, 244, 137, 132, 88, 45, 8, 192, 86, 81, 59, 126, 148, 150, 86, 15, 25, 114, 137, 220, 179, 241, 11, 112, 73, 200, 123, 198, 198, 38, 170, 94, 91, 69, 47, 63, 36, 32, 176, 107, 27, 146, 32, 156, 143, 242, 112, 86, 195, 93, 109, 192, 68, 229, 250, 195, 7, 193, 217, 1, 103, 220, 102, 25, 218, 151, 130, 128, 207, 219, 129, 212, 51, 75, 2, 3, 1, 0, 1] }, gateway_base_url: "http://10.0.0.6:3456", hardware_fingerprint: "", refresh_interval: 5 }^[[0m
+Error: write first key into shared mem
+
+Caused by:
+    0: tcp connecting
+    1: Connection timed out (os error 110)
+
+Stack backtrace:
+   0: anyhow::context::<impl anyhow::Context<T,E> for core::result::Result<T,E>>::context
+   1: fhttp::roundtrip_json::{{closure}}
+   2: <std::future::GenFuture<T> as core::future::future::Future>::poll
+   3: async_std::task::task_locals_wrapper::TaskLocalsWrapper::set_current
+   4: scoped_tls::ScopedKey<T>::set
+   5: smol::run::run
+   6: std::thread::local::LocalKey<T>::with
+   7: async_std::task::builder::Builder::blocking
+   8: flic_loader::loader::key_fetcher::remote::KeyFetcher::fetch_pub
+   9: flic_loader::loader::Loader::exec
+  10: floader::main
+  11: std::rt::lang_start::{{closure}}
+  12: std::rt::lang_start_internal::{{closure}}
+             at src/libstd/rt.rs:52
+      std::panicking::try::do_call
+             at src/libstd/panicking.rs:296
+  13: __rust_maybe_catch_panic
+             at src/libpanic_unwind/lib.rs:79
+  14: std::panicking::try
+             at src/libstd/panicking.rs:272
+      std::panic::catch_unwind
+             at src/libstd/panic.rs:394
+      std::rt::lang_start_internal
+             at src/libstd/rt.rs:51
+  15: main
+  16: __libc_start_main
+  17: <unknown>
+```
+
+经过telnet测试端口， 确定lotus-server的3456端口， 无法访问：
+![-w559](media/15958217390161.jpg)
+
+在10.0.0.6本机上测试， 可以访问本机的这个端口：
+
+
 

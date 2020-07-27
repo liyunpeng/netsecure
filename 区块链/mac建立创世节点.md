@@ -1,5 +1,5 @@
 [TOC]
-mac 上的实验数据：
+
 ####  1. 获取证明参数文件
 ```
 ./lotus fetch-params --proving-params 2048

@@ -19,6 +19,8 @@ nohup ./floader ./lotus daemon --server-api=http://10.10.28.218:3456 --bootstrap
 
 nohup ./floader ./lotus daemon --server-api=http://10.10.10.207:3456 --bootstrap=false --api 11234 > lotus.log 2>&1 &
 
+nohup ./floader ./lotus daemon --server-api=http://10.0.0.6:3456 --bootstrap=false --api 11234 > lotus.log 2>&1 &
+
 TRUST_PARAMS=1 RUST_LOG=info RUST_BACKTRACE=1 nohup ./floader ./lotus-storage-miner run --mode=remote-wdposter --server-api=http://10.10.28.218:3456 --dist-path=/var/tmp/filecoin-proof-parameters --nosync > poster.log 2>&1 &
 
 FORCE_BUILDER_P1_WORKERS=18 FORCE_BUILDER_TASK_DELAY=1s FORCE_BUILDER_AUTO_PLEDGE_INTERVAL=1 TRUST_PARAMS=1 RUST_LOG=info RUST_BACKTRACE=1 FORCE_BUILDER_PLEDGE_TASK_TOTAL_NUM=37 nohup ./floader ./lotus-storage-miner run --mode=remote-sealer --server-api=http://10.10.28.218:3456 --dist-path=/var/tmp/filecoin-proof-parameters --nosync --groups=1 > ./sealer.log 2>&1 &
