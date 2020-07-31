@@ -1,7 +1,19 @@
 [TOC]
 
+### 测试目的
 因为需要用docker容器做cpu核数划分，所以先准备好容器的镜像，然后启动容器
+测试的目的， 是为了算出配比方案， 测试p1 , p2 , p4 不同核数下， bench 的时间和产量个数， 算出每种核数配置下的， 产量速度， 最后选出产量速度最快的核数配置，并记录下相应的产量速度。 
 
+依照这个p1, p2, p4的各自的核数和产量速度，算出一个小集群需要的不同型号的机器数目，以及每个机器上运行的容器的数目。这个数据运维人员需要。 
+然后再计算出p1,p2, p4的产出速度。 
+
+
+然后把产出速度和比如月产出量期望值， 比如为1PB，把这些数据带入到excel表格， 得出每种型号的机器的台数。  这个配比数据采购人员需要。 下表用任务总量除以单台21天产量， 得到台数
+![-w1326](media/15961589610222.jpg)
+
+本文主要介绍了bench运行所有需要的容器操作， P4证明参数文件的准备， p1，p2，p4的时间统计，p1大页内存问题，p4内存估算问题， 存放cache的本地块存储，存放p3cache和最终文件的共享存储挂载等，  
+
+https://faucet.calibration.fildev.network/
 ### 创建本地镜像
 #### 编写dockerfile
 ```
@@ -604,7 +616,7 @@ Stack backtrace:
 在10.0.0.6本机上测试， 可以访问本机的这个端口：
 
 
-#### 宿主机的/root/p2 映射到 容器的/root/ 导致 没有初始化， 行的提示头为bash-4.2
+#### 宿主机的/root/p2 映射到 容器的/root/ 导致 没有初始化， 行标签为bash-4.2
 ![-w984](media/15958306984188.jpg)
 进入容器， 行的提示头为bash-4.2
 ![-w559](media/15958305829490.jpg)
@@ -650,11 +662,10 @@ sdc
 	
 	
 #### raid	
-再加两个盘 做read,   [
-
-]
+再加两个盘 做raid 
        
 #### 查看块下的分区    
+```
 [root@instance2 share]# lsblk
 NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
 sda      8:0    0  200G  0 disk
@@ -663,7 +674,7 @@ sda      8:0    0  200G  0 disk
 └─sda3   8:3    0 38.1G  0 part /
 sdb      8:16   0    2T  0 disk /mnt/storage
 sdc      8:32   0    3T  0 disk /mnt/share        
-
+```
 
 #### 链接的文件也在df 里显示为挂载
 ![-w955](media/15958382775505.jpg)
@@ -673,3 +684,64 @@ sdc      8:32   0    3T  0 disk /mnt/share
 
 
 FORCE_BUILDER_P1_WORKERS=2 FORCE_BUILDER_TASK_DELAY=1s FORCE_BUILDER_AUTO_PLEDGE_INTERVAL=1 TRUST_PARAMS=1 RUST_LOG=info RUST_BACKTRACE=1 FORCE_BUILDER_PLEDGE_TASK_TOTAL_NUM=5 nohup ./floader ./lotus-storage-miner run --mode=remote-sealer --server-api=http://10.0.0.6:3456 --dist-path=/mnt/fsqlv --nosync --groups=1 > ./sealer.log 2>&1 &
+
+
+#### 测试截图
+![-w1445](media/15958999349979.jpg)
+
+
+![-w1474](media/15961575632003.jpg)
+
+### 配比数据
+
+#### 选出p1 p2 p4最优耗时
+![-w1559](media/15961602940868.jpg)
+
+p1: 146分钟 按 150分钟算
+p2: （118+132+134+131）/2 = 120 
+因为存储吞吐量原因， p1, p2要放在同一个机器上
+ 
+P4: 77分钟：
+
+
+#### 由p1 p2 p4 耗时和月期望产量，确定购买台数
+1024* 1024 / 21 /24 /  = 2080 G / 每小时
+
+2080 / （2 *32） = 
+
+把上面的时间带入到excel表格：
+![-w1326](media/15961608503086.jpg)
+
+得出台数方案：
+![-w912](media/15961601834603.jpg)
+
+
+####  运维方案
+128 核机器划分， 四个容器， 每个容器跑一个p1,   四个容器跑p2 p3, 每个容器跑一个p2一个p3。   一组p1 p2 p3 对应一个cache存储， 所以有4个cache存储。   
+共享存储 为/mnt/fsqlv ， 存放证明参数和p3 cache
+
+64 核机器划分： 三个容器， 一个容器跑一个p4. 
+得出运维方案：
+![-w1435](media/15961610128742.jpg)
+
+![-w1301](media/15961610465025.jpg)
+
+
+
+
+
+
+#### 存储的吞吐量
+一组p1 p2 p3 对应一个单机cache存储， 所以有4个cache块存储，cache块存储吞吐量及挂载目录
+![-w1124](media/15961598479860.jpg)
+
+  共享存储 为/mnt/fsqlv ， 存放证明参数和p3 cache，共享存储吞吐量：
+![-w1124](media/15961599303530.jpg)
+
+
+
+
+
+
+
+
