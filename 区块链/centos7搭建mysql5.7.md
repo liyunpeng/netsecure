@@ -26,7 +26,6 @@ systemctl start mysqld #启动MySQL
 ### 获取密码
 3、获取安装时的临时密码（在第一次登录时就是用这个密码）：
 ```
-grep 'temporary password' /var/log/mysqld.log
 # grep 'temporary password' /var/log/mysqld.log
 2020-06-22T08:43:49.083578Z 1 [Note] A temporary password is generated for root@localhost: 8UO0S*6.zAqY
 ```

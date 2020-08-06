@@ -4,6 +4,14 @@ Linux可用三种方式：
 2. 用k8s集群，需要master节点主机，和node节点主机， 因为是笔记本，运行两个vmware虚拟机, 就很吃力了，所以不用
 3. 用docker方式，是最快捷的方式，省去了很多环境搭建的动作。 这里采用docker方式。
 
+
+mac启动docker；
+没有启动会显示：
+![-w1484](media/15963315112253.jpg)
+
+用cmd + space 弹出启动框：
+![-w688](media/15963316154008.jpg)
+
 ----------------------------------------------------------------------
 docker运行mysql服务的方法步骤：
 
@@ -42,4 +50,7 @@ $ sudo docker exec -it mysql bash
 C:\Users\Administrator> mysql -h 192.168.0.141:3306 -uroot -p123456
 连接linux主机的3306端口， 因为linux docker的mysql服务容器的3306端口直接映射到了linxu宿主机上，
 所以可以直接连接linux主机的3306端口，就可获取mysql服务。
+
+#### 挂载
+-v /docker/redis/conf/redis.conf:/etc/redis.conf
 
