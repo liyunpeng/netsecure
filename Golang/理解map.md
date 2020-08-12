@@ -21,7 +21,10 @@ map[key]会返回两个值， 一个是value,一个是表示该key 是否存在�
 ---
 键类型与值类型：
 map 的键可以是任意内建类型或者是struct类型，map的值可以是使用==操作符的表达式
-slice，function 和 包含 slice 的 struct 类型不可以作为 map 的键，否则会编译错误
+slice，
+
+function 和 包含 slice 的 struct 类型不可以作为 map 的键，否则会编译错误
+
 map 的值一般声明为接口类型，以容纳不同类型的值
 
 ---

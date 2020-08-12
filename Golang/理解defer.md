@@ -1,6 +1,7 @@
 defer 底层实现： 结构体_defer  和两个函数都在runtimer/runtime2.go里定义。 
 具名返回值 表示 返回值在声明时， 有名字。 返回值声明也可以没有名字。 
 defer可以操作具名返回值。 
+```
 type _defer struct {
 	siz     int32
 	started bool
@@ -10,6 +11,7 @@ type _defer struct {
 	_panic  *_panic // panic that is running defer
 	link    *_defer  
 }
+```
 
 defer处执行的函数：
 func deferproc(siz int32, fn *funcval) { // arguments of fn follow fn
