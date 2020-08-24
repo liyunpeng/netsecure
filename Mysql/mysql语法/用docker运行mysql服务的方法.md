@@ -5,15 +5,53 @@ Linux可用三种方式：
 3. 用docker方式，是最快捷的方式，省去了很多环境搭建的动作。 这里采用docker方式。
 
 
-mac启动docker；
+#### mac启动docker；
 没有启动会显示：
 ![-w1484](media/15963315112253.jpg)
 
 用cmd + space 弹出启动框：
 ![-w688](media/15963316154008.jpg)
+#### centos启动docker
+Docker的启动与停止
+systemctl命令是系统服务管理器指令
 
-----------------------------------------------------------------------
-docker运行mysql服务的方法步骤：
+启动docker：
+
+systemctl start docker
+ 
+
+停止docker：
+
+systemctl stop docker
+ 
+
+重启docker：
+
+systemctl restart docker
+ 
+
+查看docker状态：
+
+systemctl status docker
+ 
+
+开机启动：
+
+systemctl enable docker
+ 
+
+查看docker概要信息
+
+docker info
+ 
+
+查看docker帮助文档
+
+docker --help
+
+
+
+### docker运行mysql服务的方法步骤：
 
 1. 拉取mysql服务镜像
 $ docker pull mysql:5.7   # 拉取 mysql 5.7

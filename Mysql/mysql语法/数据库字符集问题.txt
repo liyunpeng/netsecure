@@ -9,6 +9,7 @@ mysql> create database gotest default character set=utf8;
 Query OK, 1 row affected (0.00 sec)
 
 如果用 alter database 方式， 不生效， 可能原因docker 里的服务不能重启：
+```
 root@831da969d562:/# vi /etc/mysql/my.cnf
 bash: vi: command not found
 root@831da969d562:/# cat /etc/mysql/my.cnf
@@ -37,6 +38,8 @@ root@831da969d562:/# cat /etc/mysql/my.cnf
 !includedir /etc/mysql/conf.d/
 !includedir /etc/mysql/mysql.conf.d/
 
+
+```
 容器内重启服务：
 root@831da969d562:/#  /etc/init.d/mysql  restart
 [info] Stopping MySQL Community Server 5.7.29.
@@ -47,3 +50,22 @@ root@831da969d562:/#  /etc/init.d/mysql  restart
 CONTAINER ID        IMAGE                    COMMAND                  CREATED             STATUS              PORTS                                                NAMES
 ae3739a4f17b        wurstmeister/kafka       "start-kafka.sh"         2 hours ago         Up 2 hours          0.0.0.0:9092->9092/tcp                               kafka
 d7962679749d        wurstmeister/zookeeper   "/bin/sh -c '/usr/sb…"   4 hours ago         Up 4 hours          22/tcp, 2888/tcp, 3888/tcp,
+
+
+####  因字符问题插入中文， 包1366的错误
+![-w1841](media/15982482523849.jpg)
+
+可以在navicat里添加一条记录测试： 
+
+![-w1884](media/15982484013268.jpg)
+
+也同样会报1366的错误， 
+
+解决办法， 改变字符编码， 用sql语句执行
+```
+alter table operations convert to charset utf8;
+```
+
+![-w1668](media/15982485506768.jpg)
+用对话框方式修改字符编码测试无效： 
+![-w658](media/15982486184484.jpg)
