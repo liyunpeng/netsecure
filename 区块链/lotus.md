@@ -241,3 +241,6 @@ vim  lotus.log
 内部开发的是用：
 https://stats.testnet.filecoin.io/d/3j4oi32ore0rfjos/chain-internal
 
+
+
+### 因为磁盘io满了， lotus同步不上， 同步需要写磁盘，  解决的办法是切换到另一个lotus， 
