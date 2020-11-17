@@ -188,3 +188,5 @@ header里是option跨域请求：
 
 GOPROXY="https://goproxy.cn"
 
+
+
