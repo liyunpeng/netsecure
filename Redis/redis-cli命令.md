@@ -10,6 +10,49 @@ redis-sentinel	启动redis-sentinel
 本文重点介绍的redis-cli命令。
 
  
+ 
+ alter table asset_transfer_record modify column from_user_spaceincome decimal(20,12);
+
+alter table asset_transfer_record modify column from_user_spacerace_rewards decimal(20,12);
+  
+alter table asset_transfer_record modify column from_user_spacerace_income decimal(20,12);
+
+alter table asset_transfer_record modify column from_user_spacerace_income decimal(20,12);
+
+alter table asset_transfer_record modify column from_user_spacerace_rewards decimal(20,12);
+
+alter table asset_transfer_record modify column from_user_spacerace_release_reward decimal(20,12);
+alter table asset_transfer_record modify column from_user_spacerace_release_income decimal(20,12);
+
+alter table asset_transfer_record modify column from_user_spacerace_release_released_income decimal(20,12);
+alter table asset_transfer_record modify column to_user_spacerace_income decimal(20,12);
+  
+alter table asset_transfer_record modify column to_user_spacerace_income decimal(20,12);
+alter table asset_transfer_record modify column to_user_spacerace_rewards decimal(20,12);
+alter table asset_transfer_record modify column to_user_spacerace_release_reward decimal(20,12);
+alter table asset_transfer_record modify column to_user_spacerace_release_income decimal(20,12);
+alter table asset_transfer_record modify column to_user_spacerace_income_new decimal(20,12);
+alter table asset_transfer_record modify column to_user_spacerace_rewards_new decimal(20,12);
+alter table asset_transfer_record modify column to_user_spacerace_release_reward_new decimal(20,12);
+alter table asset_transfer_record modify column to_user_spacerace_release_income_new decimal(20,12);
+alter table asset_transfer_record modify column to_user_spacerace_release_released_income_new decimal(20,12);
+alter table asset_transfer_record modify column from_user_spacerace_income_new decimal(20,12);
+alter table asset_transfer_record modify column from_user_spacerace_rewards_new decimal(20,12);
+alter table asset_transfer_record modify column from_user_spacerace_release_reward_new decimal(20,12);
+alter table asset_transfer_record modify column from_user_spacerace_release_income_new decimal(20,12);
+alter table asset_transfer_record modify column from_user_spacerace_release_released_income_new decimal(20,12);
+alter table asset_transfer_record modify column from_user_spacerace_release_reward_new decimal(20,12);
+
+
+ 
+排查
+spacerace 汇总产品显示
+修改spacecrace小数位数
+测试网福利8位小数，保证用户下全部订单转移时，数据对上
+排除extern/Userbackend冲突问题
+修改荣来分离部署文档， 发布预生产
+排查荣来系统 spacerace数据错误问题
+
 
 可以使用两种方式连接redis服务器。
 

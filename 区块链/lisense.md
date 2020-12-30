@@ -64,11 +64,12 @@ FIL_PROOFS_ALLOW_GENERATING_GROTH=1 RUST_LOG=debug BELLMAN_PROOF_THREADS=5 RUST_
 
 ```
 
-
 ### 结束floader起的进程的正确姿势
 使用kill -TERM 8771 命令可以进程和其子进程
 也可以用killall
 ```
 $killall ./floader 
 ```
+
+
 

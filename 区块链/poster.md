@@ -8,6 +8,11 @@ P4消息发到链上后，
 
 sector上链之后， poster就可以对这个sector做windowpost证明， 不是立即做， 要等一会. 而且以后要每隔固定时间， 都要做windowpost证明 
 
+资产转移的系列方法参数均改为结构体参数，方便容纳更多参数
+增加导入荣来订单接口
+添加荣来资产核算接口
+用导入的荣来用户订单标记订单数据库表
+
 从poster.log看到：
 ```
 2020-06-19T10:32:56.116+0800	INFO	storageminer	generating windowPost	{"sectors": 4}

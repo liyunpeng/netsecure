@@ -15,6 +15,10 @@ sdb               8:16   0 558.4G  0 disk
 ```
 这台机器有两块物理硬盘sda和sdb，sda又分了sda1和sda2，sda1分了1G的空间，sda2继续分了centos-root，centos-swap，centos-home，而sdb的盘没有被分区，也没有被使用
 
+8c2b22e31ffbf1b06a9b3cc53102992e3fbf11c7
+defb919053fe2485cf5662be7daa391ba984b9e0
+
+
 fdisk 跟盘名称
 
 ```

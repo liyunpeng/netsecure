@@ -114,10 +114,6 @@ show variables like "%time_zone%";
 system_time_zone	CST
 time_zone	SYSTEM
 
-李刚's avatar
-
-李刚 committed about 5 hours ago
-600bb8d8
 
 ![-w388](media/16043831730958.jpg)
 mysql> set global time_zone = '+08:00';
@@ -504,6 +500,8 @@ rpc获取数据， 将slice重新组织为map， 后续访问某一项数据，�
 
 ####  aliyun 发送次数超过限制，  自动转到备用的tencent
 ![-w1811](media/16023016919191.jpg)
+
+
 
 
 #### 登录判断

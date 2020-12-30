@@ -104,8 +104,21 @@ remote: Resolving deltas: 100% (4/4), completed with 4 local objects.
 To github.com:liyunpeng/netsecure.git
    dac8f36..d1ddbbd  master -> master
 ```
+按需求变更：修改计算逻辑，计算出sr1，sr2, br2系数，并存数据库
+修改转移的余额计算逻辑
+spacerace 奖励按需求变更，修改SR1系数对应的基数
+修改按产品id，汇总出用户订单算力
+修改转移的余额，冻结， 可提现的计算逻辑
+修改spacerace 奖励，到账计算逻辑
 
 
+
+	修改个人账户转移balance计算
+	解决增加spacerace为0的转移记录过滤后，spacerace奖励错误问题
+	按需求公式变更，修改单个用户的balance计算逻辑
+	按公式修改，重新计算br2系数
+	修改若干字段精度
+	核对程序计算数据与手动表格计算数据，找出表格计算错误或程序计算错误
 #### 只有git fetch, 没有git rebase, 本地看到的代码还不是同步下来的代码
 
 ## gitlab 建立一个组
@@ -134,6 +147,9 @@ gitlab：
   712  git submodule update
   713  git push gitlab force-send 
   
+
+  
+  
   
 ###  checkout出一个分支 并push到远程
   ```
@@ -151,3 +167,13 @@ To gitlab.forceup.in:ForcePool/Backend.git
   
   在浏览器上，可以看到远程上已经有了这个分支： 
   ![-w1305](media/15999632316214.jpg)
+
+
+	测试网福利改为5位小数
+	修改转入用户计算逻辑
+	修改balance转移数据的记录
+	修改转账收益转移数据
+	修改荣来矿池空间错误问题
+	增加转移过程中的中间数据
+	
+	

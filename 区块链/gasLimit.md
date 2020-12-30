@@ -21,3 +21,13 @@ gas price由我们自己设定，相当于每升汽油的价格；
 一次交易或调用实际需要消耗的gas（gas used）由该次交易或调用过程中执行的命令决定；
 gas used 必须小于或等于gas limit；
 实际支付的费用 = gas used * gas price。
+
+修改执行转移时的用户balance计算
+修改balance精度
+统计单个用户转移订单所设计的spacerace产品范围
+恢复spacerace基数修改
+修改核算balance
+重新计算用户spacerace
+用户表中增加记录转移订单产品id集合与用户spacerace产品id集合的交集inner_pids
+转移balance按新公式转移的矿池到账 + 该用户总的到账SR奖励*SR2 - 转移的已提现重新计算
+核对表格数据与程序计算数据
