@@ -1,9 +1,8 @@
 glusterfs是集群网络文件系统，每个节点机器都要先安装好gluster的客户端和服务端，服务端有专文叙述
 $ sudo yum -y install glusterfs-client
 
-========================================================
 准备好前提条件：
-1. 配置好/etc/hosts
+### 1. 配置好/etc/hosts
 
 启动gluster前， 包括很多其他服务也是， 都需要把/etc/hosts设置好， 因为有时ip地址可能会变， ip作为参数不是很可取， 所以要用主机名。 
 如果服务是集群型服务，要把集群里的每个节点机器都要配置好/etc/hosts文件
@@ -15,7 +14,7 @@ $ sudo yum -y install glusterfs-client
 192.168.0.212   212-node
 192.168.0.213   213-node
 
-2.  每个节点机器，都建立如下目录：
+### 2.  每个节点机器，都建立如下目录：
 /data/brick1/volume0
 生产环境，glusterfs 要管理的是每台机器上的逻辑卷分区，  硬件上，这些逻辑卷分区分布在不同的硬件磁盘设备上。 
 
@@ -30,12 +29,11 @@ gluster会以比较合理的方式使用这些逻辑卷分区， 比如gluster�
 出现过一次事故， 在服务器的硬盘扩容时， 竟然把部分数据都删除了， 竟然再无从找到这些数据。 
 所以还应该有个冗余磁盘的极致， 就是所有重要数据被删除时， 都会备份到这个卷上， 这个卷只允许写入，不允许删除， 可以设置这个卷的期限为一年。所有删除的数据，从删除那个时间开始，在之后的一年都不会被删除。 
 
-==================================================================================
-1. 器群里的每台机器都要启动 glusterd.service
+### 3. 器群里的每台机器都要启动 glusterd.service
 这里只有两台机器，分别启动glusterfsd的服务，
 [centos2@213-node glusterfs]$  sudo systemctl restart glusterd.service
 
-2. 在其中一台通过peer probe 建立和另一台机器的连接， 无需和本机建立连接：
+### 4. 在其中一台通过peer probe 建立和另一台机器的连接， 无需和本机建立连接：
 [centos2@213-node glusterfs]$ sudo gluster peer probe 212-node
 
 也可以直接指定ip的方式，不建议使用ip，ip变了比较麻烦
@@ -55,7 +53,7 @@ UUID                                    Hostname        State
 db4004ba-dd3a-4646-ae63-c731088d762b    212-node        Connected
 31111f45-b237-4be3-8c9f-aa85b3ba825e    localhost       Connected
 
-3.  创建一个复制卷
+### 5.  创建一个复制卷
 gluster volume create  <卷名> <主机名:卷目录>  <主机名:卷目录> 
 glusterfs就是一种网络文件系统， 于nfs不同， glusterfs的一个volume是多个逻辑卷分区目录， 而nfs的一个volume只是一个目录。 
 这个卷名，就是后面挂载这个文件系统要用到的。 比如卷名为rep_vol， 那就这样挂载使用
@@ -67,8 +65,8 @@ volume create: rep_vol: success: please start the volume to access data
 
 replica 后面的数字是几，后面就要有几个不同主机下的卷目录
 
-================================================================================
-说说遇到的几个问题：
+
+#### 说说遇到的几个问题：
 如果指定的主机没有被peer probe, 会报错：
 volume create: test01: failed: Host 212-node is not in 'Peer in Cluster' state
 
@@ -79,11 +77,12 @@ glusterfs本意使用的逻辑卷分区的目录，如果是普通目录， 则�
 volume create: dis_vol: failed: The brick 213-node:/data/brick1/volume0 is being created in the root partition. It is recommended that you don't use the system's root partition for storage backend. Or use 'force' at the end of the command if you want to override this behavior.
 需要加force。
 
-4. 启动作为复制卷的volume: 
+### 6. 启动作为复制卷的volume: 
 [centos2@213-node rep]$ sudo gluster volume start rep_vol
 volume start: rep_vol: success
 
 查看卷的状态：
+```
 [centos2@213-node rep]$ sudo gluster volume status
 Status of volume: rep_vol
 Gluster process                             TCP Port  RDMA Port  Online  Pid
@@ -96,19 +95,22 @@ Self-heal Daemon on 212-node                N/A       N/A        Y       57848
 Task Status of Volume rep_vol
 ------------------------------------------------------------------------------
 There are no active volume tasks
+```
 
-5. 挂载这个glusterfs的volume，
+### 7. 挂载这个glusterfs的volume，
 复制卷有同步复制功能， 多个网路存储盘， 同时自动复制， 启用volume 之后， 才能挂载这个volume.
 在主机名212-node的主机上挂载位于213-node主机下的rep_vol卷
+```
 [master@212-node mnt]$ sudo  mount -t glusterfs 213-node:rep_vol ./rep
 [master@212-node mnt]$ cd rep/
 [master@212-node rep]$ touch fffffffffffffff
-
+```
 到这个卷下的分布在不同主机的各逻辑卷分区的挂载目录看下：
 212-node主机上：
+```
 [master@212-node rep]$ ls /data/brick1/rep/  # 逻辑卷分区的挂载目录为/data/brick1/rep/  
 fffffffffffffff  .glusterfs/
-
+```
 213-node主机上：
 [master@213-node ~]$ ls /data/brick1/rep/
 fffffffffffffff  .glusterfs/

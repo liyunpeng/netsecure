@@ -4,11 +4,14 @@ glusterfsd 服务的最终目的， 是接收heketi  server api 方式发来的�
 k8s 集群和 glusterfs集群是两个不同的集群， 但在k8s集群中的一些主机也可以在glusterfs集群
 集群是软件上的概念，即多个主机运行相同的软件，这些软件彼此互联， 就可以构成一个集群
 glusterfs是集群分布式文件系统， 这个集群的每台机器都需要运行glusterfsd服务， 但并不需要每台主机都要有个用于该文件系统的硬盘分区。举个例子：
+```
 $ sudo gluster volume create rep_vol replica 2 213-node:/data/brick1/rep 212-node:/data/brick1/rep force
+```
 运行这个命令的主机， 既不是213-node， 也不是212-node主机， 
 所以k8s 采用在pod容器里运行glusterfsd服务， 容器所在的宿主机也要运行glusterfsd服务， 容器宿主机也要有个可供使用的裸硬盘分区
 
 运行glusterfsd服务的容器定义文件glusterfs-daemonset.yaml具体内容：
+```yaml
 kind: DaemonSet
 apiVersion: apps/v1
 metadata:
@@ -113,14 +116,19 @@ spec:
       - name: glusterfs-ssl
         hostPath:
           path: "/etc/ssl"
+```
+
 如果宿主机上没有运行glusterfsd服务，容器会不停的重启。
+
+```
 [master@212-node glusterfs]$ k get po -owide
 NAME                             READY   STATUS    RESTARTS   AGE     IP              NODE       NOMINATED NODE   READINESS GATES
 glusterfs-pfqdr                  0/1     Running   56         3h33m   192.168.0.213   213-node   <none>           <none>
 glusterfs-vhbgn                  1/1     Running   0          3h33m   192.168.0.217   217-node   <none>           <none>
+```
 
 glusterfs-pfqdr 重启了56次, 原因看一下describe:
-
+```
 [master@212-node glusterfs]$ kd po glusterfs-pfqdr
 Name:         glusterfs-pfqdr
 Namespace:    default
@@ -243,30 +251,40 @@ Jan 11 08:17:51 213-node systemd[1]: Failed to start GlusterFS, a clustered file
 Jan 11 08:17:51 213-node systemd[1]: Unit glusterd.service entered failed state.
 Jan 11 08:17:51 213-node systemd[1]: glusterd.service failed.
   Warning  BackOff  3m34s (x477 over 176m)  kubelet, 213-node  Back-off restarting failed container
+```
+
 原因是213-node主机上没有启动glusterd.service服务
 glusterfsd 有没有用在运行， 可以看进程， 也可以看服务
 看进程：
+```
 [user9@217-node shell]$ ps -e | grep glus
  46711 ?        00:00:00 glusterd
+```
 有glusterd， 表示glusterfs服务在运行
 
 看服务：
+```
 [user9@217-node shell]$ systemctl status glusterfsd
 ● glusterfsd.service - GlusterFS brick processes (stopping only)
    Loaded: loaded (/usr/lib/systemd/system/glusterfsd.service; disabled; vendor preset: disabled)
    Active: active (exited) since Sun 2020-01-12 01:17:39 EST; 55min ago
   Process: 29270 ExecStart=/bin/true (code=exited, status=0/SUCCESS)
  Main PID: 29270 (code=exited, status=0/SUCCESS)
+```
 Active: active (exited) 表示服务glusterfsd在运行
 
 node只有被label之后，调度器才会把pod调度在这个node上，因为damonset设置了nodeselector
+```
 [centos-8@216-node glusterfs]$ hostname
 216-node
 [centos-8@216-node glusterfs]$ kubectl label node 216-node  storagenode=glusterfs
 node/216-node labeled
+```
 
 查看本机上的卷
+```
 [master@212-node k8s_yaml]$ sudo pvs
   PV         VG  Fmt  Attr PSize   PFree
   /dev/sda2  cl  lvm2 a--  <79.00g    0
   /dev/sdb1  vg0 lvm2 a--  <10.00g 4.98g
+```

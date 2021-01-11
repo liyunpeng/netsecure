@@ -110,6 +110,7 @@ asset_transfer_record  新增资产转移记录
 
 
 
+
 添加转出用户详情接口
 从订单整理出待转移用户列表， 添加转移用户列表
 合并测试网福利修改到master
@@ -128,6 +129,10 @@ asset_transfer_record  新增资产转移记录
 完善荣来资产转移后的用户资产详情接口，转移前的数据，转移的资产数据，转移后的数据均记录到数据库
 添加新增3个接口的权限
 添加荣来用户迁移列表接口
+
+解决一般地址个数不对的问题
+更新预生产， 生产
+user后端矿池生成数据代码整理
 
 
  git commit models/BusinessAssetTransferRecord.go models/purchase_orders.go models/ronglai_transfer.go -m "用导入订单时的时间标记每个要转移的订单"
@@ -240,4 +245,38 @@ WHERE
 ```
   
   
+### 前端 后端 对接api文档 
+  前端分页展示， 前段要提供的参数， 要实现分页， 前端要向后端传这两个参数：  page, page_size。   可以先规定好前端要传给后端的， 和后端传给前端的， 如：
+列表展示：
+```http
+Url：/latest-sector-list 
+Method: POST
+RequestBody:{
+	"page":1,
+	"pageSize":50
+}
+ResponseBody:{
+		"code":0, 
+		"msg":"",
+		"data":{
+				sectorList:[
+				{
+						"id":1,
+						"sectorId":1,
+						"mediaId":1,
+						"state":"Proving",
+						"msg":"Proving",
+						"createTime":"202007151601",
+						"createTime":"202007151601"
+				}
+				],
+				"totalSectorInPeriod":1000, // for pages calculate
+				"totalSectorInPage":50,
+				"sectorInUpdate":32,
+				"sectorNewCreate":15,
+		}
+}
+```
+文档模版可以是lotus-mananger api定义.md 这样的文档
   
+如果页面上有两个列表， 就提供不同的参数， page, pageSize, 要注意区分

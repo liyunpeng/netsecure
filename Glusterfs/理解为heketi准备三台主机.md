@@ -8,24 +8,26 @@ glusterfs创建和分区和在分区上建立文件系统， 需要繁琐的手�
 在有了heketi之后，只需要创建一个pvc,  heketi会自动以server api的方式调用glusterfs命令， 并自动根据pvc的卷大小自动向glusterfs命令设定参数
 
 准备好三台有/dev/sdb硬盘的主机， 每台主机都需要做的准备有：
-1. 创建一个/dev/sdb1硬盘分区， 命令为：
+###  1. 创建一个/dev/sdb1硬盘分区， 命令为：
 $ sudo fdisk /dev/sdb 
 一路默认选项，建立/dev/sdb1裸硬盘分区
 
-2. 设置好主机名
+### 2. 设置好主机名
 hostname  ip地址的最后部分-node
 修改 /etc/hostname , 改为ip地址的最后部分-node， 使其重启后仍然生效
 比如在192.168.0.217的机器上：
+```
 $ sudo hostname 217-node 
 $ sudo vi /etc/hostname, 
 文件内容改为217-node 
-
-3. 设置好局域网内的域名解析， 
+```
+### 3. 设置好局域网内的域名解析， 
 每行包括解析的域名和ip
 所有这些都要放在每台主机的/etc/hosts
+```
 $ sudo vi /etc/hosts
 192.168.0.217     217-node
 192.168.0.218     218-node
 192.168.0.219     219-node
-
-4.  三台机器都用kubectl join加入到k8s集群
+```
+### 4.  三台机器都用kubectl join加入到k8s集群
