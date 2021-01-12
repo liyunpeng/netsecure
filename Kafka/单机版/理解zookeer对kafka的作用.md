@@ -1,10 +1,10 @@
- k exec -it zk的pod名字 bash
- 进到该pod:
- 
+```
+$ k exec -it zk的pod名字 bash
+进到该pod:
 bash-4.3# cd /zookeeper-3.4.10/bin/
 bash-4.3# ls
 README.txt    zkCleanup.sh  zkCli.cmd     zkCli.sh      zkEnv.cmd     zkEnv.sh      zkServer.cmd  zkServer.sh
-进入zookeeper模式
+进入zookeeper模式:
 bash-4.3# ./zkCli.sh
 Connecting to localhost:2181
 2020-01-15 11:20:41,425 [myid:] - INFO  [main:Environment@100] - Client environment:zookeeper.version=3.4.10-39d3a4f269333c922ed3db283be479f9deacaa0f, built on 03/23/2017 10:13 GMT
@@ -30,8 +30,10 @@ JLine support is enabled
 2020-01-15 11:20:42,134 [myid:] - INFO  [main-SendThread(localhost:2181):ClientCnxn$SendThread@1299] - Session establishment complete on server localhost/127.0.0.1:2181, sessionid = 0x16fa89963850002, negotiated timeout = 30000
 WATCHER::
 WatchedEvent state:SyncConnected type:None path:null
+```
 
-查看zk的元素
+查看zk的元素:
+```
 [zk: localhost:2181(CONNECTED) 1] ls /
 [zookeeper, kafka]
 
@@ -67,8 +69,11 @@ numChildren = 10
 可以tab补全要看的
 [zk: localhost:2181(CONNECTED) 5] get /kafka/con
 controller         controller_epoch   consumers          config
+```
 
 查看kakfa在zk保存的controller的配置信息：
+
+```
 [zk: localhost:2181(CONNECTED) 5] get /kafka/controller
 {"version":1,"brokerid":1,"timestamp":"1579082679652"}
 cZxid = 0x19
@@ -82,8 +87,10 @@ aclVersion = 0
 ephemeralOwner = 0x16fa89963850001
 dataLength = 54
 numChildren = 0
+```
 
 查看kakfa在zk保存的brokers的配置信息：
+```
 [zk: localhost:2181(CONNECTED) 6] get /kafka/brokers
 null
 cZxid = 0x7
@@ -97,12 +104,15 @@ aclVersion = 0
 ephemeralOwner = 0x0
 dataLength = 0
 numChildren = 3
-
+```
 tab看下brokers有什么
+
+```
 [zk: localhost:2181(CONNECTED) 7] get /kafka/brokers/
 ids      topics   seqid
-
+```
 查看topics信息:
+```
 [zk: localhost:2181(CONNECTED) 7] get /kafka/brokers/topics
 null
 cZxid = 0x9
@@ -136,3 +146,4 @@ aclVersion = 0
 ephemeralOwner = 0x0
 dataLength = 0
 numChildren = 0
+```

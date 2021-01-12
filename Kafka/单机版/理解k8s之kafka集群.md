@@ -1,3 +1,4 @@
+```
 [user1@220-node 单机版]$ k get po
 NAME                         READY   STATUS    RESTARTS   AGE
 kafaka-n1-5bf5999cf8-bzbhn   1/1     Running   3          2m58s
@@ -12,8 +13,9 @@ Mode: standalone
 ---------------------------------
 
 kafka-topics.sh --create --topic test --zookeeper zk-n1:2181/kafka --partitions 3 --replication-factor 2
-
+```
 kafka 没起来：
+```
 [user1@220-node 单机版]$ k logs  kafaka-n1-5bf5999cf8-bzbhn
 
 [2020-01-15 09:59:28,444] FATAL Fatal error during KafkaServer startup. Prepare to shutdown (kafka.server.KafkaServer)
@@ -35,9 +37,13 @@ org.I0Itec.zkclient.exception.ZkTimeoutException: Unable to connect to zookeeper
 [2020-01-15 09:59:28,517] INFO shut down completed (kafka.server.KafkaServer)
 [2020-01-15 09:59:28,522] FATAL Exiting Kafka. (kafka.server.KafkaServerStartable)
 [2020-01-15 09:59:28,575] INFO shutting down (kafka.server.KafkaServer)
+```
 原因：
+```
 Unable to connect to zookeeper server 'ykszktest-n1:2181,ykszktest-n2:2181,ykszktest-n3:2181'
+```
 解决办法：把kafka的yaml文件中的环境变量修改：
+```
     env:
         # 必须要有,zk集群
       - name: KAFKA_ZOOKEEPER_CONNECT
@@ -47,16 +53,22 @@ Unable to connect to zookeeper server 'ykszktest-n1:2181,ykszktest-n2:2181,ykszk
         # 必须要有,zk集群
       - name: KAFKA_ZOOKEEPER_CONNECT
         value: zk-n1:2181/kafka
+```
+
 然后把deploy资源从k8s集群中删除，
+```
 $ k delete deploy kafaka-n1
 deployment.apps "kafaka-n1" deleted
+```
 用修改后的文件重新创建deploy
+```
 $ k apply -f kafka-svc-deploy.yaml
+```
 不要删除Pod，也不要删除service, 因为起不到删除pod的作用，删除后会自动重建。
 要删除pod的管理者，deploy, rc, rs等，pod就被删除了，而且不会重建了，
 因为重建的动作时管理者发出的，管理者没了，就不会发出重建的动作了
 
-
+```
 --------------
 kafka pod的log:
 [2020-01-15 10:04:27,814] INFO Client environment:java.library.path=/usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib (org.apache.zookeeper.ZooKeeper)
@@ -135,5 +147,5 @@ kafka pod的log:
 [2020-01-15 11:04:39,805] INFO [GroupMetadataManager brokerId=1] Removed 0 expired offsets in 0 milliseconds. (kafka.coordinator.group.GroupMetadataManager)
 [2020-01-15 11:14:39,806] INFO [GroupMetadataManager brokerId=1] Removed 0 expired offsets in 0 milliseconds. (kafka.coordinator.group.GroupMetadataManager)
 [user1@220-node ~]$
-
+```
 

@@ -1,4 +1,5 @@
 
+### sed按行执行， awk按列执行
 有windows结束符，如把末尾的\r去掉, 等用sed 一次完成
 sed -e 's/$/\r/' myunix.txt > mydos.txt
 sed是一行一行的操作文件， 即按行操作文件，所以sed是流编辑器

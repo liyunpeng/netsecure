@@ -1,48 +1,15 @@
 redis安装后，在src和/usr/local/bin下有几个以redis开头的可执行文件，称为redis shell，这些可执行文件可做很多事情。
 
-可执行文件	作用
-redis-server 	启动redis
-redis-cli	redis命令行工具
-redis-benchmark	基准测试工具
-redis-check-aof	AOF持久化文件检测工具和修复工具
-redis-check-dump	RDB持久化文件检测工具和修复工具
-redis-sentinel	启动redis-sentinel
+可执行文件	作用:
+```
+redis-server 	    启动redis
+redis-cli	       redis命令行工具
+redis-benchmark	 基准测试工具
+redis-check-aof	 AOF持久化文件检测工具和修复工具
+redis-check-dump	 RDB持久化文件检测工具和修复工具
+redis-sentinel	    启动redis-sentinel
+```
 本文重点介绍的redis-cli命令。
-
- 
- 
- alter table asset_transfer_record modify column from_user_spaceincome decimal(20,12);
-
-alter table asset_transfer_record modify column from_user_spacerace_rewards decimal(20,12);
-  
-alter table asset_transfer_record modify column from_user_spacerace_income decimal(20,12);
-
-alter table asset_transfer_record modify column from_user_spacerace_income decimal(20,12);
-
-alter table asset_transfer_record modify column from_user_spacerace_rewards decimal(20,12);
-
-alter table asset_transfer_record modify column from_user_spacerace_release_reward decimal(20,12);
-alter table asset_transfer_record modify column from_user_spacerace_release_income decimal(20,12);
-
-alter table asset_transfer_record modify column from_user_spacerace_release_released_income decimal(20,12);
-alter table asset_transfer_record modify column to_user_spacerace_income decimal(20,12);
-  
-alter table asset_transfer_record modify column to_user_spacerace_income decimal(20,12);
-alter table asset_transfer_record modify column to_user_spacerace_rewards decimal(20,12);
-alter table asset_transfer_record modify column to_user_spacerace_release_reward decimal(20,12);
-alter table asset_transfer_record modify column to_user_spacerace_release_income decimal(20,12);
-alter table asset_transfer_record modify column to_user_spacerace_income_new decimal(20,12);
-alter table asset_transfer_record modify column to_user_spacerace_rewards_new decimal(20,12);
-alter table asset_transfer_record modify column to_user_spacerace_release_reward_new decimal(20,12);
-alter table asset_transfer_record modify column to_user_spacerace_release_income_new decimal(20,12);
-alter table asset_transfer_record modify column to_user_spacerace_release_released_income_new decimal(20,12);
-alter table asset_transfer_record modify column from_user_spacerace_income_new decimal(20,12);
-alter table asset_transfer_record modify column from_user_spacerace_rewards_new decimal(20,12);
-alter table asset_transfer_record modify column from_user_spacerace_release_reward_new decimal(20,12);
-alter table asset_transfer_record modify column from_user_spacerace_release_income_new decimal(20,12);
-alter table asset_transfer_record modify column from_user_spacerace_release_released_income_new decimal(20,12);
-alter table asset_transfer_record modify column from_user_spacerace_release_reward_new decimal(20,12);
-
 
  
 排查

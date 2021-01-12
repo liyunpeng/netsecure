@@ -9,29 +9,14 @@ linux下mysql忘记密码解决方案
 
 运行命令：ps -ef | grep -i mysql
 
-
-
- 
-
  如果开着就运行关闭的命令：service mysqld stop
 
-
-
- 
 
  2.修改mysql的配置文件my.conf
 
 一般在/etc目录下，运行命令：vi /etc/my.cnf，编辑文件
 
-
-
- 
-
  在文件的[mysqld]标签下添加一句：skip-grant-tables
-
-
-
- 
 
 然后wq!保存退出。
 
@@ -45,10 +30,6 @@ linux下mysql忘记密码解决方案
 
  运行命令：mysql -u root 
 
-
- 
-
- 
 
  6.进入到mysql数据库
 

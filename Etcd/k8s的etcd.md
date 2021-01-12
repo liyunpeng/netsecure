@@ -2,9 +2,10 @@
 etcd保存了整个集群的状态；
 
 所有master的持续状态都存在etcd的一个实例中。这可以很好地存储配置数据。因为有watch(观察者)的支持，各部件协调中的改变可以很快被察觉。
-```gotemplate
+
 
 [user1@220-node k8s_yaml]$ sudo cat  /etc/kubernetes/manifests/etcd.yaml
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:

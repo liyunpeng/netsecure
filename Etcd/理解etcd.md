@@ -3,16 +3,16 @@ etcd v3 操作：
 $ export ETCDCTL_API=3
 
 通过写入etcd来测试CentOS/RHEL 8上的etcd安装：
-
+```
 $ etcdctl set /message "Hello World"
 Hello World
 读取消息的值：
 $ etcdctl get /message
 
 Hello World
-
+```
 创建目录：
-
+```
 $ etcdctl mkdir /myservice
 
 $ etcdctl set /myservice/container1 localhost:8080
@@ -48,3 +48,4 @@ tcp   LISTEN 0 128 127.0.0.1:2379 0.0.0.0:*  uid:998 ino:72981 sk:45c <->
 $ etcdctl member list
 
 8e9e05c52164694d: name=992462394b1c4f2e80e7e2fd978f04f8 peerURLs=http://localhost:2380 clientURLs=http://localhost:2379 isLeader=true
+```

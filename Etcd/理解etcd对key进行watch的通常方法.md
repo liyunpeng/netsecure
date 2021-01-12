@@ -3,14 +3,19 @@ etcd是键值对服务系统，不是每个键的值变化，都会被watch到�
 本文讲解etcd 服务对key进行watch 的通常方法.
 
 app.conf设置了etcd服务要watch的key：
+```
 etcd_watch_key = /logagent/%s/logconfig
+```
 本程序etcd服务器watch的key不支持正则表达式，这里的%s在程序里会被替换为要监控的主机的ip地址
------------------------------------------------------------------------------------------------
+
 config.go 把配置文件的内容解析到程序里的配置对象：
+```
 AppConf.EtcdWatchKey = conf.String("etcd_watch_key")
+```
 这样程序用配置信息时，不用每次都去读配置文件，减少io次数。
 
 config.go 获取要etcd服务监控的多个key；
+```
 func (e *AppConfig) GetEtcdKeys() ([]string) {
 	var etcdKeys []string
 	ips, err := getLocalIP()
@@ -24,15 +29,18 @@ func (e *AppConfig) GetEtcdKeys() ([]string) {
 	fmt.Println("从etcd服务器获取到的以IP名为键的键值对: \n", etcdKeys)
 	return etcdKeys
 }
+```
 得到etcdkeys是个要监控的key数组，可以是：
+```
 [ /logagent/192.168.0.128/logconfig, /logagent/192.168.0.129/logconfig]
-
------------------------------------------------------------------------------------------------
+```
 主routine启动一个routine专门监控这些key:
+```
 etcdKeys := conf.AppConf.GetEtcdKeys()
 go etcdService.EtcdWatch(etcdKeys)
+```
 etcdKeys数组里放的key，如果有变化到，都有被watch到。 
-
+```
 etcdService.EtcdWatch定义在etcd_service.go； 
 func (e *etcdService) EtcdWatch(keys []string) {
 	waitGroup.Add(1)
@@ -59,9 +67,8 @@ func (e *etcdService) EtcdWatch(keys []string) {
 		time.Sleep(time.Second)
 	}
 }
-
+```
 真正设置要watch的key是EtcdClient.Watch 这个函数，这个是设置要watch的key, 这个函数不会阻塞。
-
 EtcdClient.Watch 返回一个watch指定的key的通道。 
 读该通道会阻塞， 只有这个key变化了， 阻塞才会解除， 由这个通道的阻塞和阻塞的解除实现对key的watch. 
 即： 被watch的key的valude一旦变化了，阻塞就解除，重新读取这个key的value.

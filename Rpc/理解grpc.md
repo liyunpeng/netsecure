@@ -1,27 +1,32 @@
 proto生成的go 文件命令指定了plugins， 这个决定了生成的service会生成什么样， 看列子
-
+```
 service UserInfoService{
 //相当于接口内的方法
 // 定义请求参数为UserRequest,响应参数为UserResponse
 rpc GetUserInfo(UserRequest) returns (UserResponse){}
 }
 $ protoc -I . --go_out=plugins=grpc:. ./user.proto
+```
 经过这个命令， 生成的代码：
 总的来说会定义出服务端接口和实现结构体,  注册服务端和向服务端注入业务的handler方法
 如果使用要生成micro格式的， 则用命令：
+```
 $ protoc --proto_path=. --micro_out=. --go_out=. proto/user/user.proto  这个命令会调用proto-micro-gen这个bin执行文件
+```
 然后， 客户端接口，实现结构体， 和结构体使用者调用的方法
 
 这里讲grpc实现的微服务
 先看user服务端：
+```
 // UserInfoServiceServer is the server API for UserInfoService service.  会自动生成注释
 type UserInfoServiceServer interface {
 	//相当于接口内的方法     .proto写的注释会原封不动的出现在生成文件里 
 	// 定义请求参数为UserRequest,响应参数为UserResponse
 	GetUserInfo(context.Context, *UserRequest) (*UserResponse, error)
 }
-
+```
 未实现的服务端
+```
 // UnimplementedUserInfoServiceServer can be embedded to have forward compatible implementations.
 type UnimplementedUserInfoServiceServer struct {
 }
@@ -29,13 +34,17 @@ type UnimplementedUserInfoServiceServer struct {
 func (*UnimplementedUserInfoServiceServer) GetUserInfo(ctx context.Context, req *UserRequest) (*UserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserInfo not implemented")
 }
+```
 
 向gprp.Server里注册该user服务
+```
 func RegisterUserInfoServiceServer(s *grpc.Server, srv UserInfoServiceServer) {
 	s.RegisterService(&_UserInfoService_serviceDesc, srv)
 }
+```
 
 向user服务注入业务依赖
+```
 func _UserInfoService_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UserRequest)
 	if err := dec(in); err != nil {
@@ -53,8 +62,10 @@ func _UserInfoService_GetUserInfo_Handler(srv interface{}, ctx context.Context, 
 	}
 	return interceptor(ctx, in, info, handler)
 }
+```
 
-user服务的描述变量
+user服务的描述变量:
+```
 var _UserInfoService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.UserInfoService",
 	HandlerType: (*UserInfoServiceServer)(nil),
@@ -67,8 +78,9 @@ var _UserInfoService_serviceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "user.proto",
 }
-
+```
 在来看业务提供者， 对生成的服务端的调用，先准备一个业务：
+```
 type UserInfoService struct {
 }
 
@@ -90,8 +102,10 @@ func (s *UserInfoService) GetUserInfo(ctx context.Context, req *pb.UserRequest) 
 	err = nil
 	return
 }
+```
 
 实际就调用了一句生成代码register：
+```
 	// 1. 监听
 	addr := "127.0.0.1:8080"
 	lis, err := net.Listen("tcp", addr)
@@ -106,6 +120,7 @@ func (s *UserInfoService) GetUserInfo(ctx context.Context, req *pb.UserRequest) 
 	pb.RegisterUserInfoServiceServer(s, &u)
 	// 4.启动gRPC服务
 	s.Serve(lis)
+```
 对以上代码归纳一下： 创建一个tcp监听; 准备好grpcserver， 把业务u注入到server里; 把监听的放到grpcserver里面， 并启动这个grpc server
 
 
@@ -114,6 +129,7 @@ func (s *UserInfoService) GetUserInfo(ctx context.Context, req *pb.UserRequest) 
 接下来看客户端的， 
 先看生成代码：
 也是要有接口，和接口的实现
+```
 // UserInfoServiceClient is the client API for UserInfoService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
@@ -139,6 +155,7 @@ func (c *userInfoServiceClient) GetUserInfo(ctx context.Context, in *UserRequest
 	}
 	return out, nil
 }
+```
 看业务使用者调用形式： 
 
 	// 1. 创建与gRPC服务端的连接
