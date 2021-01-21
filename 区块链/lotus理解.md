@@ -66,6 +66,11 @@ build/proof_params/parameters.json  提供的 参数文件名 和 /var/tmp/filec
 新出现的需求：  区块链的存储， 
 小步快跑， 
 
+那些人 都被查出来了
+肯定是总统签署了
+
+
+
 
 
 

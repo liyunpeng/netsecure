@@ -1,4 +1,8 @@
 # 
+没有办法， 也没演练
+消息堆积很多， 一下推很多， 有可能outofgas
+
+
 
 问题原因：
 收益数据由23:59:59改回到0点时， user端在修改的同时， 没有同步到admin端， 导致admin按23:59:59取数据， 而这个时间不再有数据， 所以显示可用余额显示为0 
@@ -280,3 +284,72 @@ ResponseBody:{
 文档模版可以是lotus-mananger api定义.md 这样的文档
   
 如果页面上有两个列表， 就提供不同的参数， page, pageSize, 要注意区分
+
+###  jekins设置
+配置：
+```
+source /root/.bashrc
+git submodule update --init --recursive
+make buildversion.go
+go vet ./...
+pwd
+
+export GOBIN=$(pwd)/.dist/bin
+make
+source /root/.profile
+export PKG_NAME=$JOB_BASE_NAME-$BUILD_NUMBER-$(git rev-parse --short HEAD).tar.gz
+tar -zcvf /home/devops/forcepool/backend/$PKG_NAME forcepooladmin
+forcepool-backend $JOB_BASE_NAME
+ansible 192.168.1.207 -m file -a "path=/root/forcepool/backend/code/forcepool state=absent"
+ansible 192.168.1.207 -m copy -a "src=/home/data/jenkins/workspace/$JOB_BASE_NAME/forcepooladmin dest=/home/forcepool/backend/code/ mode=0777"
+ansible 192.168.1.207 -m shell -a "cd /home/forcepool;docker-compose restart"
+```
+配置图片： 
+![-w932](media/16110531547500.jpg)
+
+
+
+代码分支：
+![-w950](media/16110530649913.jpg)
+
+
+### 消息的数量 和新增算力对应关系
+6000 多条消息， 正常有200T，
+统计的路径，逻辑是相同的， 都是来演于filscan 
+
+一个是数消息数
+统计的不成功的， 和不成功的， 都有
+
+一个是是数sector数量， active的sector， 好多sector
+包括所有sector， 
+
+proving 的sector才会进去。 道理是一致的。 
+
+也是去数sector数量
+要么监控错了， 监控也是
+消耗两千gas正常
+precommietsector的消耗
+
+别的对不上， 
+已经有这个数据， 可以把这个数据讲出去， 
+及时的到一个阶段， 
+不能在短时间内全部搞定
+
+问题在哪里， 
+逻辑错在哪里， 
+今天找
+ 
+看6000多个sector, 一个成功的sector, 就是
+ 
+提个需求
+
+filscan 和wallet 都绕开
+现在需要去加强
+你脑袋要立得住， 要能坚定你的判断
+
+
+第二阶段的预充值， 第四阶段失败， 第二阶段的充值，就罚没了
+procommiit, 通过调度来批量验证的， 不是批量验证的 
+
+
+

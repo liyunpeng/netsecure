@@ -1,13 +1,14 @@
+```
 master@etcd0:~/k8s/pv$ kubectl create -f mypv.yaml
+
 master@etcd0:~/k8s/pv$  kubectl  get pv
 NAME    CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE
 pv001   5Gi        RWX            Retain           Available                                   5s
-
 master@etcd0:~/k8s/pv$ kubectl create -f mypvc.yaml
+
 master@etcd0:~/k8s/pv$ kubectl get pv
 NAME    CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM             STORAGECLASS   REASON   AGE
 pv001   5Gi        RWX            Retain           Bound    default/myclaim                           95s
-
 
 master@etcd0:~/k8s/pv$ kubectl create -f  mysql-svr-deployment.yaml
 master@etcd0:~/k8s/pv$ kubectl get pod
@@ -145,9 +146,10 @@ master@etcd0:~/k8s/pv$ kubectl get service
 NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP    24h
 mysql        ClusterIP   10.96.173.212   <none>        3306/TCP   30m
-
+```
 数据落盘：
 到网络文件系统可以看到k8s中的mysql服务在此创建的文件：
+```
 master@etcd0:/nfs$ ll
 total 110612
 drwxrwxrwx  4 logstash master     4096 Dec 19 22:21 ./
@@ -158,4 +160,5 @@ drwxr-xr-x 26 root     root       4096 Dec 17 22:10 ../
 -rw-rw----  1 logstash docker 50331648 Dec 19 22:09 ib_logfile1
 drwx------  2 logstash docker     4096 Dec 19 22:09 mysql/
 drwx------  2 logstash docker     4096 Dec 19 22:09 performance_schema/
+```
 

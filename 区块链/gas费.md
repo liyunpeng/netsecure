@@ -1,4 +1,4 @@
-什么是gas
+### 什么是gas
 gas是“燃料”的意思，在以太坊区块链上实现了一个EVM（以太坊虚拟机）的代码运行环境，在链上执行写入操作时，网络中的每个全节点都会进行相同的计算并存储相同的值，这种执行的消耗是昂贵的，为了促使大家将能在链下进行的运算都不放到链上进行，也为了奖励矿工，因此在链上每执行一个写入操作时，都需要支付一定的费用，用gas为单位来计数，每个在链上可以执行的命令都设置了一个消耗的gas值，例：PUSH操作需要消耗3个gas，一次转账一般要消耗21000gas，gas使用ETH来支付。
 
 注意：无论您执行的命令是成功还是失败，都需要支付计算费用，即使失败，节点也验证并执行了您的交易（计算），因此必须和成功执行支付一样的费用
@@ -22,12 +22,51 @@ gas price由我们自己设定，相当于每升汽油的价格；
 gas used 必须小于或等于gas limit；
 实际支付的费用 = gas used * gas price。
 
-修改执行转移时的用户balance计算
-修改balance精度
-统计单个用户转移订单所设计的spacerace产品范围
-恢复spacerace基数修改
-修改核算balance
-重新计算用户spacerace
-用户表中增加记录转移订单产品id集合与用户spacerace产品id集合的交集inner_pids
-转移balance按新公式转移的矿池到账 + 该用户总的到账SR奖励*SR2 - 转移的已提现重新计算
-核对表格数据与程序计算数据
+
+
+### 一个消息可以有多个block（块）
+一个消息允许被多个矿工打包出块， block就存放块的id,  消息的minertip只会给第一个出块的矿工， 
+一个块现在有200多个消息。 
+## 质押
+### fil单位
+1FIL=1x109nanoFIL=1x1018attoFIL
+### P2 转账质押 precommit 
+质押 = initpledge + precommit 
+![-w1170](media/16111261132693.jpg)
+
+p2 结束发送 precommitSector 消息，这是一个转账消息，消息的 value 即转账数额， 由矿工的controller转入到矿工地址，  矿工的controller地址是f3地址，这个钱进入到矿工的precommit质押中，当P4完成时， 这个钱就会释放出来， 
+
+### P4 转账质押 initpledge
+p4 结束后， 发送 provesector 消息， 这也是一个转账消息， 也是由矿工的controller地址转入到矿工地址， 这个钱会进入到矿工的initpledge质押，在sector有效期结束后， 才会释放， 这个钱是最多的。 
+![-w911](media/16111290305787.jpg)
+
+## 块
+### 一个块的基本信息
+![-w1569](media/16111943788386.jpg)
+一个块可以有多个parentCid, 
+
+### 一个出块奖励的构成及分发
+ 现在抱一个块， f02奖励矿工18fil，小费是非常少的， 大概0点0000几， 现在一个块大概有200多个消息， 加在一起的小费， 也就0点0几。 
+![-w716](media/16111280838195.jpg)
+
+## gas费
+### gas费构成
+每个消息，都有消耗gas费， gas费包括两个部分： 
+![-w1275](media/16111266536251.jpg)
+矿工手续费是minertip,  即转给爆块矿工的小费， 爆块矿工除了得到消息的小费， 还会得到f02转来的钱。
+销毁手续费会转给一个f099地址， 这个就纯粹是燃烧掉的。 销毁手续费里又包括： 
+```
+BaseFeeBurn        decimal.NullDecimal `pg:"basefee_burn" json:"base_fee_burn"`
+MinerPenalty       decimal.NullDecimal `pg:"miner_penalty" json:"miner_penalty"`
+```
+
+MinerPenalty 这个在矿工收到的奖励中， 已经扣掉了
+
+###  gas 名词
+![-w1227](media/16111131702545.jpg)
+
+Gas Fee Cap: 用户选择支付的总手续费率
+Gas Premium: 用户选择支付给矿工的手续费率
+Gas 限额: 该笔交易能消耗的最大Gas量
+Gas 使用量: 完成这笔交易真实消耗的Gas量
+Base Fee: 根据区块链网络拥堵状况实时更新的基础手续费率

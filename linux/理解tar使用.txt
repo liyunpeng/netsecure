@@ -3,7 +3,7 @@ gz格式的压缩和解压，zvf是固定的，
 前面加上x，表示解压， 
 参数顺序，先写源文件，后写目标目标文件
 
-将jpg整个目录打包成a.tar.gz：
+将a整个目录打包成a.tar.gz：
 tar czvf b.tar.gz a/
 
 b.tar.gz解压之后，就是一个a目录：

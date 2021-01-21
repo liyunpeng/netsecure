@@ -7,12 +7,15 @@ $ sudo yum -y install glusterfs-client
 启动gluster前， 包括很多其他服务也是， 都需要把/etc/hosts设置好， 因为有时ip地址可能会变， ip作为参数不是很可取， 所以要用主机名。 
 如果服务是集群型服务，要把集群里的每个节点机器都要配置好/etc/hosts文件
 213上, 在/etc/hosts添加：
+```
 192.168.0.212   212-node
 192.168.0.213   213-node
-
+```
 212上, 在/etc/hosts也添加这两行：
+```
 192.168.0.212   212-node
 192.168.0.213   213-node
+```
 
 ### 2.  每个节点机器，都建立如下目录：
 /data/brick1/volume0
@@ -30,29 +33,34 @@ gluster会以比较合理的方式使用这些逻辑卷分区， 比如gluster�
 所以还应该有个冗余磁盘的极致， 就是所有重要数据被删除时， 都会备份到这个卷上， 这个卷只允许写入，不允许删除， 可以设置这个卷的期限为一年。所有删除的数据，从删除那个时间开始，在之后的一年都不会被删除。 
 
 ### 3. 器群里的每台机器都要启动 glusterd.service
-这里只有两台机器，分别启动glusterfsd的服务，
+这里只有两台机器，分别启动glusterfsd的服务:
+```
 [centos2@213-node glusterfs]$  sudo systemctl restart glusterd.service
+```
 
 ### 4. 在其中一台通过peer probe 建立和另一台机器的连接， 无需和本机建立连接：
+```
 [centos2@213-node glusterfs]$ sudo gluster peer probe 212-node
 
 也可以直接指定ip的方式，不建议使用ip，ip变了比较麻烦
 [centos2@213-node glusterfs]$ sudo gluster peer probe 192.168.0.212
-
+```
 查看集群状态：
+```
 [centos2@213-node glusterfs]$ sudo gluster peer status
 Number of Peers: 1
 
 Hostname: 192.168.0.212
 Uuid: db4004ba-dd3a-4646-ae63-c731088d762b
 State: Accepted peer request (Connected)
-
+```
 以字段方式列出集群中所有节点：
+```
 [centos2@213-node glusterfs]$ sudo gluster peer list
 UUID                                    Hostname        State
 db4004ba-dd3a-4646-ae63-c731088d762b    212-node        Connected
 31111f45-b237-4be3-8c9f-aa85b3ba825e    localhost       Connected
-
+```
 ### 5.  创建一个复制卷
 gluster volume create  <卷名> <主机名:卷目录>  <主机名:卷目录> 
 glusterfs就是一种网络文件系统， 于nfs不同， glusterfs的一个volume是多个逻辑卷分区目录， 而nfs的一个volume只是一个目录。 
@@ -60,22 +68,25 @@ glusterfs就是一种网络文件系统， 于nfs不同， glusterfs的一个vol
 sudo  mount -t glusterfs 213-node:rep_vol ./a
 
 创建复制卷的实例命令：
+```
 [centos2@213-node rep]$ sudo gluster volume create rep_vol replica 2 213-node:/data/brick1/rep 212-node:/data/brick1/rep force
 volume create: rep_vol: success: please start the volume to access data
+```
 
 replica 后面的数字是几，后面就要有几个不同主机下的卷目录
 
 
 #### 说说遇到的几个问题：
 如果指定的主机没有被peer probe, 会报错：
+```
 volume create: test01: failed: Host 212-node is not in 'Peer in Cluster' state
-
 replica意在多个卷数据同步复制，所以下面卷目录数量必须大于1， 如果指定1，则报错：
 replica count should be greater than 1
 
 glusterfs本意使用的逻辑卷分区的目录，如果是普通目录， 则报错：
 volume create: dis_vol: failed: The brick 213-node:/data/brick1/volume0 is being created in the root partition. It is recommended that you don't use the system's root partition for storage backend. Or use 'force' at the end of the command if you want to override this behavior.
 需要加force。
+```
 
 ### 6. 启动作为复制卷的volume: 
 [centos2@213-node rep]$ sudo gluster volume start rep_vol
@@ -86,14 +97,14 @@ volume start: rep_vol: success
 [centos2@213-node rep]$ sudo gluster volume status
 Status of volume: rep_vol
 Gluster process                             TCP Port  RDMA Port  Online  Pid
-------------------------------------------------------------------------------
+--------------------------------------------------------------
 Brick 213-node:/data/brick1/rep             49153     0          Y       57600
 Brick 212-node:/data/brick1/rep             49153     0          Y       57827
 Self-heal Daemon on localhost               N/A       N/A        Y       57621
 Self-heal Daemon on 212-node                N/A       N/A        Y       57848
 
 Task Status of Volume rep_vol
-------------------------------------------------------------------------------
+-------------------------------------------------------------
 There are no active volume tasks
 ```
 
