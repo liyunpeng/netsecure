@@ -25,6 +25,19 @@ wait_sec = 60 表示work每60秒去查一次数据库， 看有没有任务要�
 并行woker 的 数量 由sealer 的启动参数控制。 
 
 
+SELECT 
+sum(value) burn
+FROM lotus_messages
+WHERE "from" = 'f3qbn7n7lycddeuuhmw7fxqfluvkvfc6ljoe2ox7sepazlrex2tq3mffrxvszlkypyeglojpqzpyqfd4zaxwea' AND block_time >= extract(epoch FROM to_timestamp('2021-01-24 00:00:00', 'YYYY-MM-DD HH24:MI:SS'))::INTEGER
+  AND block_time < extract(epoch FROM to_timestamp('2021-01-25 00:00:00', 'YYYY-MM-DD HH24:MI:SS'))::INTEGER
+  AND epoch > 0 AND exit_code = 0;
+  
+  优化MessageByAddressDirection借口， 加块查询速度
+  在原有接口，开发获取worker 和controller 的balance, 获取昨日gas费 以及计算预计可用时间
+  处理个别接口慢查询问题
+  
+李刚 committed about 3 hours ago
+27ab9292
 
 ### 本地链发出的消息的查看
 消息都是sealer发出的， $cat sealer.log 看很多消息

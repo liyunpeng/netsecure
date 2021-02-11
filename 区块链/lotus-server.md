@@ -43,6 +43,8 @@ mysql> exit
 1	1	1
 ![-w246](media/15949838464865.jpg)
 
+李刚 committed about 3 hours ago
+9970fce0
 ### 数据库表中添加记录行：
 打开navicat,在fconfigs, groups表中添加数据 
 

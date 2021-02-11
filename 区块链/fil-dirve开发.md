@@ -30,7 +30,9 @@ CONTAINER ID        IMAGE               COMMAND                  CREATED        
 ➜  ipfs_staging docker restart 09c992e758f6
 ```
 
+
 手动修改配置文件， 或在页面上修改：
+
 ➜  ipfs_staging docker exec -it 09c992e758f6 /bin/sh
 / # export EDITOR=vi
 / # ipfs config edit

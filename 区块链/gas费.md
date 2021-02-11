@@ -22,6 +22,32 @@ gas price由我们自己设定，相当于每升汽油的价格；
 gas used 必须小于或等于gas limit；
 实际支付的费用 = gas used * gas price。
 
+###  gascap 
+feecap = preminum + basefee
+feecap 就是一个gas的价格，  包括 附加费premium， 和 base费， 附加费是给矿工的， basefee 是要销毁掉的， 
+
+```
+要花费的钱 = premium * gas_limit + basefee * gas_used
+```
+
+因为premium 是给矿工的， 所有乘上gas_limit, 
+
+gas_limit 是消息的发送者设定的， 如果设置的过低， gas_limit 小于gas_used, 就不会发出消息， 如果设置太高， 就会多花， 也就惩罚， gas_limit设置过高， 要花的钱，一个gas的
+
+要花的钱 = preminum + basefee + burn*(设置值 - 合理值的120%)
+
+比如gas_limit 正常的值是100， 那么gas_limit 设置了150， 那么150-100 * 120 = 30， 就是超越的值， 即：
+```
+要花的钱 = preminum * gas_limit + basefee * gas_used + burn* 30
+```
+计算出的值， 是attofil为单位
+验证了一个转账的消息： 
+![-w262](media/16129453040368.jpg)
+miner_tip = gas_premium * gas_limit
+
+
+
+
 
 
 ### 一个消息可以有多个block（块）
@@ -61,6 +87,15 @@ MinerPenalty       decimal.NullDecimal `pg:"miner_penalty" json:"miner_penalty"`
 ```
 
 MinerPenalty 这个在矿工收到的奖励中， 已经扣掉了
+
+statChainInfo接口增加近24小时全网新增奖励，近1小时全网新增算力， 近24小时全网新增算力等 
+计算gaslimit, gas消耗平均值，整数显示
+filcompose 接口缓存
+全网24小时算力趋势缓存与排序
+statChainInfo接口更新
+转账列表接口增加时间戳
+编写basefee 24小时，7天 sql语句
+处理Forcepool 禁用账户的账户余额， 冻结， 可提现， 已体现， 矿池收益等数据表 
 
 ###  gas 名词
 ![-w1227](media/16111131702545.jpg)
