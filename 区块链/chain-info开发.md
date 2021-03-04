@@ -47,13 +47,17 @@ Height        int             `gorm:"primary_key;unique_index:height_index;type:
 点击打开链接：
 ![-w1692](media/16110353579627.jpg)
 可以看到分配了ip
+```
 {"Claims": {"/": "bafy2bzaceajsoxvvl7kpsvcegconsvjui3b6v6vb564m5tcqnrdmowi6zyjhi"}, "MinerCount": 25333, "CronEventQueue": {"/": "bafy2bzacecomni2qh5zfipvzeojh4xs7zsi2t2gy4wjehu4bq7cdd5ghazina"}, "FirstCronEpoch": 450616, "TotalRawBytePower": "2476284697546588160", "TotalBytesCommitted": "2476872627029803008", "ProofValidationBatch": null, "TotalQualityAdjPower": "2476675206600261632", "ThisEpochRawBytePower": "2476284697546588160", "TotalPledgeCollateral": "33723763523854197855663208", "TotalQABytesCommitted": "2477263155331923968", "MinerAboveMinPowerCount": 1060, "ThisEpochQAPowerSmoothed": {"PositionEstimate": "841816222345035920745067969164119436377358501819842926548", "VelocityEstimate": "3239973013640125633924499096181203450380766386691539"}, "ThisEpochQualityAdjPower": "2476675206600261632", "ThisEpochPledgeCollateral": "33723763523854197855663208"}
 
 
 {"Claims": {"/": "bafy2bzacebzzyzhdeqag2use76uryrfgx4qiikkzxtbwbhjw3szw5v3hjhfoy"}, "MinerCount": 25333, "CronEventQueue": {"/": "bafy2bzacec65r3tvspzvq7j4wlub2feoijkccybeqeatu7rrct6km22aiufdw"}, "FirstCronEpoch": 450614, "TotalRawBytePower": "2476283872912867328", "TotalBytesCommitted": "2476877574832128000", "ProofValidationBatch": null, "TotalQualityAdjPower": "2476674381966540800", "ThisEpochRawBytePower": "2476283872912867328", "TotalPledgeCollateral": "33723494133744057422247589", "TotalQABytesCommitted": "2477268103134248960", "MinerAboveMinPowerCount": 1060, "ThisEpochQAPowerSmoothed": {"PositionEstimate": "841807975315131780843377741446014310621385461452538251815", "VelocityEstimate": "3239430219799008033116474695019713807226536996845021"}, "ThisEpochQualityAdjPower": "2476674381966540800", "ThisEpochPledgeCollateral": "33723494133744057422247589"}
 
 
-{"Claims": {"/": "bafy2bzaceb3zr4epodaei6xgk46xyhqadhaliktfvmv6nooknm6m4ptrkq7co"}, "MinerCount": 25333, "CronEventQueue": {"/": "bafy2bzacechu4qq5xhgiwuyfzzorxhq7bj3yg2dyou4gkwjrixgofrlyb4aai"}, "FirstCronEpoch": 450599, "TotalRawBytePower": "2475895573509570560", "TotalBytesCommitted": "2476489962623598592", "ProofValidationBatch": null, "TotalQualityAdjPower": "2476285777957027840", "ThisEpochRawBytePower": "2475895573509570560", "TotalPledgeCollateral": "33721448900726147235660425", "TotalQABytesCommitted": "2476880186319503360", "MinerAboveMinPowerCount": 1060, "ThisEpochQAPowerSmoothed": {"PositionEstimate": "841746406575968822986796717474774047704164757281816897478", "VelocityEstimate": "3235435889954835535937620765589234920335635137733438"}, "ThisEpochQualityAdjPower": "2476285777957027840", "ThisEpochPledgeCollateral": "33721448900726147235660425"}![-w1759](media/16118228339502.jpg)
+{"Claims": {"/": "bafy2bzaceb3zr4epodaei6xgk46xyhqadhaliktfvmv6nooknm6m4ptrkq7co"}, "MinerCount": 25333, "CronEventQueue": {"/": "bafy2bzacechu4qq5xhgiwuyfzzorxhq7bj3yg2dyou4gkwjrixgofrlyb4aai"}, "FirstCronEpoch": 450599, "TotalRawBytePower": "2475895573509570560", "TotalBytesCommitted": "2476489962623598592", "ProofValidationBatch": null, "TotalQualityAdjPower": "2476285777957027840", "ThisEpochRawBytePower": "2475895573509570560", "TotalPledgeCollateral": "33721448900726147235660425", "TotalQABytesCommitted": "2476880186319503360", "MinerAboveMinPowerCount": 1060, "ThisEpochQAPowerSmoothed": {"PositionEstimate": "841746406575968822986796717474774047704164757281816897478", "VelocityEstimate": "3235435889954835535937620765589234920335635137733438"}, "ThisEpochQualityAdjPower": "2476285777957027840", "ThisEpochPledgeCollateral": "33721448900726147235660425"}
+```
+
+![-w1759](media/16118228339502.jpg)
 
 
 
@@ -162,8 +166,9 @@ WINDOW w AS (ORDER BY base.day DESC) LIMIT 30
 
 ### 连接没关， 超过限制连接池限制， 导致pg数据库没反应
 
-
+```json
 {"Claims": {"/": "bafy2bzacebilf6bcdfizf4aozvz3e3fm2tyy63z6ldlf67o3snbfjbo6qptrg"}, "MinerCount": 25705, "CronEventQueue": {"/": "bafy2bzacebfsslgei3fungoznk5mqv3vmtinbqz46lurl43tn72t6z3lqqm3w"}, "FirstCronEpoch": 468149, "TotalRawBytePower": "2626616043329552384", "TotalBytesCommitted": "2627190813032972288", "ProofValidationBatch": null, "TotalQualityAdjPower": "2627130202754875392", "ThisEpochRawBytePower": "2626616043329552384", "TotalPledgeCollateral": "35466975376044844050748045", "TotalQABytesCommitted": "2627704991706742784", "MinerAboveMinPowerCount": 1123, "ThisEpochQAPowerSmoothed": {"PositionEstimate": "893974282535353253965660431331790991136404327440817423927", "VelocityEstimate": "3141338273791504296067148645107963086964651045810581"}, "ThisEpochQualityAdjPower": "2627130202754875392", "ThisEpochPledgeCollateral": "35466975376044844050748045"}
+```
 
 ### 表的分区， 导致了慢， 导致其他查询都跟着慢
 
@@ -249,8 +254,106 @@ inner JOIN product pr
 on s.pid = pr.id
 GROUP BY s.phone 
 ```
+
+
 ![-w529](media/16127698935490.jpg)
 
 
 ### gaslimit 过大会被惩罚
+
+
+
+### chaininfo 生产
+```
+chain-info生产, 
+地址:13.115.185.218
+项目目录:/home/filscan-test/backend/code
+```
+
+### pg表示： 一个字符串在一个字符串数组里面
+```
+SELECT sum(miner_penalty)*3 as msg_penalty
+							FROM lotus_messages lm
+									 LEFT JOIN lotus_blocks lb
+											   ON lm.block_time = lb.block_time AND lm.blk_cids @> ARRAY [lb.cid]
+							WHERE lb.block_time >= ?
+							  AND lb.block_time < ?
+							  AND lb.bad = FALSE
+							  AND lm.epoch > 0  AND lm.miner_penalty > 0
+                              AND lb.miner = ?
+
+```
+里面的lm.blk_cids @> ARRAY [lb.cid]
+表示lb.cid 在lm.blk_cids 数组里面
+
+
+
+![-w1413](media/16137846197383.jpg)
+
+
+
+
+
+
+
+### 高度信息
+![-w1084](media/16137908633058.jpg)
+
+### pool_rewards
+![-w1442](media/16137927892250.jpg)
+
+
+![-w1442](media/16137980142495.jpg)
+
+
+###  分支保护
+![-w1333](media/16140708507216.jpg)
+
+###  生产服务器
+chain-info生产, 
+地址:13.115.185.218
+项目目录:/home/filscan-test/backend/code
+ssh 进去以后,切换到root用户:
+sudo su -
+cd /home/filscan-test/backend/code
+上传你的新版本chian-info-新版本, 然后更新软连接:
+ln -s -f ./chain-info-新版本 ./chain-info
+kill chain-info进程
+./start.sh
+ssh 进去以后,切换到root用户:
+sudo su -
+cd /home/filscan-test/backend/code
+上传你的新版本chian-info-新版本, 然后更新软连接:
+ln -s -f ./chain-info-新版本 ./chain-info
+kill chain-info进程
+./start.sh
+
+### 测试服务器
+
+
+
+
+### 传入的参数类型与代码规定的不一致， 导致
+![-w1486](media/16145819967528.jpg)
+
+
+![-w1486](media/16145823035596.jpg)
+代码中规定的： 
+![-w1336](media/16145823454100.jpg)
+
+
+###  加上--recursive，才可以下载代码
+```
+➜  ChainInfo git:(local-filscan-master) ✗ git submodule update --init
+
+➜  ChainInfo git:(local-filscan-master) ✗ git submodule update --init --recursive
+子模组路径 'extern/ChainSyncer/extern/filecoin-ffi'：检出 'b6e0b35fb49ed0fedb6a6a473b222e3b8a7d7f17'
+子模组路径 'extern/ChainSyncer/extern/serialization-vectors'：检出 '5bfb928910b01ac8b940a693af2884f7f8276211'
+子模组路径 'extern/ChainSyncer/extern/test-vectors'：检出 'd9a75a7873aee0db28b87e3970d2ea16a2f37c6a'
+子模组路径 'extern/ChainSyncer/extern/test-vectors/gen/extern/fil-blst'：检出 '5f93488fc0dbfb450f2355269f18fc67010d59bb'
+子模组路径 'extern/ChainSyncer/extern/test-vectors/gen/extern/filecoin-ffi'：检出 'f640612a1a1f7a2dd8b3a49e1531db0aa0f63447'
+```
+make build不过，因为缺少子仓库
+![-w1773](media/16148424974112.jpg)
+
 

@@ -106,3 +106,7 @@ CreatedAt          int64               `pg:"block_time" json:"block_time,omitemp
 ```
 
 ![-w1321](media/16105292183410.jpg)
+
+
+### 对于特别大量的消息的查询， 查询count, 不加索引限定的话，  会查的非常慢
+![-w1336](media/16146786974078.jpg)

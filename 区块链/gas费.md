@@ -23,8 +23,8 @@ gas used 必须小于或等于gas limit；
 实际支付的费用 = gas used * gas price。
 
 ###  gascap 
-feecap = preminum + basefee
-feecap 就是一个gas的价格，  包括 附加费premium， 和 base费， 附加费是给矿工的， basefee 是要销毁掉的， 
+gas_feecap = preminum + basefee
+gas_feecap 就是一个gas的价格，  包括 附加费premium， 和 base费， 附加费是给矿工的， basefee 是要销毁掉的， 
 
 ```
 要花费的钱 = premium * gas_limit + basefee * gas_used
@@ -47,6 +47,94 @@ miner_tip = gas_premium * gas_limit
 
 
 
+### mpool
+```
+{
+  "Message": {
+    "Version": 0,
+    "To": "f04",
+    "From": "f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova",
+    "Nonce": 0,
+    "Value": "0",
+    "GasLimit": 37108642,
+    "GasFeeCap": "188635304",
+    "GasPremium": "271415",
+    "Method": 2,
+    "Params": "hVgxA6QQeBGSy0k/METZakbnEQaB55J+5tUBKsi2/Zz4mAwQjY7814bU4ApBzXwq28wjHFgxA6QQeBGSy0k/METZakbnEQaB55J+5tUBKsi2/Zz4mAwQjY7814bU4ApBzXwq28wjHAhYJgAkCAESINefsb5s940FRYBkkSVOzqJcLLOZGQksN3TOc6u7+MmqgA==",
+    "CID": {
+      "/": "bafy2bzacecl3eoejl4d2a73wuxop6gjxtkwfnzab634cdtf3lztnz3ulvjyp6"
+    }
+--
+    "Data": "rafKPuBcA0nrFDX07SIAIr+46vqcic4a4wv+hI8RTUgJAkmyqGqNW1oV5y/O5bSPAbZFEmMD1Sxav8pnnd0q4wuPgY9H60888KKuM5UJQFYUF8c6va5jiZvwhal3KoWh"
+  },
+  "CID": {
+    "/": "bafy2bzacecl3eoejl4d2a73wuxop6gjxtkwfnzab634cdtf3lztnz3ulvjyp6"
+  }
+}
+```
+经过mpool replace ：
+```
+[fil@machine1 ~]$ ./lotus mpool replace --auto f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova 0
+new message cid:  bafy2bzacebkosbra7ktgfb4bn55d3vaxxm2fzapyx3wxvagvy4lj3hwu3hd2s
+```
+消息的gaspremium 被重新计算，gaspremium 由271415 变为339269， attofil单位， 即变为了原来的1.25倍。 
+
+gaslimit和 gasfeecap不变
+
+   "GasLimit": 37108642,
+    "GasFeeCap": "188635304",
+    "GasPremium": "271415",
+
+
+1.d 7.len
+2.
+
+
+
+
+修改后：
+```
+{
+  "Message": {
+    "Version": 0,
+    "To": "f04",
+    "From": "f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova",
+    "Nonce": 0,
+    "Value": "0",
+    "GasLimit": 37108642,
+    "GasFeeCap": "188635304",
+    "GasPremium": "339269",
+    "Method": 2,
+    "Params": "hVgxA6QQeBGSy0k/METZakbnEQaB55J+5tUBKsi2/Zz4mAwQjY7814bU4ApBzXwq28wjHFgxA6QQeBGSy0k/METZakbnEQaB55J+5tUBKsi2/Zz4mAwQjY7814bU4ApBzXwq28wjHAhYJgAkCAESINefsb5s940FRYBkkSVOzqJcLLOZGQksN3TOc6u7+MmqgA==",
+    "CID": {
+      "/": "bafy2bzacebkosbra7ktgfb4bn55d3vaxxm2fzapyx3wxvagvy4lj3hwu3hd2s"
+    }
+--
+    "Data": "qN6lcfhH01iydk21jb9QX3/6vM7IFc9LQH0c+67xGCrq+Vll64j7T0WRckQXr2G0AuBnllSwiM8xCov8yTp24YmYGf6bNJ/R8j5GUjv+CG7/044QbgbPYlAp87n8vpGp"
+  },
+  "CID": {
+    "/": "bafy2bzacebkosbra7ktgfb4bn55d3vaxxm2fzapyx3wxvagvy4lj3hwu3hd2s"
+  }
+}
+```
+
+### mpool replace 的帮助文档：
+```
+[fil@machine1 ~]$ ./lotus mpool replace --help
+NAME:
+   lotus mpool replace - replace a message in the mempool
+
+USAGE:
+   lotus mpool replace [command options] <from nonce> | <message-cid>
+
+OPTIONS:
+   --gas-feecap value   gas feecap for new message (burn and pay to miner, attoFIL/GasUnit)
+   --gas-premium value  gas price for new message (pay to miner, attoFIL/GasUnit)
+   --gas-limit value    gas limit for new message (GasUnit) (default: 0)
+   --auto               automatically reprice the specified message (default: false)
+   --max-fee value      Spend up to X attoFIL for this message (applicable for auto mode)
+   --help, -h           show help (default: false)
+```
 
 
 
@@ -105,3 +193,32 @@ Gas Premium: 用户选择支付给矿工的手续费率
 Gas 限额: 该笔交易能消耗的最大Gas量
 Gas 使用量: 完成这笔交易真实消耗的Gas量
 Base Fee: 根据区块链网络拥堵状况实时更新的基础手续费率
+
+f016703
+### 设置gascap， gaspriemu
+消息上链了
+```
+[fil@machine1 ~]$ ./lotus mpool replace --gas-feecap 6047339493 --gas-premium 530108  f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova 0
+new message cid:  bafy2bzacedqmdjllbqyv46kmm2az4pwxjg4reivuxaoecsjc7p3gxrmjme5vq
+[fil@machine1 ~]$ ./lotus mpool pending | grep f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova -A 10 -B 10 | less
+```
+
+：
+![-w1557](media/16131371928695.jpg)
+
+
+![-w1556](media/16131372292810.jpg)
+
+返回值里的id 既是矿工， 可以查到：
+![-w1533](media/16131373187287.jpg)
+
+
+###. miner
+```
+./lotus-miner init --actor=f0167039 --owner=f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova --worker=f3wochec64xehz3t6h5ky5rrxhsloxvvdvdc67a7o36tgstlu2vbvjpyfzhkmsahxbdbbkleqip4koky72yfda --no-local-storage > lotus-miner20210213.log 2>&1 &
+```
+  
+  
+```
+   ./lotus mpool replace  --nonce 1 --gas-feecap 6047339493 --gas-premium 530108  f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova 9
+```

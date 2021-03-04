@@ -166,16 +166,30 @@ Requested multiaddrs change in message bafy2bzacecsrlg7uyvowv65fr57522ly2w7sq7re
 
 ![-w1386](media/16133627219853.jpg)
 
-### token 生成后， 
 
-```
-[fil@machine1 ~]$ ./lotus-miner auth api-info --perm admin
-MINER_API_INFO=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.vKziiSHLsC3znNSUEDLv9qNbdRm5oPxoKJvro7H65fU:/ip4/127.0.0.1/tcp/2345/http
-```
 
-拷贝到miner.sh, 然后source miner.sh
 
+### .bashrc 文件完整内容：
 ```
+[fil@machine1 ~]$ cat .bashrc
+# .bashrc
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+	. /etc/bashrc
+fi
+export GOROOT=/home/fil/go
+export GOPATH=/home/fil/gopath
+export GO111MODULE=on
+export GOPROXY=https://goproxy.cn
+
+# Uncomment the following line if you don't like systemctl's auto-paging feature:
+# export SYSTEMD_PAGER=
+
+# User specific aliases and functions
+export PATH=${PATH}:~/go/bin
+
+source "$HOME/.cargo/env"
 export BELLMAN_CPU_UTILIZATION=0.875
 
 # See https://github.com/filecoin-project/rust-fil-proofs/
@@ -382,4 +396,211 @@ Worker b94e853f-35d4-4a33-aad1-f27589f0b28e, host machine1
 2021-02-15T16:57:53.110+0800	INFO	stores	stores/index.go:138	New sector storage: 417db84a-aeb7-496e-9498-16663771913b
 2021-02-15T16:57:53.110+0800	INFO	node	impl/storminer.go:355	Connected to a remote worker at http://127.0.0.1:6606/rpc/v0
 2021-02-15T16:57:53.113+0800	DEBUG	advmgr	sector-storage/sched.go:354	SCHED 0 queued; 4 open windows
+```
+
+
+
+
+### 删除缓冲池消息
+
+clear  只会删除本地缓冲池里的消息， 链上缓冲池的消息是删除不了的。 
+
+```
+[fil@machine1 ~]$ ./lotus mpool  clear --local --really-do-it
+[fil@machine1 ~]$
+[fil@machine1 ~]$
+[fil@machine1 ~]$
+[fil@machine1 ~]$ ./lotus mpool pending | grep f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova -A 10 -B 10
+[fil@machine1 ~]$ ./lotus mpool pending | grep f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova -A 10 -B 10
+
+
+./lotus2 mpool repub --from= f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova --from_nonce=15 --to_nonce=5
+```
+
+
+### code
+```
+[fil@machine1 ~]$ ./lotus state get-actor  f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova
+Address:	f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova
+Balance:	1.040596965801782546 FIL
+Nonce:		2
+Code:		bafkqadlgnfwc6mrpmfrwg33vnz2a (fil/2/account)
+Head:		bafy2bzacebkejdshuaymcc2xhiqf4affpwley7ievrywldndigkqzr5rxexzs
+[fil@machine1 ~]$ ./lotus state get-actor  f0167329
+Address:	f0167329
+Balance:	0 FIL
+Nonce:		0
+Code:		bafkqaetgnfwc6mrpon2g64tbm5sw22lomvza (fil/2/storageminer)
+Head:		bafy2bzacecq67w6gkjal7extxfjewm2652jwuz4riln4j6l3xdy2021年2月26日3thfeckeok
+```
+
+错误： 
+```
+ ./lotus-miner init --actor=f0168195 --owner=f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova --worker=f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova --no-local-storage > lotus-miner20210215.log 2>&1 &
+ 
+ 
+ 
+```
+log：
+
+![](media/16142650052316.jpg)
+
+
+```
+2021-02-13T12:27:48.323+0800	INFO	repo	repo/fsrepo.go:122	Initializing repo at '/home/fil/.lotusminer'
+2021-02-13T12:27:48.323+0800	INFO	main	lotus-storage-miner/init.go:408	Initializing libp2p identity
+2021-02-13T12:27:48.337+0800	INFO	badger	v2@v2.2007.2/levels.go:183	All 0 tables opened in 0s
+
+2021-02-13T12:27:48.347+0800	INFO	badger	v2@v2.2007.2/levels.go:183	All 0 tables opened in 0s
+
+2021-02-13T12:27:48.353+0800	ERROR	main	lotus-storage-miner/init.go:253	Failed to initialize lotus-miner: failed to configure miner:
+    main.storageMinerInit
+        /home/fil/lotus-code/cmd/lotus-storage-miner/init.go:518
+  - getWorkerAddr returned bad address:
+    main.configureStorageMiner
+        /home/fil/lotus-code/cmd/lotus-storage-miner/init.go:568
+  - failed to load miner actor state: unknown actor code bafkqadlgnfwc6mrpmfrwg33vnz2a
+2021-02-13T12:27:48.353+0800	INFO	main	lotus-storage-miner/init.go:258	Cleaning up /home/fil/.lotusminer after attempt...
+ERROR: Storage-miner init failed
+```
+
+消息池里的消息， 用clear, 只会清除本地缓存， 不会清除链上缓冲池的， 所以不要用clear. 
+
+缓冲里的消息改Nonce要用repub, 即广播到链上缓冲池。需要开发这个功能
+
+
+### 矿工初始化有actorID， 则会发送changePeerId
+```
+./lotus-miner init --actor=f0168195 --owner=f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova --worker=f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova --no-local-storage > lotus-miner20210215.log 2>&1 &
+```
+
+
+controller地址诃worker地址要分开
+```
+
+ ./lotus-miner init --actor=f0168195 --owner=f3vp5dj3ghe7j6nmx2gkmjzwshp5rvvakh2kebpabngj5id7idh6tsgievwvr2qz5d5tbypu6lrxvxofnrylda --worker=f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova --no-local-storage > lotus-miner20210226.log 2>&1 &
+ 
+   ./lotus send --from f3uqihqemsznet6mce3fvenzyra2a6pet643kqckwiw36zz6eybqii3dx426dnjyakihgxykw3zqrryzexvova f3rlg22zvz6tgdy26urciotphs6n2qytqrqoloopbbzdzcrxifj5azuawltvqevjml2quhpwuxsfbnwrkfcbjq  0.3 
+  
+```
+ 
+
+### 初始化矿工成功
+
+```
+[fil@machine1 ~]$ cat miner.sh
+export FIL_PROOFS_USE_MULTICORE_SDR=1
+export TMPDIR=/home/fil/seal-tmp
+export BELLMAN_CPU_UTILIZATION=0.875 # Optimal value depends on your exact hardware.
+export FIL_PROOFS_MAXIMIZE_CACHING=1
+export FIL_PROOFS_USE_GPU_COLUMN_BUILDER=1 # When having GPU.
+export FIL_PROOFS_USE_GPU_TREE_BUILDER=1   # When having GPU.
+export FIL_PROOFS_PARAMETER_CACHE=/var/tmp/filecoin-proof-parameters/
+export FIL_PROOFS_PARENT_CACHE=/home/fil/proof-parent-cache   # > 50GiB!
+```
+FIL_PROOFS_PARAMETER_CACHE是证明参数存放文件
+
+![-w1432](media/16133572422952.jpg)
+
+
+lotus 和lotus-minier一起跑耗用的资源：
+![-w1020](media/16133576503856.jpg)
+
+
+
+### aliyun 云盘停止， ecs服务器 登陆提示如下：
+```
+[fil@machine1 ~]$ ll /home/fil/seal-tmp
+ls: reading directory /home/fil/seal-tmp: Input/output error
+total 0
+[fil@machine1 ~]$ df /home/fil/work_path
+Filesystem     1K-blocks  Used Available Use% Mounted on
+/dev/vdc1       51473888 53372  48782744   1% /home/fil/work_path
+[fil@machine1 ~]$ ll /home/fil/work_path
+ls: reading directory /home/fil/work_path: Input/output error
+total 0
+```
+
+
+### 50万的高度， .lotus已经超过100G
+
+```
+[fil@machine1 ~]$ du -sch .lotus
+100G	.lotus
+100G	total
+```
+
+
+### /var/tmp/filcoin. 存放证明参数的文件， 也要单独挂载一个盘： 后面也会超过100G， 而且P4也需要这些证明参数文件
+
+```
+[fil@machine1 ~]$ du -sch /var/tmp/filecoin-proof-parameters/
+101G	/var/tmp/filecoin-proof-parameters/
+101G	total
+```
+
+
+
+
+![-w1757](media/16141557005669.jpg)
+
+
+
+![-w1757](media/16141586632061.jpg)
+
+
+### ./lotus-miner info 报bad handshaek
+原因：
+.bashrc里错误配置了：
+export MINER_API_INFO="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.vKziiSHLsC3znNSUEDLv9qNbdRm5oPxoKJvro7H65fU:/ip4/127.0.0.1/tcp/2345/http"
+lotus-miner run 时报错： jwc 认证错误
+
+
+### lotus-worker  报错 
+```
+2021-02-28T20:59:23.930+0800	WARN	main	lotus-seal-worker/main.go:97	MINER_API_INFO environment variable required to extract IP:
+    main.extractRoutableIP
+        /home/fil/lotus-code/cmd/lotus-seal-worker/main.go:547
+```
+原因是没生成 MINER_API_INFO , 用：
+
+```
+[fil@machine1 ~]$ ./lotus-miner auth api-info --perm admin
+MINER_API_INFO=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.vKziiSHLsC3znNSUEDLv9qNbdRm5oPxoKJvro7H65fU:/ip4/127.0.0.1/tcp/2345/http
+```
+MINER_API_INFO 放到.bashrc, source一下
+
+然后启动worker, :
+```
+2021-02-28T21:08:23.269+0800	INFO	main	lotus-seal-worker/main.go:335	Opening local storage; connecting to master
+2021-02-28T21:08:23.271+0800	INFO	main	lotus-seal-worker/main.go:392	Setting up control endpoint at 127.0.0.1:6667
+2021-02-28T21:08:23.272+0800	INFO	main	lotus-seal-worker/main.go:495	Making sure no local tasks are running
+2021-02-28T21:08:33.276+0800	INFO	main	lotus-seal-worker/main.go:518	Worker registered successfully, waiting for tasks
+```
+
+
+### miner
+woker 停止， 显示    disabled
+```
+[fil@m1 ~]$ ./lotus-miner sealing workers
+Worker 16c50c3e-bad0-4283-95d7-e43e33e6b89d, host m1
+	CPU:  [                                                                ] 0/16 core(s) in use
+	RAM:  [||||||||                                                        ] 13% 8.036 GiB/61.76 GiB
+	VMEM: [||||||||                                                        ] 13% 8.036 GiB/61.76 GiB
+Worker 51834086-4208-4207-987c-32362f1b7497, host m1 (disabled)
+	CPU:  [                                                                ] 0/16 core(s) in use
+	RAM:  [||||||||                                                        ] 13% 8.247 GiB/61.76 GiB
+	VMEM: [||||||||                                                        ] 13% 8.247 GiB/61.76 GiB
+```
+当worker重新启动后， 
+```
+[fil@m1 ~]$ ./lotus-miner sealing workers
+Worker 16c50c3e-bad0-4283-95d7-e43e33e6b89d, host m1
+	CPU:  [                                                                ] 0/16 core(s) in use
+	RAM:  [||||||||                                                        ] 13% 8.036 GiB/61.76 GiB
+	VMEM: [||||||||                                                        ] 13% 8.036 GiB/61.76 GiB
+Worker 9948e6ce-b3ad-45aa-883e-310043636312, host m1
+	CPU:  [                                                                ] 0/16 core(s) in use
+	RAM:  [||||||||                                                        ] 13% 8.251 GiB/61.76 GiB
+	VMEM: [||||||||                                                        ] 13% 8.251 GiB/61.76 GiB
 ```
