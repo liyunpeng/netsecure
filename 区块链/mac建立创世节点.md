@@ -8,6 +8,11 @@ du -sch /var/tmp/filecoin-proof-parameters/
 1.1G	/var/tmp/filecoin-proof-parameters/
 1.1G	total
 ```
+
+
+
+
+
 #### 2.  seed pre-seal 
 pre-seal 成功的正常log: 
 ```

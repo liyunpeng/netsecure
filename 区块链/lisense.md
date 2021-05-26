@@ -48,6 +48,8 @@ mount -t nfs -o hard,nolock,rw,user,rsize=1048576,wsize=1048576,vers=3 10.10.28.
 
 可以先做链同步， 初始化矿工， 之后重启lotus进程，加上floader
 
+
+
 ###  启动worker 
 
 ```

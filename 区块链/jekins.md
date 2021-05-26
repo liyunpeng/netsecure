@@ -5,6 +5,9 @@
 #### 构建环境
 ![-w961](media/16136199202216.jpg)
 
+
+
+
 ```
 source /etc/profile
 source /root/.bashrc

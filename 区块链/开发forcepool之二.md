@@ -1,4 +1,4 @@
-# 
+# `12
 没有办法， 也没演练
 消息堆积很多， 一下推很多， 有可能outofgas
 
@@ -24,6 +24,15 @@ user端修改， 要同步修改到admin端
 
 资产转移详情增加转出用户， 转入用户的三个表的转移前的历史记录数据，和转移后的数据。 三个表分别为矿池收益， spacerace奖励与释放， balance表
 
+
+### sql语句 时间错误， 时间会被更新为0 
+![-w881](media/16170035524352.jpg)
+将：
+update user set service_signed_time='2020/04/07 24:59:59' where is_service_signed=0
+改为
+update user set service_signed_time='2020/04/07 23:59:59' where is_service_signed=0
+
+就对了
 
 ### 2
 ![-w1713](media/16051659958151.jpg)

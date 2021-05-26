@@ -1,3 +1,111 @@
+### 分析慢查询
+```
+SELECT 
+  pid, 
+  datname AS db, 
+  query_start AS start,
+  now() - query_start AS lap, 
+  wait_event_type,wait_event,
+  query 
+FROM pg_stat_activity 
+WHERE state <> 'idle' and query not like '%pg_stat_activity%'
+  and (now() - query_start) > interval '3 seconds';
+```
+  
+  如下， 查到慢查询： select distinct method_name, from like
+  lotus_messages表非常大， 导致
+![](media/16194893797970.jpg)
+
+像distanct， like等语句，尽量不要， 秽导致慢查询
+
+### 服务器日志记录慢查询
+
+自己的.ssh/id_rsa.pub 贴到 192.168.1.185服务器的.ssh/authorized_keys 文件里， ssh 免密登陆
+
+/data/chain-info/code/cron-info.log 过滤关键子： ··
+cost time:
+
+### 统计全网每天奖励， 每天新增新增， 每天算力
+```
+
+SELECT
+				base.day,
+				(base.rewards/pow(10, 18))::INT AS rewards,
+		     ( (base.rewards - lead(base.rewards) OVER w)/pow(10, 18))::INT AS increased,
+				 (power/pow(2, 40))::INT as power
+		FROM
+		(SELECT to_timestamp(block_time)::date AS day,
+		      max(sigma_rewards) AS rewards,
+		      max(net_quality_adj_power) AS power
+		FROM lotus_tipsets
+		WHERE  block_time >= 1616828989 - 86400*218 AND block_time <= 1616828989
+		GROUP BY 1
+		ORDER BY day DESC) base
+		WINDOW w AS (ORDER BY base.day DESC) LIMIT 210
+```
+![-w770](media/16168367041798.jpg)
+
+
+### 有分区的查询，要加上索引
+and block_time >= 1616515200 
+and block_time < 1616601600 
+
+不能只用order by block_time
+
+### to 是关键字， 要用双引号，不然有语法错误
+![-w818](media/16166409901762.jpg)
+
+计算矿工的封装费用的： 
+![-w836](media/16166428244613.jpg)
+```
+SELECT sum(basefee_burn+over_estimation_burn+miner_tip) as burn  
+from lotus_messages 
+where  block_time >= 1616515200 
+and block_time < 1616601600 
+and “to”='f0127595'
+and method_name='PreCommitSector'
+```
+pg语法， 字段要用双引号
+
+　有客作礼而问曰。余生晚。机钝寡闻。自昔至今伶俜湖海。处静进功。量力未得。若即旅次不假道场。六时三业皆可奉行。伏愿弘慈曲垂方便。答世。人欲修三昧必百事具足然后发行。今子之志拔乎类矣。念佛三昧普摄群机。四威仪中皆为道用。子若力行。最初当立不欺心。藏德露玭。慎毋矜耀。从脚跟下便内外稳当。熟读净土经咒忏法极令通利。习所行威仪使端庄雅重。乃如前说起真信心。运大悲智。普为众生。如理观察二土净薉。苦乐两报实可厌忻。清净身心随分净服。于六斋日具蕞尔香华供三宝前。拜跪稽颡。立广大愿。在处生世以此为归。更不中悔。是日为始至形寿尽。每日六时修行此法。香灯有无毋固必矣。问。三昧一心。人事万绪。如何修行不相妨碍。答。如鸟入笼。身在笼。心忆园林。两不妨碍。笼系身不能系彼求出之心。事拘身不能拘我愿往之志。三界如笼。此身如鸟。求出即愿往园林。乃净土也。故知妄缘万绪不碍真心。日三夜三若有像处。或自有像随身。当口诵身礼。或默诵身礼。如无佛像或对经卷。或面西遥礼。或除东向随方修礼。若在道登舟及治身动用之事不可拨置。则佛事世事同运。念此世务本为养身。我身行道。世务即与三昧同体。问。心无二用。如何二事同运。答。一心不妨眼见耳闻身作心忆。应用无尽何止二事。便就动用中一心诵小弥陀经一卷。或上品。或楞严势至章。及诵净土咒或三或七至百多遍。又称佛号或三五百至千。为入忏佛事。回向已方入忏。随其文义节段。想我身恭对净土佛前。或形像佛前。跪拜瞻绕一一明了。不使昏乱。礼毕观白毫相等。量时而止。如前诵经咒佛号回向。此想礼与前道场行法同。但身礼异耳。其音随人境好恶而轻重之。当令声默相半沉大雅重。俾两肩隐闻。切不可与人多语。先于佛前烧香一炷。或拈物为香。至时但运想耳。余时宜独坐独行。远离喧杂及聚首闲谈戏谑侮弄哂笑歌叹吟咏笔砚。使人忘失正念等事。
+
+
+chain-info生产, 
+地址:13.115.185.218
+项目目录:/home/filscan-test/backend/code
+1月29日 11:08
+1
+ssh 进去以后,切换到root用户:
+2
+sudo su -
+3
+cd /home/filscan-test/backend/code
+4
+上传你的新版本chian-info-新版本, 然后更新软连接:
+5
+ln -s -f ./chain-info-新版本 ./chain-info
+6
+kill chain-info进程
+7
+./start.sh
+
+
+
+### 对没有索引的字段， 查询会导致逐个扫描， 会非常慢
+sector_size没有索引， 下面的查询非常慢：
+```
+SELECT * from lotus_miners WHERE sector_size=34359738368 and epoch >= 599000 and  epoch < 600000 order by epoch desc limit 1;
+```
+
+
+
+
+
+
+
+
+
+
 ### 禁止本机以外的地址访问本服务
 bind = "127.0.0.1" 表示只允许本地访问， 其他地址不能访问， 如本地地址为192.168.19.84， 而：
 
@@ -34,6 +142,7 @@ Height        int             `gorm:"primary_key;unique_index:height_index;type:
 ![-w1493](media/16110251227259.jpg)
 
 
+夜中人定境寂。用功正宜不同。生死事大岂随懈怠而恣睡眠。纵寒暑之极。慎勿脱衣。法服数珠宜置近处。手巾净水不离坐隅。或有所需皆应预备。又应观彼信根厚薄。不恼他人。不使人厌。于此无碍。则当微出其声如琴如瑟。细而沉重。大而不雌。使天神欢喜。鬼畜闻声。其功弥深。或在船及他家卑隈处。皆当察境察人。一心精进方便宛转以竭其行。切不可于中起人之过彰人之恶。又不可尽人之欢倾人之美。时闲处便而有他事异人为碍者。亦当择僻处端坐面西合掌至膺。声嘿随宜。如前想礼。又作务时一句一拜未圆。事讫。身闲当身礼圆满。佛前礼时忽有他事急为。一句一拜未圆。当随作处想礼圆满。切不可入忏未多而重起忏。又想礼盖不得已。不可暇时亦想礼。又不可想礼于作务时而闲时反虚掷也。浅信人不可遽然劝修。深信人不可不密启之使其自肯。又不可使功归己。如春育物不见其功。依道场修。顺中易行。从客中修。逆中易行。逆中易行其功益著。问。想与身同否。答。意为身口之主。主既注想。焉得不及身口。如运香华身心遍至。岂不亦但念想。问。若尔。可不运身口耶。答。意业虽胜。若全身口。名三业圆修。问。六时之外如何用心。答。观佛相好．持咒．诵经．称名．顶礼等行。念念不舍克期往生。如行路。人步紧到速。步缓到迟。当如是用心也。若身心力弱不能具修六时。但克定每日若干时。虽不厌加多。亦不可一时增减而改其所立之行。问。若尔。道场所修为不必耶。答。如人堕海求船未得。忽遇横木执之达岸。岂可有船必求其木。况客中去住随主厌忻。得无挂碍。可不进功。如上为客途所修三昧。境界甚深。四三昧中名非行非坐三昧。亦名随顺四威仪三昧。正被大机。小智小根随分受益。余观世人闻易即作易想。妄谓得证。闻难即生退屈。尽失其志。信心切者又入邪见。密相传授。以误多人。其传授之法千形万状。有不可闻者。皆能罗罩人心。非行渐张。师徒俱陷。岂能若尔正心下问之切也。此既可修。则一切奔驰世务流荡四方。邸店市廛百工伎艺。奴婢黄门受人驱役。及被牢狱者。未有不可修时。况出家四众。在家四民。有居有暇。所欲皆具。得自在者宁不进其行也。客名行一。字志西。自言读智觉禅师万善同归集甚熟。后游庐山见远公遗迹。因发愿念佛云。
 ### 本地地址添加代理ip服务器的百名单 
 获取本主机公网ip地址
 ![-w1232](media/16110352028709.jpg)
@@ -333,7 +442,7 @@ kill chain-info进程
 
 
 
-### 传入的参数类型与代码规定的不一致， 导致
+### 传入的参数类型与代码规定的不一致， 导致返回报参数错误
 ![-w1486](media/16145819967528.jpg)
 
 
@@ -356,4 +465,431 @@ kill chain-info进程
 make build不过，因为缺少子仓库
 ![-w1773](media/16148424974112.jpg)
 
+
+### 代码质量        
+代码： 最好的代码都是写出来的
+
+
+
+### goland 可以直接test 运行
+![-w1678](media/16152790349373.jpg)
+
+### XHR 只过滤出接口
+![-w1594](media/16152799071646.jpg)
+
+
+### 接口耗用时间查看
+![-w1780](media/16152800632937.jpg)
+
+
+### 将多个提交合并成一个提交
+git log --pretty=oneline --abbrev-commit --graph
+git rebase -i  03031746
+git push --set-upstream origin filscan-msg
+
+
+### 什么都没返回， 表示服务没启动
+![-w1208](media/16153735344972.jpg)
+
+
+###  文件路径找不到的排查
+docker 里的路径和宿主机路径的映射：
+
+用docker inspect a8 看到：
+```
+   "Mounts": [
+            {
+                "Type": "bind",
+                "Source": "/home/forcepool/backend-user/static",
+                "Destination": "/root/static",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/home/forcepool/backend-user/code",
+                "Destination": "/root/www/code",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/etc/localtime",
+                "Destination": "/etc/localtime",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            }
+        ],
+```
+看到source和destimation， 进程运行在docker里面， 要用desctinaiton的路径。 
+
+### postman 下载pdf文件
+![-w1475](media/16153742394967.jpg)
+
+点save to file. 
+
+404 表示服务已启动， 但服务器上没有这个文件
+
+### 子仓库chainsyncer 版本号更新
+
+先到chainsyncer 项目目录， 更新到最新， 获取指定分支的版本号，  注意不是chaininfo下的chainsyncer 目录
+```
+➜  ChainSyncer git:(local_actor_msg_count) ✗ git log  
+➜  ChainSyncer git:(local_actor_msg_count) ✗ git fetch --all
+正在获取 origin
+remote: Counting objects: 1547, done.
+remote: Compressing objects: 100% (795/795), done.
+remote: Total 1547 (delta 952), reused 1141 (delta 738)
+接收对象中: 100% (1547/1547), 3.28 MiB | 11.58 MiB/s, 完成.
+处理 delta 中: 100% (952/952), 完成.
+来自 gitlab.forceup.in:ChainService/ChainSyncer
+ * [新分支]              force/ft/optmize -> origin/force/ft/optmize
+   0d4e1ec63..de1862a7e  force/utimate2   -> origin/force/utimate2
+ + 14a1aea94...f6e4295e2 master           -> origin/master  (强制更新)
+ * [新分支]              master_bak_0308  -> origin/master_bak_0308
+ * [新标签]              before-merge-v1.5.0 -> before-merge-v1.5.0
+ * [新标签]              force.v.1.50        -> force.v.1.50
+ * [新标签]              force_stablev1.5.0  -> force_stablev1.5.0
+ * [新标签]              force_v1.5.0-rc2    -> force_v1.5.0-rc2
+ * [新标签]              v1.4.2              -> v1.4.2
+ * [新标签]              v1.4.2-rc1          -> v1.4.2-rc1
+ * [新标签]              v1.5.0              -> v1.5.0
+ * [新标签]              v1.5.0-rc1          -> v1.5.0-rc1
+ * [新标签]              v1.5.0-rc2          -> v1.5.0-rc2
+warning: 82f1558cda4c68b8a59626333e1d6efa5cc68db0:.gitmodules, multiple configurations found for 'submodule.extern/filecoin-ffi.path'. Skipping second one!
+warning: 82f1558cda4c68b8a59626333e1d6efa5cc68db0:.gitmodules, multiple configurations found for 'submodule.extern/filecoin-ffi.url'. Skipping second one!
+warning: 82f1558cda4c68b8a59626333e1d6efa5cc68db0:.gitmodules, multiple configurations found for 'submodule.extern/serialization-vectors.path'. Skipping second one!
+warning: 82f1558cda4c68b8a59626333e1d6efa5cc68db0:.gitmodules, multiple configurations found for 'submodule.extern/serialization-vectors.url'. Skipping second one!
+warning: 82f1558cda4c68b8a59626333e1d6efa5cc68db0:.gitmodules, multiple configurations found for 'submodule.extern/test-vectors.path'. Skipping second one!
+warning: 82f1558cda4c68b8a59626333e1d6efa5cc68db0:.gitmodules, multiple configurations found for 'submodule.extern/test-vectors.url'. Skipping second one!
+正在获取子模组 extern/filecoin-ffi
+来自 https://github.com/filecoin-project/filecoin-ffi
+ * [新分支]          feat-aggregation  -> origin/feat-aggregation
+ * [新分支]          feat-aggregation2 -> origin/feat-aggregation2
+   62f89f1..b6e0b35  master            -> origin/master
+ * [新标签]          b6e0b35fb49ed0fe  -> b6e0b35fb49ed0fe
+ * [新标签]          951d66ae93f6f4d3  -> 951d66ae93f6f4d3
+➜  ChainSyncer git:(local_actor_msg_count) ✗ git branch -vv
+➜  ChainSyncer git:(local_actor_msg_count) ✗ git remote -v                    
+origin  git@gitlab.forceup.in:ChainService/ChainSyncer.git (fetch)
+origin  git@gitlab.forceup.in:ChainService/ChainSyncer.git (push)
+➜  ChainSyncer git:(local_actor_msg_count) ✗ git checkout -b force/master origin/master
+error: 您对下列文件的本地修改将被检出操作覆盖：
+        lotuspond/front/src/chain/methods.json
+请在切换分支前提交或贮藏您的修改。
+正在终止
+➜  ChainSyncer git:(local_actor_msg_count) ✗ git chekcout .
+git：'chekcout' 不是一个 git 命令。参见 'git --help'。
+
+最相似的命令是
+        checkout
+➜  ChainSyncer git:(local_actor_msg_count) ✗ git checkout .
+从索引区更新了 2 个路径
+➜  ChainSyncer git:(local_actor_msg_count) ✗ git status
+位于分支 local_actor_msg_count
+您的分支与上游分支 'origin/force/ft/actor_msg_count' 一致。
+
+未跟踪的文件:
+  （使用 "git add <文件>..." 以包含要提交的内容）
+        extern/fil-blst/
+        extern/oni/
+        trace-crawler
+
+提交为空，但是存在尚未跟踪的文件（使用 "git add" 建立跟踪）
+➜  ChainSyncer git:(local_actor_msg_count) ✗ rm -rf extern/fil-blst 
+➜  ChainSyncer git:(local_actor_msg_count) ✗ rm -rf extern/oni 
+➜  ChainSyncer git:(local_actor_msg_count) ✗ rm -rf trace-crawler 
+➜  ChainSyncer git:(local_actor_msg_count) git status
+位于分支 local_actor_msg_count
+您的分支与上游分支 'origin/force/ft/actor_msg_count' 一致。
+
+无文件要提交，干净的工作区
+➜  ChainSyncer git:(local_actor_msg_count) git checkout -b force/master origin/master
+warning: unable to rmdir 'extern/blst': Directory not empty
+M       extern/filecoin-ffi
+分支 'force/master' 设置为跟踪来自 'origin' 的远程分支 'master'。
+切换到一个新分支 'force/master'
+➜  ChainSyncer git:(force/master) ✗ git submodule update --init --recursive
+子模组路径 'extern/filecoin-ffi'：检出 'b6e0b35fb49ed0fedb6a6a473b222e3b8a7d7f17'
+➜  ChainSyncer git:(force/master) ✗ git status
+位于分支 force/master
+您的分支与上游分支 'origin/master' 一致。
+
+未跟踪的文件:
+  （使用 "git add <文件>..." 以包含要提交的内容）
+        extern/blst/
+
+提交为空，但是存在尚未跟踪的文件（使用 "git add" 建立跟踪）
+➜  ChainSyncer git:(force/master) ✗ rm -rf extern/blst
+➜  ChainSyncer git:(force/master) git status
+位于分支 force/master
+您的分支与上游分支 'origin/master' 一致。
+
+无文件要提交，干净的工作区
+➜  ChainSyncer git:(force/master) git log
+➜  ChainSyncer git:(force/master) 
+```
+拿到版本号：f6e4295e20334fe94cdcc3ef7e3049b1c02b8085
+
+到chain-info 更新子仓库版本号：
+
+```
+➜  ChainInfo git:(filscan-msg) git submodule 
+ db065f4c4c4c53114b5b654ee975d713950379c9 extern/ChainSyncer (force_v1.5.0-rc2-59-gdb065f4c4)
+➜  ChainInfo git:(filscan-msg) git status
+位于分支 filscan-msg
+您的分支与上游分支 'origin/filscan-msg' 一致。
+
+无文件要提交，干净的工作区
+➜  ChainInfo git:(filscan-msg) cd extern/ChainSyncer 
+➜  ChainSyncer git:(db065f4c4) git brach
+git：'brach' 不是一个 git 命令。参见 'git --help'。
+
+最相似的命令是
+        branch
+➜  ChainSyncer git:(db065f4c4) git checkout f6e4295e20334fe94cdcc3ef7e3049b1c02b8085
+fatal: 引用不是一个树：f6e4295e20334fe94cdcc3ef7e3049b1c02b8085
+➜  ChainSyncer git:(db065f4c4) git fetch --all
+正在获取 origin
+remote: Counting objects: 58, done.
+remote: Compressing objects: 100% (51/51), done.
+remote: Total 58 (delta 19), reused 33 (delta 7)
+展开对象中: 100% (58/58), 120.99 KiB | 2.33 MiB/s, 完成.
+来自 gitlab.forceup.in:ChainService/ChainSyncer
+ * [新分支]              force/ft/optmize -> origin/force/ft/optmize
+   db065f4c4..de1862a7e  force/utimate2   -> origin/force/utimate2
+ + 14a1aea94...f6e4295e2 master           -> origin/master  (强制更新)
+ * [新分支]              master_bak_0308  -> origin/master_bak_0308
+ * [新标签]              force_stablev1.5.0 -> force_stablev1.5.0
+➜  ChainSyncer git:(db065f4c4) git checkout f6e4295e20334fe94cdcc3ef7e3049b1c02b8085
+之前的 HEAD 位置是 db065f4c4 out put details for collection headers
+HEAD 目前位于 f6e4295e2 Merge branch 'force/ft/optmize' into 'master'
+➜  ChainSyncer git:(f6e4295e2) git checkout origin/master
+HEAD 目前位于 f6e4295e2 Merge branch 'force/ft/optmize' into 'master'
+➜  ChainSyncer git:(f6e4295e2) git log
+➜  ChainSyncer git:(f6e4295e2) git submodule update --init --recursive
+➜  ChainSyncer git:(f6e4295e2) cd ../
+➜  extern git:(filscan-msg) ✗ git status
+位于分支 filscan-msg
+您的分支与上游分支 'origin/filscan-msg' 一致。
+
+尚未暂存以备提交的变更：
+  （使用 "git add <文件>..." 更新要提交的内容）
+  （使用 "git restore <文件>..." 丢弃工作区的改动）
+        修改：     ChainSyncer (新提交)
+
+修改尚未加入提交（使用 "git add" 和/或 "git commit -a"）
+➜  extern git:(filscan-msg) ✗ git status
+位于分支 filscan-msg
+您的分支与上游分支 'origin/filscan-msg' 一致。
+
+尚未暂存以备提交的变更：
+  （使用 "git add <文件>..." 更新要提交的内容）
+  （使用 "git restore <文件>..." 丢弃工作区的改动）
+        修改：     ChainSyncer (新提交)
+
+修改尚未加入提交（使用 "git add" 和/或 "git commit -a"）
+➜  extern git:(filscan-msg) ✗ git diff
+➜  extern git:(filscan-msg) ✗ git add -A
+➜  extern git:(filscan-msg) ✗ git status
+位于分支 filscan-msg
+您的分支与上游分支 'origin/filscan-msg' 一致。
+
+要提交的变更：
+  （使用 "git restore --staged <文件>..." 以取消暂存）
+        修改：     ChainSyncer
+
+➜  extern git:(filscan-msg) ✗ git commit -m'update submodule chainsyncer'
+[filscan-msg d97a4ead] update submodule chainsyncer
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+➜  extern git:(filscan-msg) git push
+枚举对象: 5, 完成.
+对象计数中: 100% (5/5), 完成.
+使用 12 个线程进行压缩
+压缩对象中: 100% (2/2), 完成.
+写入对象中: 100% (3/3), 317 字节 | 317.00 KiB/s, 完成.
+总共 3（差异 1），复用 0（差异 0），包复用 0
+remote: 
+remote: To create a merge request for filscan-msg, visit:
+remote:   https://gitlab.forceup.in/ChainService/ChainInfo/merge_requests/new?merge_request%5Bsource_branch%5D=filscan-msg
+remote: 
+To gitlab.forceup.in:ChainService/ChainInfo.git
+   30689841..d97a4ead  filscan-msg -> filscan-msg
+➜  extern git:(filscan-msg) git status
+位于分支 filscan-msg
+您的分支与上游分支 'origin/filscan-msg' 一致。
+
+无文件要提交，干净的工作区
+➜  extern git:(filscan-msg) git submodule
+ f6e4295e20334fe94cdcc3ef7e3049b1c02b8085 ChainSyncer (force_stablev1.5.0-5-gf6e4295e2)
+
+```
+
+这时 子仓库号f6e4295e20334fe94cdcc3ef7e3049b1c02b8085 和 chainsyncer代码目录 是同一个， 就对了
+
+
+### git status 看到extern/ChainSyncer (新提交)， 不能切到别的分支的解决办法
+ rm -rf extern/ChainSyncer 
+git submodule update --init 
+可以消除extern/ChainSyncer (新提交)
+```
+➜  ChainInfo git:(filscan) ✗ git status
+位于分支 filscan
+您的分支落后 'origin/filscan' 共 347 个提交，并且可以快进。
+  （使用 "git pull" 来更新您的本地分支）
+
+尚未暂存以备提交的变更：
+  （使用 "git add <文件>..." 更新要提交的内容）
+  （使用 "git restore <文件>..." 丢弃工作区的改动）
+        修改：     extern/ChainSyncer (新提交)
+
+修改尚未加入提交（使用 "git add" 和/或 "git commit -a"）
+➜  ChainInfo git:(filscan) ✗ pwd
+/Users/zhenglun1/goworkspace/ChainInfo
+➜  ChainInfo git:(filscan) ✗ cd extern 
+➜  extern git:(filscan) ✗ rm -rf ChainSyncer 
+➜  extern git:(filscan) ✗ cd ..
+➜  ChainInfo git:(filscan) ✗ git submodule update --init            
+子模组路径 'extern/ChainSyncer'：检出 '3816b51be8643003a1f5be8cf2b89022be06da25'
+➜  ChainInfo git:(filscan) git status
+位于分支 filscan
+您的分支落后 'origin/filscan' 共 347 个提交，并且可以快进。
+  （使用 "git pull" 来更新您的本地分支）
+
+无文件要提交，干净的工作区
+```
+### extern/chainsyncer 和他人提交冲突的解决办法
+执行git merge --abort命令回到解决冲突之前的状态
+
+git merge filscan
+git merge --abort
+git submodule update --init
+git push
+
+git status 提示
+双方修改：     extern/ChainSyncer (新提交)
+当有这个冲突时， 可以用git merge --abort 来解决冲突， git status 就不会看到有冲突了
+
+
+### git status  修改：     extern/ChainSyncer (修改的内容, 未跟踪的内容) 的解决办法
+问题描述：
+```
+➜  ChainInfo git:(filscan-msg) git status . 
+位于分支 filscan-msg
+您的分支与上游分支 'origin/filscan-msg' 一致。
+
+尚未暂存以备提交的变更：
+  （使用 "git add <文件>..." 更新要提交的内容）
+  （使用 "git restore <文件>..." 丢弃工作区的改动）
+  （提交或丢弃子模组中未跟踪或修改的内容）
+        修改：     extern/ChainSyncer (修改的内容, 未跟踪的内容)
+
+```
+
+解决办法； 
+```
+➜  ChainInfo git:(filscan-msg) ✗ cd extern 
+➜  extern git:(filscan-msg) ✗ rm -rf ChainSyncer 
+➜  extern git:(filscan-msg) ✗ cd ..
+➜  ChainInfo git:(filscan-msg) ✗ git submodule update --init 
+子模组路径 'extern/ChainSyncer'：检出 'f6e4295e20334fe94cdcc3ef7e3049b1c02b8085'
+➜  ChainInfo git:(filscan-msg) ✗ git status 
+位于分支 filscan-msg
+您的分支与上游分支 'origin/filscan-msg' 一致。
+```
+
+将子仓库的子仓库也同步下来：
+```
+➜  ChainInfo git:(filscan-msg) ✗ git submodule update --init --recursive
+子模组路径 'extern/ChainSyncer/extern/filecoin-ffi'：检出 'b6e0b35fb49ed0fedb6a6a473b222e3b8a7d7f17'
+子模组路径 'extern/ChainSyncer/extern/serialization-vectors'：检出 '5bfb928910b01ac8b940a693af2884f7f8276211'
+子模组路径 'extern/ChainSyncer/extern/test-vectors'：检出 'd9a75a7873aee0db28b87e3970d2ea16a2f37c6a'
+子模组路径 'extern/ChainSyncer/extern/test-vectors/gen/extern/fil-blst'：检出 '5f93488fc0dbfb450f2355269f18fc67010d59bb'
+子模组路径 'extern/ChainSyncer/extern/test-vectors/gen/extern/filecoin-ffi'：检出 'f640612a1a1f7a2dd8b3a49e1531db0aa0f63447'
+```
+
+### 计算count查询，避免or查询做的优化
+![-w1176](media/16155441197550.jpg)
+
+避免类似这样的查询： "actor_addr=?" or "actor=?"
+
+### pg 查询的钩子函数
+db 链接初始化时， 设置钩子函数， 
+![-w1176](media/16155444234789.jpg)
+钩子函数可以设置查询前后的动作： 
+![-w1283](media/16155445094649.jpg)
+查询后， 统计查询耗时， 如果超过1秒， 或设置了showquery， 就把查询语句和耗时打印出来。 
+![-w1283](media/16155618872278.jpg)
+
+
+![-w1562](media/16155620617413.jpg)
+
+
+![-w1562](media/16155999261546.jpg)
+
+
+###  make 开始就停止的问题
+```
+➜  ChainInfo git:(filscan-msg) make
+make -C ./extern/ChainSyncer clean
+make[1]: *** No rule to make target `clean'.  Stop.
+make: [clean-deps] Error 2 (ignored)
+make -C ./extern/ChainSyncer deps
+make[1]: *** No rule to make target `deps'.  Stop.
+make: *** [build-deps] Error 2
+
+```
+
+![-w696](media/16157961872741.jpg)
+
+make 之前要把子仓库下载好, 解决办法：
+```
+➜  ChainInfo git:(filscan-msg) git submodule update --init --recursive
+子模组路径 'extern/ChainSyncer'：检出 '36704cb07986e07f5b7b5cb9aa3c99fe1c71a3ab'
+子模组路径 'extern/ChainSyncer/extern/filecoin-ffi'：检出 'b6e0b35fb49ed0fedb6a6a473b222e3b8a7d7f17'
+子模组路径 'extern/ChainSyncer/extern/serialization-vectors'：检出 '5bfb928910b01ac8b940a693af2884f7f8276211'
+子模组路径 'extern/ChainSyncer/extern/test-vectors'：检出 'd9a75a7873aee0db28b87e3970d2ea16a2f37c6a'
+子模组路径 'extern/ChainSyncer/extern/test-vectors/gen/extern/fil-blst'：检出 '5f93488fc0dbfb450f2355269f18fc67010d59bb'
+子模组路径 'extern/ChainSyncer/extern/test-vectors/gen/extern/filecoin-ffi'：检出 'f640612a1a1f7a2dd8b3a49e1531db0aa0f63447'
+```
+![-w1494](media/16157962751184.jpg)
+
+
+### 依赖仓库的升级
+buildmessage 接口返回 invalid to 错误， 代码；
+![-w1119](media/16196872613520.jpg)
+
+
+原因
+extern下的依赖仓库有变形， 但版本号还是原来的
+
+浮现问题
+checkout相应的提交点， 可以浮现问题
+
+![-w741](media/16196870059072.jpg)
+
+![-w961](media/16196870706345.jpg)
+
+
+
+解决问题：
+![-w973](media/16196871771755.jpg)
+
+浮现问题， 解决问题可以通过 切子仓库分支， 来验证
+
+
+### 
+![-w733](media/16197532536064.jpg)
+ MethodsMap 缺少
+actors = append(actors, exported4.BuiltinActors()...)
+说明chainsyncer没有同步好， 到
+
+解决办法： 
+ChainInfo git:(filscan-msg) ✗ cd extern/ChainSyncer 
+➜  ChainSyncer git:(a85672810) git fetch --all
+正在获取 origin
+➜  ChainSyncer git:(a85672810) git checkout master
 

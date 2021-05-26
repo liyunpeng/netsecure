@@ -134,7 +134,7 @@ lotus-server会检查json config制定的库里面， 有没有表， 没有会�
 (/builds/ForceMining/lotus-server/sql_model/mysql_conn.go:50)
 [2020-06-13 14:27:41]  [3.73ms]  CREATE TABLE `storage_nodes` (`id` bigint(20) unsigned AUTO_INCREMENT,`name` varchar(255),`type` int(255),`loc` varchar(255),`remark` varchar(255) , PRIMARY KEY (`id`))
 [0 rows affected or returned ]
-
+                
 (/builds/ForceMining/lotus-server/sql_model/mysql_conn.go:51)
 [2020-06-13 14:27:41]  [3.39ms]  CREATE TABLE `storage_node_groups` (`id` bigint(20) unsigned AUTO_INCREMENT,`node_id` bigint(20) unsigned NOT NULL,`group_id` bigint(20) unsigned NOT NULL , PRIMARY KEY (`id`))
 [0 rows affected or returned ]

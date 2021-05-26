@@ -39,6 +39,7 @@ WHERE "from" = 'f3qbn7n7lycddeuuhmw7fxqfluvkvfc6ljoe2ox7sepazlrex2tq3mffrxvszlky
 李刚 committed about 3 hours ago
 27ab9292
 
+
 ### 本地链发出的消息的查看
 消息都是sealer发出的， $cat sealer.log 看很多消息
 ```
@@ -81,6 +82,7 @@ P4 发的消息， 在网页上看到的方法列的名字是 ProveCommitSector
 
 消息发到链上， 指消息会广播链上的所有节点， 有时， 链产生了分叉， 需要lotus-message 手动发送消息， 只有消息发到链上， sector才能上链。
 
+lotus wallet sign f1zh2d3rprwhch4yjqsor7xoyzeg4czxjkcoocmjy 5369676E617475726520666F722066696C7363616E20663031333534363720323032312D30332D31395430373A34313A32312E3436335A f1zh2d3rprwhch4yjqsor7xoyzeg4czxjkcoocmjy
 ### sealer正常的判断
 tasks表正常
 

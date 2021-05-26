@@ -1,3 +1,159 @@
+### 提交子仓库版本号示范步骤
+```
+➜  Backend git:(payment_test) git status 
+位于分支 payment_test
+您的分支领先 'origin/test' 共 1 个提交。
+  （使用 "git push" 来发布您的本地提交）
+
+尚未暂存以备提交的变更：
+  （使用 "git add <文件>..." 更新要提交的内容）
+  （使用 "git restore <文件>..." 丢弃工作区的改动）
+  （提交或丢弃子模组中未跟踪或修改的内容）
+        修改：     extern/UserBackend (修改的内容)
+
+修改尚未加入提交（使用 "git add" 和/或 "git commit -a"）
+➜  Backend git:(payment_test) rm extern/UserBackend/
+➜  Backend git:(payment_test) cd extern 
+➜  extern git:(payment_test) rm -rf UserBackend
+➜  extern git:(payment_test) ✗ cd ..
+➜  Backend git:(payment_test) ✗ git status
+位于分支 payment_test
+您的分支领先 'origin/test' 共 1 个提交。
+  （使用 "git push" 来发布您的本地提交）
+
+尚未暂存以备提交的变更：
+  （使用 "git add/rm <文件>..." 更新要提交的内容）
+  （使用 "git restore <文件>..." 丢弃工作区的改动）
+        删除：     extern/UserBackend
+
+修改尚未加入提交（使用 "git add" 和/或 "git commit -a"）
+➜  Backend git:(payment_test) ✗ git submodule update --init --recursive
+子模组路径 'extern/UserBackend'：检出 'a8d87ce6ee5493c27e88e4d1dfc76def2202a837'
+➜  Backend git:(payment_test) cd extern/UserBackend 
+➜  UserBackend git:(a8d87ce) git log  
+➜  UserBackend git:(a8d87ce) git pull
+warning: 不建议在没有为偏离分支指定合并策略时执行 pull 操作。 您可以在执行下一次
+pull 操作之前执行下面一条命令来抑制本消息：
+
+  git config pull.rebase false  # 合并（缺省策略）
+  git config pull.rebase true   # 变基
+  git config pull.ff only       # 仅快进
+
+您可以将 "git config" 替换为 "git config --global" 以便为所有仓库设置
+缺省的配置项。您也可以在每次执行 pull 命令时添加 --rebase、--no-rebase，
+或者 --ff-only 参数覆盖缺省设置。
+
+remote: Counting objects: 230, done.
+remote: Compressing objects: 100% (108/108), done.
+remote: Total 230 (delta 127), reused 186 (delta 110)
+接收对象中: 100% (230/230), 79.12 KiB | 13.19 MiB/s, 完成.
+处理 delta 中: 100% (127/127), 完成.
+来自 gitlab.forceup.in:ForcePool/UserBackend
+ * [新分支]          hotfix/forbidden-user -> origin/hotfix/forbidden-user
+   fe31861..849e0c0  master                -> origin/master
+   080598b..c8646bb  master1.10            -> origin/master1.10
+   5309277..29e7564  sky                   -> origin/sky
+   a8d87ce..777f757  test                  -> origin/test
+   e8b02a0..844c5da  test1                 -> origin/test1
+您当前不在一个分支上。
+请指定您要合并哪一个分支。
+详见 git-pull(1)。
+
+    git pull <远程> <分支>
+
+➜  UserBackend git:(a8d87ce) git pull origin test
+warning: 不建议在没有为偏离分支指定合并策略时执行 pull 操作。 您可以在执行下一次
+pull 操作之前执行下面一条命令来抑制本消息：
+
+  git config pull.rebase false  # 合并（缺省策略）
+  git config pull.rebase true   # 变基
+  git config pull.ff only       # 仅快进
+
+您可以将 "git config" 替换为 "git config --global" 以便为所有仓库设置
+缺省的配置项。您也可以在每次执行 pull 命令时添加 --rebase、--no-rebase，
+或者 --ff-only 参数覆盖缺省设置。
+
+来自 gitlab.forceup.in:ForcePool/UserBackend
+ * branch            test       -> FETCH_HEAD
+更新 a8d87ce..777f757
+Fast-forward
+ api/types/request.go               |  10 +++
+ api/user/asset.go                  |  18 ++++
+ api/user/force_refresh.go          |  94 +++++++++++++++++---
+ api/user/login.go                  |  14 ++-
+ api/user/rlpoolassert.go           |   2 +-
+ api/user/user.go                   | 115 +++++++++++++++++++-----
+ api/user/userspace_income.go       |   7 --
+ conf/app.toml                      |  10 ++-
+ mes/mes.go                         |   2 +
+ middleware/session/checksess.go    |  10 ++-
+ models/gas_model.go                |  11 +++
+ models/miner_balance.go            |   2 +-
+ models/pledge_model_new.go         |   2 +
+ models/pledge_model_rpc.go         | 488 ++++++++++++++++++++++++++++++++++-------------------------------------------------------------------
+ models/pledge_model_rpc_user.go    | 454 +---------------------------------------------------------------------------------------------
+ models/pool_total_income.go        |  10 ++-
+ models/user.go                     |  89 ++++++++++++-------
+ models/wallet_record.go            |   4 +-
+ pledgetype/pledge_type.go          |  42 ++-------
+ pledgetype/rpc_balance.go          |  25 +-----
+ routers/routers.go                 |   8 +-
+ rpc/rpc_balance.go                 |   2 +
+ rpc/rpc_call.go                    |   2 +-
+ rpc/rpc_gas.go                     |  42 +++++++++
+ settings/settingtypes/tomltypes.go |   3 +
+ 25 files changed, 544 insertions(+), 922 deletions(-)
+ create mode 100644 api/user/asset.go
+ create mode 100644 models/gas_model.go
+ create mode 100644 rpc/rpc_gas.go
+➜  UserBackend git:(777f757) git log
+➜  UserBackend git:(777f757) cd ..
+➜  extern git:(payment_test) ✗ git status 
+位于分支 payment_test
+您的分支领先 'origin/test' 共 1 个提交。
+  （使用 "git push" 来发布您的本地提交）
+
+尚未暂存以备提交的变更：
+  （使用 "git add <文件>..." 更新要提交的内容）
+  （使用 "git restore <文件>..." 丢弃工作区的改动）
+        修改：     UserBackend (新提交)
+
+修改尚未加入提交（使用 "git add" 和/或 "git commit -a"）
+➜  extern git:(payment_test) ✗ git sub
+git：'sub' 不是一个 git 命令。参见 'git --help'。
+
+最相似的命令是
+        push
+➜  extern git:(payment_test) ✗ git submodule 
++777f75792cf3567734cf7c2aa78835cd8df443e1 UserBackend (v1.8.4-1366-g777f757)
+➜  extern git:(payment_test) ✗ git status
+位于分支 payment_test
+您的分支领先 'origin/test' 共 1 个提交。
+  （使用 "git push" 来发布您的本地提交）
+
+尚未暂存以备提交的变更：
+  （使用 "git add <文件>..." 更新要提交的内容）
+  （使用 "git restore <文件>..." 丢弃工作区的改动）
+        修改：     UserBackend (新提交)
+
+修改尚未加入提交（使用 "git add" 和/或 "git commit -a"）
+➜  extern git:(payment_test) ✗ git commit 
+➜  extern git:(payment_test) ✗ cd ..
+➜  Backend git:(payment_test) ✗ git submodule 
++777f75792cf3567734cf7c2aa78835cd8df443e1 extern/UserBackend (v1.8.4-1366-g777f757)
+➜  Backend git:(payment_test) ✗ git status
+位于分支 payment_test
+您的分支领先 'origin/test' 共 1 个提交。
+  （使用 "git push" 来发布您的本地提交）
+
+尚未暂存以备提交的变更：
+  （使用 "git add <文件>..." 更新要提交的内容）
+  （使用 "git restore <文件>..." 丢弃工作区的改动）
+        修改：     extern/UserBackend (新提交)
+
+修改尚未加入提交（使用 "git add" 和/或 "git commit -a"）
+```
+
 ![-w1300](media/15969672324154.jpg)
 
  ➜  lotus git:(ntwk-calibration) ✗ ./lotus client  list-deals start -h
